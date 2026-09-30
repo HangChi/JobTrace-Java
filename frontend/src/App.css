@@ -54,3 +54,22 @@ h1 {
   box-shadow: 0 0 0 0.35rem rgba(34, 197, 94, 0.14);
 }
 
+.status-checking {
+  color: #475569;
+}
+
+.status-checking span {
+  background: #94a3b8;
+  box-shadow: 0 0 0 0.35rem rgba(148, 163, 184, 0.16);
+}
+
+.status-database-unavailable,
+.status-backend-unavailable {
+  color: #b45309;
+}
+
+.status-database-unavailable span,
+.status-backend-unavailable span {
+  background: #f59e0b;
+  box-shadow: 0 0 0 0.35rem rgba(245, 158, 11, 0.16);
+}

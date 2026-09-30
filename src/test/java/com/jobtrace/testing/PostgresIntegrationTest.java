@@ -18,10 +18,9 @@ public abstract class PostgresIntegrationTest {
 
     @DynamicPropertySource
     static void databaseProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRES::getUsername);
-        registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("jobtrace.database.url", POSTGRES::getJdbcUrl);
+        registry.add("jobtrace.database.username", POSTGRES::getUsername);
+        registry.add("jobtrace.database.password", POSTGRES::getPassword);
         registry.add("spring.flyway.enabled", () -> false);
     }
 }
-
