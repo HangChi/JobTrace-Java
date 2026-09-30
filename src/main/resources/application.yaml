@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: jobtrace
+  datasource:
+    url: ${JOBTRACE_DATABASE_URL:jdbc:postgresql://127.0.0.1:5432/jobtrace}
+    username: ${JOBTRACE_DATABASE_USERNAME:jobtrace}
+    password: ${JOBTRACE_DATABASE_PASSWORD:jobtrace}
+  flyway:
+    enabled: ${JOBTRACE_FLYWAY_ENABLED:false}
+  jooq:
+    sql-dialect: POSTGRES
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+server:
+  error:
+    include-message: never
+  forward-headers-strategy: framework
+

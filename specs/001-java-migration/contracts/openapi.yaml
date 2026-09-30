@@ -1,0 +1,52 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Migration Foundation API
+  version: 0.1.0
+  description: Initial health contract for the Java migration runtime.
+paths:
+  /api/health/live:
+    get:
+      operationId: getLiveness
+      summary: Confirm that the application process can respond
+      security: []
+      responses:
+        "200":
+          description: Process is alive
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /api/health/ready:
+    get:
+      operationId: getReadiness
+      summary: Confirm that the application can query PostgreSQL
+      security: []
+      responses:
+        "200":
+          description: Application is ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "500":
+          description: The readiness check completed but did not return the expected result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: PostgreSQL or the application dependency is unavailable
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum:
+            - ok
+            - error
+
