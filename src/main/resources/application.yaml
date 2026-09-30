@@ -2,13 +2,21 @@ spring:
   application:
     name: jobtrace
   datasource:
+    url: ${jobtrace.database.url}
+    username: ${jobtrace.database.username}
+    password: ${jobtrace.database.password}
+  flyway:
+    enabled: ${jobtrace.migration.flyway-enabled}
+  jooq:
+    sql-dialect: POSTGRES
+
+jobtrace:
+  database:
     url: ${JOBTRACE_DATABASE_URL:jdbc:postgresql://127.0.0.1:5432/jobtrace}
     username: ${JOBTRACE_DATABASE_USERNAME:jobtrace}
     password: ${JOBTRACE_DATABASE_PASSWORD:jobtrace}
-  flyway:
-    enabled: ${JOBTRACE_FLYWAY_ENABLED:false}
-  jooq:
-    sql-dialect: POSTGRES
+  migration:
+    flyway-enabled: ${JOBTRACE_FLYWAY_ENABLED:false}
 
 management:
   endpoint:
@@ -24,4 +32,3 @@ server:
   error:
     include-message: never
   forward-headers-strategy: framework
-

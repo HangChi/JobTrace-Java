@@ -17,11 +17,11 @@
 
 **Purpose**: Complete repository-level conventions that support every later slice.
 
-- [ ] T001 Record the source repository API, module, migration, and test inventory in `docs/source-inventory.md`
-- [ ] T002 [P] Configure Java formatting and static analysis in `build.gradle.kts` and `config/checkstyle/checkstyle.xml`
-- [ ] T003 [P] Configure frontend coverage thresholds in `frontend/vite.config.ts` and `frontend/package.json`
-- [ ] T004 [P] Add dependency update policy and automated update configuration in `.github/dependabot.yml`
-- [ ] T005 Document local secret handling and configuration precedence in `docs/configuration.md`
+- [x] T001 Record the source repository API, module, migration, and test inventory in `docs/source-inventory.md`
+- [x] T002 [P] Configure Java formatting and static analysis in `build.gradle.kts` and `config/checkstyle/checkstyle.xml`
+- [x] T003 [P] Configure frontend coverage thresholds in `frontend/vite.config.ts` and `frontend/package.json`
+- [x] T004 [P] Add dependency update policy and automated update configuration in `.github/dependabot.yml`
+- [x] T005 Document local secret handling and configuration precedence in `docs/configuration.md`
 
 ---
 
@@ -31,13 +31,13 @@
 
 **⚠️ CRITICAL**: User-story implementation begins only after this phase passes CI.
 
-- [ ] T006 [P] Add PostgreSQL Testcontainers support and reusable test configuration in `src/test/java/com/jobtrace/testing/PostgresIntegrationTest.java`
-- [ ] T007 [P] Add RFC 9457-compatible safe error responses in `src/main/java/com/jobtrace/shared/web/GlobalExceptionHandler.java`
-- [ ] T008 [P] Add request ID generation and response propagation in `src/main/java/com/jobtrace/shared/web/RequestIdFilter.java`
-- [ ] T009 Add structured logging with sensitive-field redaction tests in `src/main/java/com/jobtrace/shared/observability/SafeLogger.java` and `src/test/java/com/jobtrace/shared/observability/SafeLoggerTest.java`
-- [ ] T010 Add typed environment validation for database and auth-bridge settings in `src/main/java/com/jobtrace/shared/config/JobTraceProperties.java`
-- [ ] T011 Add modular package boundaries and architecture tests in `src/test/java/com/jobtrace/ArchitectureTest.java`
-- [ ] T012 Add API contract validation utilities in `src/test/java/com/jobtrace/testing/OpenApiContractTest.java`
+- [x] T006 [P] Add PostgreSQL Testcontainers support and reusable test configuration in `src/test/java/com/jobtrace/testing/PostgresIntegrationTest.java`
+- [x] T007 [P] Add RFC 9457-compatible safe error responses in `src/main/java/com/jobtrace/shared/web/GlobalExceptionHandler.java`
+- [x] T008 [P] Add request ID generation and response propagation in `src/main/java/com/jobtrace/shared/web/RequestIdFilter.java`
+- [x] T009 Add structured logging with sensitive-field redaction tests in `src/main/java/com/jobtrace/shared/observability/SafeLogger.java` and `src/test/java/com/jobtrace/shared/observability/SafeLoggerTest.java`
+- [x] T010 Add typed environment validation for database and auth-bridge settings in `src/main/java/com/jobtrace/shared/config/JobTraceProperties.java`
+- [x] T011 Add modular package boundaries and architecture tests in `src/test/java/com/jobtrace/ArchitectureTest.java`
+- [x] T012 Add API contract validation utilities in `src/test/java/com/jobtrace/testing/OpenApiContractTest.java`
 
 **Checkpoint**: Shared security, errors, observability, database testing, and module boundaries are available.
 
@@ -187,4 +187,3 @@ Task: T034 Document baseline capture in docs/database-baseline.md
 ## Format validation
 
 All tasks use the required checkbox, sequential task ID, optional parallel marker, required user-story label within story phases, actionable description, and exact file path.
-

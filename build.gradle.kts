@@ -1,6 +1,7 @@
 plugins {
     java
     jacoco
+    checkstyle
     id("org.springframework.boot") version "4.1.1"
 }
 
@@ -15,6 +16,11 @@ java {
 
 repositories {
     mavenCentral()
+}
+
+checkstyle {
+    toolVersion = "14.3.0"
+    configFile = file("config/checkstyle/checkstyle.xml")
 }
 
 dependencies {
@@ -34,6 +40,8 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("com.tngtech.archunit:archunit-junit5:1.5.1")
+    testImplementation("io.swagger.parser.v3:swagger-parser:2.1.48")
     testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.5"))
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.testcontainers:testcontainers-postgresql")
@@ -43,6 +51,13 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.withType<Checkstyle> {
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }
 
 tasks.jacocoTestReport {
