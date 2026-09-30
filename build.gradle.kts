@@ -115,6 +115,35 @@ val frontendBuild = tasks.register<Exec>("frontendBuild") {
     outputs.dir("frontend/dist")
 }
 
+val devDatabaseUp = tasks.register<Exec>("devDatabaseUp") {
+    group = "development"
+    description = "Start the local PostgreSQL service and wait until it is healthy."
+    commandLine("docker", "compose", "up", "--detach", "--wait", "postgres")
+}
+
+tasks.register<Exec>("devDatabaseDown") {
+    group = "development"
+    description = "Stop the local PostgreSQL service without deleting its data volume."
+    commandLine("docker", "compose", "down")
+}
+
+tasks.register<Exec>("frontendDev") {
+    dependsOn(frontendInstall)
+    group = "development"
+    description = "Run the Vite frontend development server."
+    workingDir("frontend")
+    commandLine("npm", "run", "dev")
+}
+
+tasks.register("devSetup") {
+    dependsOn(devDatabaseUp, frontendInstall)
+    group = "development"
+    description = "Prepare the database and frontend dependencies for local development."
+    doLast {
+        logger.lifecycle("Development dependencies are ready. Run ./gradlew bootRun and ./gradlew frontendDev in separate terminals.")
+    }
+}
+
 tasks.bootJar {
     dependsOn(frontendBuild)
     from("frontend/dist") {

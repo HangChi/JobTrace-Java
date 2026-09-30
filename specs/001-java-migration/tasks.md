@@ -51,17 +51,17 @@
 
 ### Tests for User Story 1
 
-- [ ] T013 [P] [US1] Add database-backed readiness integration tests in `src/test/java/com/jobtrace/shared/health/HealthControllerIntegrationTest.java`
-- [ ] T014 [P] [US1] Add frontend health-client tests in `frontend/src/shared/api/health.test.ts`
-- [ ] T015 [P] [US1] Add a clean-clone verification script test in `scripts/test-quickstart.sh`
+- [x] T013 [P] [US1] Add database-backed readiness integration tests in `src/test/java/com/jobtrace/shared/health/HealthControllerIntegrationTest.java`
+- [x] T014 [P] [US1] Add frontend health-client tests in `frontend/src/shared/api/health.test.ts`
+- [x] T015 [P] [US1] Add a clean-clone verification script test in `scripts/test-quickstart.sh`
 
 ### Implementation for User Story 1
 
-- [ ] T016 [P] [US1] Add a local PostgreSQL service with health checks in `compose.yaml`
-- [ ] T017 [P] [US1] Implement the typed health client in `frontend/src/shared/api/health.ts`
-- [ ] T018 [US1] Show backend liveness and readiness states in `frontend/src/App.tsx`
-- [ ] T019 [US1] Add Gradle development orchestration commands in `build.gradle.kts`
-- [ ] T020 [US1] Verify and correct every command and expected response in `specs/001-java-migration/quickstart.md`
+- [x] T016 [P] [US1] Add a local PostgreSQL service with health checks in `compose.yaml`
+- [x] T017 [P] [US1] Implement the typed health client in `frontend/src/shared/api/health.ts`
+- [x] T018 [US1] Show backend liveness and readiness states in `frontend/src/App.tsx`
+- [x] T019 [US1] Add Gradle development orchestration commands in `build.gradle.kts`
+- [x] T020 [US1] Verify and correct every command and expected response in `specs/001-java-migration/quickstart.md`
 
 **Checkpoint**: A clean clone can be configured, tested, and run locally in under 20 minutes.
 
