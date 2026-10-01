@@ -1,5 +1,6 @@
 package com.jobtrace.shared.security;
 
+import com.jobtrace.shared.web.SpaForwardController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -19,7 +20,9 @@ public class SecurityConfig {
                                 "/assets/**",
                                 "/*.svg",
                                 "/api/health/**",
-                                "/actuator/health/**")
+                                "/actuator/health/**",
+                                SpaForwardController.BROWSER_ROUTE,
+                                SpaForwardController.NESTED_BROWSER_ROUTE)
                         .permitAll()
                         .anyRequest()
                         .authenticated())
@@ -27,4 +30,3 @@ public class SecurityConfig {
                 .build();
     }
 }
-
