@@ -1,6 +1,6 @@
 # Implementation Plan: Maven Build Migration
 
-**Branch**: `codex/maven-build-migration` | **Date**: 2026-10-01 | **Spec**: [spec.md](spec.md)
+**Branch**: `main` | **Date**: 2026-10-01 | **Completed**: 2026-10-01 | **Merge revision**: `abae384` | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/002-maven-build-migration/spec.md`
 
@@ -54,16 +54,28 @@ verification scripts, and all current repository documentation/configuration ref
 Post-design recheck: passed. The design adds only standard Maven plugins needed to reproduce
 existing gates and introduces no new runtime dependencies or architectural layers.
 
+## Observability Expectations
+
+The migration introduces no runtime behavior or telemetry changes. Maven and npm must emit
+actionable dependency, compilation, test, coverage, packaging, and frontend-build failures to the
+local console and corresponding GitHub Actions job logs. CI keeps separate `backend`, `frontend`,
+and `production-artifact` checks so the failing boundary is visible without inspecting an artifact.
+The packaged application retains `Build-Revision` and `Frontend-Asset-SHA256` manifest entries for
+release traceability. Existing application logs, health endpoints, request IDs, and safe-error
+behavior remain unchanged.
+
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
 specs/002-maven-build-migration/
+├── spec.md
 ├── plan.md
 ├── research.md
 ├── data-model.md
 ├── quickstart.md
+├── validation-report.md
 ├── checklists/
 │   └── requirements.md
 └── tasks.md
