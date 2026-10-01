@@ -10,7 +10,7 @@ JobTrace 的渐进式 Java 迁移仓库。目标架构是 Spring Boot 模块化�
 - Spring MVC、Security、JDBC、jOOQ、Flyway、Actuator
 - React 19、TypeScript 6、Vite 8 前端骨架
 - 独立的存活与数据库就绪检查
-- Gradle Wrapper 与前后端测试基础
+- Maven Wrapper 与前后端测试基础
 - CI 工作流
 - speckit 迁移规格、设计与任务清单
 
@@ -33,14 +33,14 @@ Browser
 - Node.js 24 或更新版本
 - PostgreSQL 17（运行就绪检查和后续集成测试时需要）
 
-Gradle 无需全局安装，使用仓库内 Wrapper。
+Maven 无需全局安装，使用仓库内 Wrapper。
 
 ## 快速验证
 
 后端：
 
 ```bash
-./gradlew test
+./mvnw test
 ```
 
 前端：
@@ -56,7 +56,7 @@ npm run build
 完整生产构建：
 
 ```bash
-./gradlew bootJar
+./mvnw package
 ```
 
 详细说明见 [迁移基础 Quickstart](specs/001-java-migration/quickstart.md)。
@@ -106,4 +106,3 @@ com.jobtrace
 - Git 远程仓库地址尚未设置。
 - 分支保护需要在远程仓库创建后启用。
 - License 尚未选择；在明确开源或授权策略前不添加许可证。
-

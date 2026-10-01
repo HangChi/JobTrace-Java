@@ -63,9 +63,5 @@ data repair, or dual-write reconciliation.
 Verification command:
 
 ```bash
-./gradlew test \
-  --tests com.jobtrace.migration.ContractComparisonTest \
-  --tests com.jobtrace.migration.LegacySchemaSafetyTest \
-  --tests com.jobtrace.migration.MigrationSliceTest \
-  --tests com.jobtrace.analytics.AnalyticsSummarySecurityTest
+./mvnw -Dtest=ContractComparisonTest,LegacySchemaSafetyTest,MigrationSliceTest,AnalyticsSummarySecurityTest test
 ```

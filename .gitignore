@@ -3,9 +3,9 @@
 .env.*
 !.env.example
 
-# Gradle and Java
-.gradle/
-build/
+# Maven and Java
+target/
+.mvn/wrapper/maven-wrapper.jar
 out/
 *.class
 

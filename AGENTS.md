@@ -15,8 +15,7 @@ Requirements and tasks are managed through the speckit workflow under `specs/<NN
 
 ## Quality gates
 
-- Run `./gradlew test` for backend changes.
+- Run `./mvnw verify` for backend changes.
 - Run `npm run lint`, `npm test`, and `npm run build` from `frontend/` for frontend changes.
 - Add tests for every behavior change and preserve at least 80% line and branch coverage for changed production code.
 - Never commit secrets, database dumps, local environment files, generated build output, or frontend dependencies.
-

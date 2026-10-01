@@ -19,14 +19,14 @@ shell, a direct browser route, liveness, and database-backed readiness.
 The artifact is written to:
 
 ```text
-build/libs/jobtrace-0.1.0-SNAPSHOT.jar
+target/jobtrace-0.1.0-SNAPSHOT.jar
 ```
 
 Its manifest records `Build-Revision` and `Frontend-Asset-SHA256`. Inspect them
 without starting the application:
 
 ```bash
-unzip -p build/libs/jobtrace-0.1.0-SNAPSHOT.jar META-INF/MANIFEST.MF
+unzip -p target/jobtrace-0.1.0-SNAPSHOT.jar META-INF/MANIFEST.MF
 ```
 
 ## Runtime configuration
@@ -52,7 +52,7 @@ status. Liveness should only restart a process that cannot respond.
 Build the JAR and image from one immutable source revision:
 
 ```bash
-./gradlew clean bootJar
+./mvnw clean package
 revision="$(git rev-parse --short=12 HEAD)"
 docker build --tag "jobtrace:$revision" .
 ```
