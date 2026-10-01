@@ -1,0 +1,61 @@
+{
+  "total": 4,
+  "submitted": 2,
+  "refused": 1,
+  "offers": 1,
+  "addedThisWeek": 1,
+  "stageDistribution": {
+    "screening": 1,
+    "assessment": 1,
+    "final_interview": 1
+  },
+  "followUps": [
+    {
+      "id": "00000000-0000-0000-0000-0000000000a1",
+      "companyName": "Legacy Alpha",
+      "positionName": "Engineer",
+      "city": "Shanghai",
+      "jobUrl": "https://example.test/alpha",
+      "appliedDate": "2026-08-01",
+      "type": "campus_recruitment",
+      "status": "submitted",
+      "latestDate": "2026-08-01",
+      "stages": [],
+      "needsFollowUp": true,
+      "followUpDays": 56,
+      "followUpReason": "timeline",
+      "version": 1
+    },
+    {
+      "id": "00000000-0000-0000-0000-0000000000a4",
+      "companyName": "Legacy Delta",
+      "positionName": "Intern",
+      "city": null,
+      "jobUrl": null,
+      "appliedDate": "2026-08-10",
+      "type": "summer_internship",
+      "status": "submitted",
+      "latestDate": "2026-08-10",
+      "stages": [],
+      "needsFollowUp": true,
+      "followUpDays": 41,
+      "followUpReason": "timeline",
+      "version": 2
+    }
+  ],
+  "progressReminders": [
+    {
+      "id": "00000000-0000-0000-0000-0000000000b4",
+      "applicationId": "00000000-0000-0000-0000-0000000000a4",
+      "companyName": "Legacy Delta",
+      "positionName": "Intern",
+      "city": null,
+      "stageOccurrenceId": "00000000-0000-0000-0000-0000000000b4",
+      "stage": "assessment",
+      "occurredOn": "2026-08-20",
+      "reviewId": null,
+      "reviewStatus": null,
+      "completed": false
+    }
+  ]
+}

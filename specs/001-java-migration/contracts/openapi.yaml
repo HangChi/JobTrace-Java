@@ -1,9 +1,33 @@
 openapi: 3.1.0
 info:
   title: JobTrace Migration Foundation API
-  version: 0.1.0
-  description: Initial health contract for the Java migration runtime.
+  version: 0.2.0
+  description: Health and verified read-only pilot contracts for the Java migration runtime.
 paths:
+  /api/analytics/summary:
+    get:
+      operationId: getAnalyticsSummary
+      summary: Return the authenticated owner's application analytics summary
+      description: >-
+        Verified read-only migration pilot. Production activation remains gated on an
+        approved signed identity bridge; public identity headers are never authoritative.
+      security:
+        - authenticatedOwner: []
+      responses:
+        "200":
+          description: Owner-isolated analytics summary
+          headers:
+            Cache-Control:
+              description: Prevent storage of an owner's analytics response
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+        "401":
+          description: No trusted authenticated owner is available
   /api/health/live:
     get:
       operationId: getLiveness
@@ -37,7 +61,166 @@ paths:
         "503":
           description: PostgreSQL or the application dependency is unavailable
 components:
+  securitySchemes:
+    authenticatedOwner:
+      type: http
+      scheme: basic
+      description: >-
+        Development and contract-test authentication surface. Production traffic requires
+        the separately approved signed identity bridge before this operation can be active.
   schemas:
+    AnalyticsSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - total
+        - submitted
+        - refused
+        - offers
+        - addedThisWeek
+        - stageDistribution
+        - followUps
+        - progressReminders
+      properties:
+        total:
+          type: integer
+          minimum: 0
+        submitted:
+          type: integer
+          minimum: 0
+        refused:
+          type: integer
+          minimum: 0
+        offers:
+          type: integer
+          minimum: 0
+        addedThisWeek:
+          type: integer
+          minimum: 0
+        stageDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        followUps:
+          type: array
+          items:
+            $ref: "#/components/schemas/FollowUp"
+        progressReminders:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProgressReminder"
+    FollowUp:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - companyName
+        - positionName
+        - city
+        - jobUrl
+        - appliedDate
+        - type
+        - status
+        - latestDate
+        - stages
+        - needsFollowUp
+        - followUpDays
+        - followUpReason
+        - version
+      properties:
+        id:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        positionName:
+          type: string
+        city:
+          type:
+            - string
+            - "null"
+        jobUrl:
+          type:
+            - string
+            - "null"
+          format: uri
+        appliedDate:
+          type: string
+          format: date
+        type:
+          type: string
+        status:
+          type: string
+        latestDate:
+          type: string
+          format: date
+        stages:
+          type: array
+          items:
+            type: string
+        needsFollowUp:
+          type: boolean
+        followUpDays:
+          type: integer
+          minimum: 0
+        followUpReason:
+          type: string
+          enum:
+            - timeline
+            - application
+        version:
+          type: integer
+          minimum: 0
+    ProgressReminder:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - applicationId
+        - companyName
+        - positionName
+        - city
+        - stageOccurrenceId
+        - stage
+        - occurredOn
+        - reviewId
+        - reviewStatus
+        - completed
+      properties:
+        id:
+          type: string
+          format: uuid
+        applicationId:
+          type: string
+          format: uuid
+        companyName:
+          type: string
+        positionName:
+          type: string
+        city:
+          type:
+            - string
+            - "null"
+        stageOccurrenceId:
+          type: string
+          format: uuid
+        stage:
+          type: string
+        occurredOn:
+          type: string
+          format: date
+        reviewId:
+          type:
+            - string
+            - "null"
+          format: uuid
+        reviewStatus:
+          type:
+            - string
+            - "null"
+        completed:
+          type: boolean
     HealthStatus:
       type: object
       additionalProperties: false
@@ -49,4 +232,3 @@ components:
           enum:
             - ok
             - error
-

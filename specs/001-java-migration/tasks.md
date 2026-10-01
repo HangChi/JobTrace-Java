@@ -99,20 +99,20 @@
 
 ### Tests for User Story 3
 
-- [ ] T029 [P] [US3] Capture analytics-summary legacy contract fixtures in `src/test/resources/contracts/analytics-summary/`
-- [ ] T030 [P] [US3] Add a dual-implementation contract comparison harness in `src/test/java/com/jobtrace/migration/ContractComparisonTest.java`
-- [ ] T031 [P] [US3] Add tests proving Flyway remains disabled for legacy connections in `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java`
-- [ ] T032 [P] [US3] Add owner-isolation acceptance cases for the pilot in `src/test/java/com/jobtrace/analytics/AnalyticsSummarySecurityTest.java`
+- [x] T029 [P] [US3] Capture analytics-summary legacy contract fixtures in `src/test/resources/contracts/analytics-summary/`
+- [x] T030 [P] [US3] Add a dual-implementation contract comparison harness in `src/test/java/com/jobtrace/migration/ContractComparisonTest.java`
+- [x] T031 [P] [US3] Add tests proving Flyway remains disabled for legacy connections in `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java`
+- [x] T032 [P] [US3] Add owner-isolation acceptance cases for the pilot in `src/test/java/com/jobtrace/analytics/AnalyticsSummarySecurityTest.java`
 
 ### Implementation for User Story 3
 
-- [ ] T033 [P] [US3] Define migration-slice metadata and validation in `src/main/java/com/jobtrace/migration/MigrationSlice.java`
-- [ ] T034 [P] [US3] Document the legacy schema head and checksum capture procedure in `docs/database-baseline.md`
-- [ ] T035 [US3] Implement the read-only analytics summary query in `src/main/java/com/jobtrace/analytics/infrastructure/PostgresAnalyticsSummaryQuery.java`
-- [ ] T036 [US3] Implement the analytics summary use case in `src/main/java/com/jobtrace/analytics/application/GetAnalyticsSummary.java`
-- [ ] T037 [US3] Expose the pilot contract in `src/main/java/com/jobtrace/analytics/web/AnalyticsSummaryController.java`
-- [ ] T038 [US3] Extend the API definition with the verified pilot operation in `specs/001-java-migration/contracts/openapi.yaml`
-- [ ] T039 [US3] Document traffic ownership, observation, and rollback for the pilot in `docs/migration-slices/analytics-summary.md`
+- [x] T033 [P] [US3] Define migration-slice metadata and validation in `src/main/java/com/jobtrace/migration/MigrationSlice.java`
+- [x] T034 [P] [US3] Document the legacy schema head and checksum capture procedure in `docs/database-baseline.md`
+- [x] T035 [US3] Implement the read-only analytics summary query in `src/main/java/com/jobtrace/analytics/infrastructure/PostgresAnalyticsSummaryQuery.java`
+- [x] T036 [US3] Implement the analytics summary use case in `src/main/java/com/jobtrace/analytics/application/GetAnalyticsSummary.java`
+- [x] T037 [US3] Expose the pilot contract in `src/main/java/com/jobtrace/analytics/web/AnalyticsSummaryController.java`
+- [x] T038 [US3] Extend the API definition with the verified pilot operation in `specs/001-java-migration/contracts/openapi.yaml`
+- [x] T039 [US3] Document traffic ownership, observation, and rollback for the pilot in `docs/migration-slices/analytics-summary.md`
 
 **Checkpoint**: The first read-only slice is contract-equivalent, owner-isolated, reversible, and does not modify the schema.
 
