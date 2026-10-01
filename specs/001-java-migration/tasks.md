@@ -122,13 +122,13 @@
 
 **Purpose**: Close repository and operational gaps before declaring the foundation complete.
 
-- [ ] T040 [P] Add accessibility checks for the migration shell in `frontend/src/App.a11y.test.tsx`
-- [ ] T041 [P] Add dependency and secret scanning to `.github/workflows/security.yml`
-- [ ] T042 Add performance smoke budgets for health and analytics reads in `src/test/java/com/jobtrace/performance/ReadPerformanceTest.java`
-- [ ] T043 Run the complete quickstart and record verification evidence in `specs/001-java-migration/validation-report.md`
-- [ ] T044 Add the selected remote URL and push instructions to `docs/repository-setup.md`
-- [ ] T045 Apply and document remote `main` branch protection in `docs/repository-setup.md`
-- [ ] T046 Add the repository-owner-approved license in `LICENSE`
+- [x] T040 [P] Add accessibility checks for the migration shell in `frontend/src/App.a11y.test.tsx`
+- [x] T041 [P] Add dependency and secret scanning to `.github/workflows/security.yml`
+- [x] T042 Add performance smoke budgets for health and analytics reads in `src/test/java/com/jobtrace/performance/ReadPerformanceTest.java`
+- [x] T043 Run the complete quickstart and record verification evidence in `specs/001-java-migration/validation-report.md`
+- [x] T044 Add the selected remote URL and push instructions to `docs/repository-setup.md`
+- [x] T045 Apply and document remote `main` branch protection in `docs/repository-setup.md`
+- [x] T046 Add the repository-owner-approved license in `LICENSE`
 
 ---
 
