@@ -15,6 +15,11 @@ spring:
     enabled: ${jobtrace.migration.flyway-enabled}
   jooq:
     sql-dialect: POSTGRES
+  data:
+    redis:
+      url: ${JOBTRACE_REDIS_URL:redis://127.0.0.1:6379}
+      connect-timeout: 2s
+      timeout: 2s
 
 jobtrace:
   database:
@@ -23,6 +28,18 @@ jobtrace:
     password: ${JOBTRACE_DATABASE_PASSWORD:jobtrace}
   migration:
     flyway-enabled: ${JOBTRACE_FLYWAY_ENABLED:false}
+  auth-bridge:
+    enabled: ${JOBTRACE_AUTH_BRIDGE_ENABLED:false}
+    issuer: ${JOBTRACE_AUTH_BRIDGE_ISSUER:legacy-jobtrace}
+    audience: ${JOBTRACE_AUTH_BRIDGE_AUDIENCE:jobtrace-java}
+    max-lifetime-seconds: ${JOBTRACE_AUTH_BRIDGE_MAX_LIFETIME_SECONDS:30}
+    clock-skew-seconds: ${JOBTRACE_AUTH_BRIDGE_CLOCK_SKEW_SECONDS:5}
+    replay-key-prefix: ${JOBTRACE_AUTH_BRIDGE_REPLAY_KEY_PREFIX:jobtrace:auth-bridge:replay}
+    keys:
+      - id: ${JOBTRACE_AUTH_BRIDGE_KEYS_0_ID:}
+        secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_0_SECRET:}
+      - id: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_ID:}
+        secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_SECRET:}
 
 management:
   endpoint:
