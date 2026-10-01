@@ -6,6 +6,8 @@
 
 **Validated baseline revision**: `59fd3b6877ced431c5e0e5ca7ff7de40d44fcf98`
 
+**Convergence review**: [PR #13](https://github.com/HangChi/JobTrace-Java/pull/13)
+
 **Environment**: macOS, Java 21.0.12, Maven Wrapper 3.9.16, Node.js 24, Docker Desktop
 
 ## Result
