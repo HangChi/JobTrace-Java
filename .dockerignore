@@ -1,0 +1,5 @@
+**
+!Dockerfile
+!build/
+!build/libs/
+!build/libs/jobtrace-0.1.0-SNAPSHOT.jar

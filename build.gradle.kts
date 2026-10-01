@@ -1,8 +1,43 @@
+import java.io.File
+import java.io.IOException
+import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
+
 plugins {
     java
     jacoco
     checkstyle
     id("org.springframework.boot") version "4.1.1"
+}
+
+fun frontendAssetDigest(directory: File): String {
+    require(directory.isDirectory) { "Frontend assets are missing: $directory" }
+    val digest = MessageDigest.getInstance("SHA-256")
+    directory.walkTopDown()
+        .filter(File::isFile)
+        .sortedBy { it.relativeTo(directory).invariantSeparatorsPath }
+        .forEach { asset ->
+            digest.update(asset.relativeTo(directory).invariantSeparatorsPath
+                .toByteArray(StandardCharsets.UTF_8))
+            digest.update(0)
+            digest.update(asset.readBytes())
+            digest.update(0)
+        }
+    return digest.digest().joinToString("") { byte -> "%02x".format(byte) }
+}
+
+fun sourceRevision(repository: File): String {
+    System.getenv("GITHUB_SHA")?.trim()?.takeIf(String::isNotEmpty)?.let { return it }
+    return try {
+        val process = ProcessBuilder("git", "rev-parse", "HEAD")
+            .directory(repository)
+            .redirectErrorStream(true)
+            .start()
+        val revision = process.inputStream.bufferedReader().use { it.readText() }.trim()
+        if (process.waitFor() == 0 && revision.isNotEmpty()) revision else "unknown"
+    } catch (_: IOException) {
+        "unknown"
+    }
 }
 
 group = "com.jobtrace"
@@ -149,4 +184,26 @@ tasks.bootJar {
     from("frontend/dist") {
         into("BOOT-INF/classes/static")
     }
+    doFirst {
+        manifest.attributes(
+            "Build-Revision" to sourceRevision(rootDir),
+            "Frontend-Asset-SHA256" to frontendAssetDigest(file("frontend/dist"))
+        )
+    }
+}
+
+tasks.register<Test>("packagedApplicationTest") {
+    dependsOn(tasks.bootJar)
+    description = "Start the executable JAR and verify its frontend, health routes, and metadata."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    filter {
+        includeTestsMatching("com.jobtrace.packaging.PackagedApplicationTest")
+    }
+    inputs.file(tasks.bootJar.flatMap { it.archiveFile })
+    systemProperty(
+        "jobtrace.packaged.jar",
+        tasks.bootJar.flatMap { it.archiveFile }.get().asFile.absolutePath
+    )
 }

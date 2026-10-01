@@ -75,17 +75,17 @@
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Add an executable-JAR smoke test in `src/test/java/com/jobtrace/packaging/PackagedApplicationTest.java`
-- [ ] T022 [P] [US2] Add direct browser-route fallback tests in `src/test/java/com/jobtrace/shared/web/SpaForwardControllerTest.java`
-- [ ] T023 [P] [US2] Add a production-container smoke script in `scripts/test-production-artifact.sh`
+- [x] T021 [P] [US2] Add an executable-JAR smoke test in `src/test/java/com/jobtrace/packaging/PackagedApplicationTest.java`
+- [x] T022 [P] [US2] Add direct browser-route fallback tests in `src/test/java/com/jobtrace/shared/web/SpaForwardControllerTest.java`
+- [x] T023 [P] [US2] Add a production-container smoke script in `scripts/test-production-artifact.sh`
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement safe SPA route fallback without intercepting API paths in `src/main/java/com/jobtrace/shared/web/SpaForwardController.java`
-- [ ] T025 [US2] Add a minimal Java-only runtime image in `Dockerfile`
-- [ ] T026 [US2] Add frontend asset digest and source revision to build metadata in `build.gradle.kts`
-- [ ] T027 [US2] Add production artifact verification to `.github/workflows/ci.yml`
-- [ ] T028 [US2] Document Java-only deployment and rollback in `docs/operations.md`
+- [x] T024 [US2] Implement safe SPA route fallback without intercepting API paths in `src/main/java/com/jobtrace/shared/web/SpaForwardController.java`
+- [x] T025 [US2] Add a minimal Java-only runtime image in `Dockerfile`
+- [x] T026 [US2] Add frontend asset digest and source revision to build metadata in `build.gradle.kts`
+- [x] T027 [US2] Add production artifact verification to `.github/workflows/ci.yml`
+- [x] T028 [US2] Document Java-only deployment and rollback in `docs/operations.md`
 
 **Checkpoint**: The packaged application runs without Node.js and distinguishes liveness from readiness.
 

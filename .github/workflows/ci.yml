@@ -42,3 +42,23 @@ jobs:
         run: npm run test:coverage
       - name: Build
         run: npm run build
+
+  production-artifact:
+    needs:
+      - backend
+      - frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify Java-only production artifact
+        run: ./scripts/test-production-artifact.sh
