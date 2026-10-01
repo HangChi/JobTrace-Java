@@ -145,3 +145,18 @@ Task: T016 Replace active Gradle documentation and specification references
 
 All tasks use the required checkbox, sequential ID, optional parallel marker, required story label
 inside user-story phases, an actionable description, and exact file paths.
+
+---
+
+## Phase 7: Convergence
+
+**Purpose**: Close lifecycle, constitutional, and remote-validation gaps before declaring the Maven
+build migration complete.
+
+- [x] T021 CRITICAL Add an explicit accessibility non-regression expectation and evidence in `specs/002-maven-build-migration/spec.md` and `specs/002-maven-build-migration/validation-report.md` per Constitution III and delivery gate 1 (missing)
+- [x] T022 CRITICAL Record the Solo-Maintainer Mode written self-review against the specification and all four constitutional principles in `specs/002-maven-build-migration/validation-report.md` and the closeout pull request per Constitution delivery gate 4 (missing)
+- [x] T023 CRITICAL Document build and runtime observability expectations in `specs/002-maven-build-migration/plan.md` per Constitution delivery gate 2 (missing)
+- [x] T024 Update the completed lifecycle status, branch metadata, completion date, and merge revision in `specs/002-maven-build-migration/spec.md` and `specs/002-maven-build-migration/plan.md` (partial)
+- [x] T025 Measure the complete current quickstart duration and record evidence that it remains below 20 minutes in `specs/002-maven-build-migration/validation-report.md` per SC-001 (partial)
+- [x] T026 Record PR #10 and merged-main CI evidence in `specs/002-maven-build-migration/validation-report.md` per SC-006 (partial)
+- [x] T027 Correct the feature document tree in `specs/002-maven-build-migration/plan.md` to include `spec.md` and `validation-report.md` (partial)

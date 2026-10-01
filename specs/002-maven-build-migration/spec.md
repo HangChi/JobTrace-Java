@@ -1,10 +1,10 @@
 # Feature Specification: Maven Build Migration
 
-**Feature Branch**: `codex/maven-build-migration`
+**Feature Branch**: `main`
 
 **Created**: 2026-10-01
 
-**Status**: Draft
+**Status**: Complete — delivered by PR #10 at `abae384` and revalidated on 2026-10-01
 
 **Input**: User description: "Replace Gradle with Maven and remove all Gradle-related files and references."
 
@@ -106,7 +106,8 @@ paths, or active command references.
 - **FR-011**: Gradle build definitions, wrapper executables, wrapper binaries, cache configuration,
   editor rules, and active repository references MUST be removed after Maven equivalence passes.
 - **FR-012**: The migration MUST NOT alter application API behavior, database ownership, frontend
-  behavior, or production runtime dependencies.
+  behavior, accessibility conformance, or production runtime dependencies. Existing automated
+  accessibility checks MUST remain passing under the Maven workflow.
 
 ## Success Criteria *(mandatory)*
 
