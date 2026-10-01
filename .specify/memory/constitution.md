@@ -6,8 +6,7 @@ Sync Impact Report
   - Governance: clarified that the solo maintainer may approve amendments
 - Added sections: none
 - Removed sections: none
-- Follow-up TODOs:
-  - Align repository documentation and GitHub branch protection with solo-maintainer mode
+- Follow-up TODOs: none
 -->
 # JobTrace Constitution
 
