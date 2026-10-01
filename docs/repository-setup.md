@@ -26,6 +26,7 @@ direct pushes to `main` are not the project workflow.
 The GitHub `main` branch protection was verified on 2026-10-01 with these settings:
 
 - Require a pull request before merging.
+- Require at least one approval from a reviewer other than the change author.
 - Dismiss stale approvals after new commits.
 - Require the `backend`, `frontend`, and `production-artifact` CI jobs.
 - Require the `dependency-review` and `secret-scan` security jobs.
@@ -34,9 +35,9 @@ The GitHub `main` branch protection was verified on 2026-10-01 with these settin
 - Require linear history.
 - Apply rules to administrators.
 
-The approval count is currently zero because this is a single-maintainer repository; pull requests
-remain mandatory. Repository administrators must update this document whenever protection rules or
-required status checks change. Local Git configuration cannot enforce these controls.
+Independent review is a release gate even for maintainers and administrators. Repository
+administrators must update this document whenever protection rules or required status checks change.
+Local Git configuration cannot enforce these controls.
 
 ## License
 

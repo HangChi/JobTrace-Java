@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-30
 
-**Status**: Draft
+**Status**: Complete — validated on 2026-10-01
 
 **Input**: User description: "Create the new JobTrace repository foundation for a Java backend and a React/TypeScript frontend, including documentation, configuration, continuous integration, and an actionable migration backlog."
 
@@ -79,7 +79,7 @@ As a maintainer, I can migrate one existing capability at a time while preservin
 - **FR-009**: Each migrated capability MUST have an independent verification method and rollback path before it becomes the only implementation.
 - **FR-010**: Only one implementation MAY own writes for a business aggregate at any point during migration.
 - **FR-011**: Public clients MUST NOT be trusted to assert user identity or administrative roles.
-- **FR-012**: Repository documentation MUST state which setup items cannot be completed locally, including remote hosting, branch protection, and licensing decisions.
+- **FR-012**: Repository documentation MUST record the selected remote hosting, applied branch protection, and owner-approved licensing decisions.
 
 ### Key Entities
 
@@ -106,5 +106,4 @@ As a maintainer, I can migrate one existing capability at a time while preservin
 - The existing PostgreSQL schema and stored routines are reused initially rather than redesigned.
 - Browser functionality continues to require a JavaScript toolchain during development and CI, but not in production.
 - Authentication remains owned by the existing service until a separately specified transition is approved.
-- Repository hosting, remote URL, branch protection, and license choice require owner decisions and are not inferred by this foundation.
-
+- Repository hosting, remote URL, branch protection, and license choice require explicit owner decisions; the approved GitHub remote, protected `main` rules, and MIT License are recorded in `docs/repository-setup.md`.
