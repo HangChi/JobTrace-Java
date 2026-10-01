@@ -44,6 +44,11 @@ Establish a new repository that can incrementally replace the existing Next.js b
 
 No constitution exception is required. The frontend toolchain is a build-time dependency justified by preserving the existing accessible React experience while removing Node.js from production.
 
+Delivery uses Constitution v1.1.0 Solo-Maintainer Mode while the repository has exactly one human
+maintainer with write access. Pull requests, written self-review, CI, security checks, resolved
+conversations, linear history, and protected history remain mandatory. Independent approval becomes
+mandatory again before the first production merge after a second human receives write access.
+
 ## Phase 0 Decisions
 
 - Use Java 21 LTS because it is installed locally, broadly supported, and sufficient for the selected Spring line.

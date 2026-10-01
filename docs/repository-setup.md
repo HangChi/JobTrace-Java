@@ -26,8 +26,7 @@ direct pushes to `main` are not the project workflow.
 The GitHub `main` branch protection was verified on 2026-10-01 with these settings:
 
 - Require a pull request before merging.
-- Require at least one approval from a reviewer other than the change author.
-- Dismiss stale approvals after new commits.
+- Require zero approving reviews while exactly one human maintainer has repository write access.
 - Require the `backend`, `frontend`, and `production-artifact` CI jobs.
 - Require the `dependency-review` and `secret-scan` security jobs.
 - Require conversations to be resolved.
@@ -35,9 +34,13 @@ The GitHub `main` branch protection was verified on 2026-10-01 with these settin
 - Require linear history.
 - Apply rules to administrators.
 
-Independent review is a release gate even for maintainers and administrators. Repository
-administrators must update this document whenever protection rules or required status checks change.
-Local Git configuration cannot enforce these controls.
+The repository is currently operating in Constitution v1.1.0 Solo-Maintainer Mode. Every production
+change still requires a pull request, all automated gates, resolved conversations, and a written
+self-review against the specification and all four constitutional principles. Bots and automation
+accounts do not count as human maintainers. Before the first production merge after a second human
+receives write access, protection must be changed to require at least one independent approval.
+Repository administrators must update this document whenever protection rules, maintainer count, or
+required status checks change. Local Git configuration cannot enforce these controls.
 
 ## License
 

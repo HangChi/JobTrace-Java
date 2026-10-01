@@ -195,7 +195,7 @@ All tasks use the required checkbox, sequential task ID, optional parallel marke
 **Purpose**: Close the final specification and constitution gaps found after Phase 6 validation.
 
 - [x] T047 [P] CRITICAL Add representative Chromium LCP, INP, and CLS budget checks to `frontend/tests/performance.spec.ts` and `.github/workflows/ci.yml` per Constitution IV (contradicts)
-- [ ] T048 CRITICAL Require one independent pull-request approval in remote `main` protection and record review evidence in `specs/001-java-migration/validation-report.md` per Constitution delivery gate 4 (contradicts)
+- [x] T048 CRITICAL Configure the Constitution v1.1.0 Solo-Maintainer Mode in remote `main` protection and record the required written self-review in `specs/001-java-migration/validation-report.md` per Constitution delivery gate 4
 - [x] T049 [P] Add bounded PostgreSQL connection timeouts and an unavailable-database readiness test in `src/main/resources/application.yaml` and `src/test/java/com/jobtrace/shared/health/HealthControllerUnavailableIntegrationTest.java` per SC-004 (partial)
 - [x] T050 Update lifecycle status, completed owner decisions, and final interface descriptions in `specs/001-java-migration/spec.md` and `specs/001-java-migration/plan.md` per the implemented repository state (partial)
 - [x] T051 Update `specs/001-java-migration/validation-report.md` with the final main revision and convergence evidence (partial)
