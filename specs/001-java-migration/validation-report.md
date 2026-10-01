@@ -37,7 +37,7 @@ analysis gates passed.
 - No production credentials, database dumps, local environment files, generated outputs, or
   frontend dependencies are included in the change.
 
-## Remaining owner decision
+## License decision
 
-The repository owner must select an open-source or source-available license before T046 can be
-completed. Public visibility alone does not grant reuse rights, so no license is inferred.
+The repository owner selected the MIT License on 2026-10-01. The approved license text is included
+in the repository-root `LICENSE` file.

@@ -128,7 +128,7 @@
 - [x] T043 Run the complete quickstart and record verification evidence in `specs/001-java-migration/validation-report.md`
 - [x] T044 Add the selected remote URL and push instructions to `docs/repository-setup.md`
 - [x] T045 Apply and document remote `main` branch protection in `docs/repository-setup.md`
-- [ ] T046 Add the repository-owner-approved license in `LICENSE`
+- [x] T046 Add the repository-owner-approved license in `LICENSE`
 
 ---
 

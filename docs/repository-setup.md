@@ -40,4 +40,6 @@ required status checks change. Local Git configuration cannot enforce these cont
 
 ## License
 
-Do not add a `LICENSE` file until the repository owner chooses whether the project is private, source-available, or open source. A missing license means external users do not automatically receive permission to copy, modify, or distribute the code.
+The repository owner selected the MIT License on 2026-10-01. The complete license text is stored in
+the repository-root `LICENSE` file and must remain included in copies or substantial portions of the
+software.
