@@ -1,6 +1,6 @@
 # Implementation Plan: Java Migration Foundation
 
-**Branch**: `001-java-migration` | **Date**: 2026-09-30 | **Spec**: [spec.md](spec.md)
+**Branch**: `main` | **Date**: 2026-09-30 | **Completed**: 2026-10-01 | **Spec**: [spec.md](spec.md)
 
 **Input**: Feature specification from `specs/001-java-migration/spec.md`
 
@@ -44,6 +44,11 @@ Establish a new repository that can incrementally replace the existing Next.js b
 
 No constitution exception is required. The frontend toolchain is a build-time dependency justified by preserving the existing accessible React experience while removing Node.js from production.
 
+Delivery uses Constitution v1.1.0 Solo-Maintainer Mode while the repository has exactly one human
+maintainer with write access. Pull requests, written self-review, CI, security checks, resolved
+conversations, linear history, and protected history remain mandatory. Independent approval becomes
+mandatory again before the first production merge after a second human receives write access.
+
 ## Phase 0 Decisions
 
 - Use Java 21 LTS because it is installed locally, broadly supported, and sufficient for the selected Spring line.
@@ -58,7 +63,7 @@ Full rationale and rejected alternatives are recorded in [research.md](research.
 
 ## Phase 1 Design
 
-The foundation introduces build and migration-control entities rather than new user data. Their fields and state transitions are documented in [data-model.md](data-model.md). The initial interface is limited to liveness and readiness, documented in [contracts/openapi.yaml](contracts/openapi.yaml). [quickstart.md](quickstart.md) provides the end-to-end verification path.
+The foundation introduces build and migration-control entities rather than new user data. Their fields and state transitions are documented in [data-model.md](data-model.md). The implemented interface includes liveness, readiness, and the verified read-only analytics pilot documented in [contracts/openapi.yaml](contracts/openapi.yaml). [quickstart.md](quickstart.md) provides the end-to-end verification path.
 
 Each later migration slice must:
 

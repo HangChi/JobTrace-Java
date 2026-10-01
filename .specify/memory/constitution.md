@@ -1,14 +1,10 @@
 <!--
 Sync Impact Report
-- Version change: none -> 1.0.0
-- Added principles:
-  - I. Maintainable Code by Design
-  - II. Testing Is a Release Gate
-  - III. Consistent and Accessible User Experience
-  - IV. Measured Performance Budgets
-- Added sections:
-  - Engineering Standards
-  - Delivery and Review Gates
+- Version change: 1.0.0 -> 1.1.0
+- Modified sections:
+  - Delivery and Review Gates: added a bounded solo-maintainer review mode
+  - Governance: clarified that the solo maintainer may approve amendments
+- Added sections: none
 - Removed sections: none
 - Follow-up TODOs: none
 -->
@@ -80,7 +76,15 @@ includes impact, mitigation, owner, and expiry date.
 3. Before merge, automated formatting, linting, type checking, tests, coverage gates, and applicable
    performance checks MUST pass in continuous integration.
 4. Reviewers MUST verify behavior against the specification and explicitly assess all four core
-   principles. Self-review alone is insufficient for production changes.
+   principles. When two or more human maintainers have repository write access, self-review alone
+   is insufficient for production changes and at least one independent approval is required.
+   When exactly one human maintainer has write access, Solo-Maintainer Mode MAY replace independent
+   approval only if the change still uses a pull request, all required automated gates pass, all
+   conversations are resolved, and the maintainer records a written self-review covering the
+   specification and all four core principles. Bots and automation accounts do not count as human
+   maintainers. The repository setup documentation and branch protection MUST identify this mode.
+   Before the first production merge after a second human receives write access, branch protection
+   MUST again require at least one independent approval.
 5. Exceptions MUST be recorded in the pull request or decision record with rationale, scope, risk,
    compensating controls, accountable owner, and expiry date. Expired exceptions block further
    release until resolved or renewed.
@@ -93,9 +97,10 @@ tasks, reviews, and implementation decisions MUST comply with it. When another p
 conflicts with this constitution, this constitution governs.
 
 Amendments require a written proposal describing the change, rationale, migration impact, and any
-affected quality gates. Approval requires review by the project maintainers before merge. Material
-changes MUST include a migration plan for active work and existing code where immediate compliance
-is impractical.
+affected quality gates. Approval requires review by the project maintainers before merge. In
+Solo-Maintainer Mode, the sole human maintainer's explicit recorded approval satisfies this
+requirement. Material changes MUST include a migration plan for active work and existing code where
+immediate compliance is impractical.
 
 Constitution versions follow semantic versioning: MAJOR for removal or incompatible redefinition of
 a principle or governance rule, MINOR for a new principle or materially expanded obligation, and
@@ -107,4 +112,4 @@ constitution review at least once per major release or every six months, whichev
 Any non-compliance MUST be corrected before release or covered by a time-bound exception under the
 Delivery and Review Gates.
 
-**Version**: 1.0.0 | **Ratified**: 2026-08-13 | **Last Amended**: 2026-08-13
+**Version**: 1.1.0 | **Ratified**: 2026-08-13 | **Last Amended**: 2026-10-01

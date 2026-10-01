@@ -5,6 +5,12 @@ spring:
     url: ${jobtrace.database.url}
     username: ${jobtrace.database.username}
     password: ${jobtrace.database.password}
+    hikari:
+      connection-timeout: 5000
+      validation-timeout: 3000
+      data-source-properties:
+        connectTimeout: "5"
+        socketTimeout: "5"
   flyway:
     enabled: ${jobtrace.migration.flyway-enabled}
   jooq:

@@ -111,7 +111,12 @@ npm ci
 npm run lint
 npm run test:coverage
 npm run build
+npx playwright install chromium
+npm run test:performance
 ```
+
+The Chromium performance test enforces representative lab budgets of LCP at or below 2.5 seconds,
+INP at or below 200 milliseconds, and CLS at or below 0.1.
 
 ## Build the production artifact
 

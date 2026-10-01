@@ -46,6 +46,8 @@ fi
   npm run lint
   npm run test:coverage
   npm run build
+  npx playwright install chromium
+  npm run test:performance
 )
 
 jar_file="$repo_dir/target/jobtrace-0.1.0-SNAPSHOT.jar"
