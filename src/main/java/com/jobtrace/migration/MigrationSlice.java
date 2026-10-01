@@ -21,6 +21,9 @@ public record MigrationSlice(
         List<String> evidence) {
 
     private static final Pattern SLUG = Pattern.compile("[a-z0-9]+(?:-[a-z0-9]+)*");
+    public static final String BRIDGE_EVIDENCE = "identity bridge verified";
+    public static final String ROLLBACK_EVIDENCE = "rollback exercised";
+    public static final String OBSERVATION_EVIDENCE = "seven-day observation complete";
 
     public MigrationSlice {
         if (id == null || !SLUG.matcher(id).matches()) {
@@ -40,6 +43,14 @@ public record MigrationSlice(
         }
         if (state == State.ACTIVE && rollbackRoute.isBlank()) {
             throw new IllegalArgumentException("Active migration slices require a rollback route");
+        }
+        if (state == State.ACTIVE && !hasActivationEvidence(evidence)) {
+            throw new IllegalArgumentException(
+                    "Active migration slices require bridge and rollback evidence");
+        }
+        if (state == State.OBSERVED && !evidence.contains(OBSERVATION_EVIDENCE)) {
+            throw new IllegalArgumentException(
+                    "Observed migration slices require seven-day observation evidence");
         }
     }
 
@@ -89,6 +100,14 @@ public record MigrationSlice(
         if (target == State.ACTIVE && rollbackRoute.isBlank()) {
             throw new IllegalStateException("Active migration slices require a rollback route");
         }
+        if (target == State.ACTIVE && !hasActivationEvidence(evidence)) {
+            throw new IllegalStateException(
+                    "Active migration slices require bridge and rollback evidence");
+        }
+        if (target == State.OBSERVED && !evidence.contains(OBSERVATION_EVIDENCE)) {
+            throw new IllegalStateException(
+                    "Observed migration slices require seven-day observation evidence");
+        }
         return new MigrationSlice(
                 id,
                 module,
@@ -106,6 +125,11 @@ public record MigrationSlice(
             throw new IllegalArgumentException(field + " must not be blank");
         }
         return value.trim();
+    }
+
+    private static boolean hasActivationEvidence(List<String> evidence) {
+        return evidence.contains(BRIDGE_EVIDENCE)
+                && evidence.contains(ROLLBACK_EVIDENCE);
     }
 
     private static List<String> requireNonBlankValues(List<String> values, String field) {

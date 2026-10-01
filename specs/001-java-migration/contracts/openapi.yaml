@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: JobTrace Migration Foundation API
-  version: 0.2.0
+  version: 0.3.0
   description: Health and verified read-only pilot contracts for the Java migration runtime.
 paths:
   /api/analytics/summary:
@@ -12,7 +12,7 @@ paths:
         Verified read-only migration pilot. Production activation remains gated on an
         approved signed identity bridge; public identity headers are never authoritative.
       security:
-        - authenticatedOwner: []
+        - signedIdentityBridge: []
       responses:
         "200":
           description: Owner-isolated analytics summary
@@ -62,12 +62,13 @@ paths:
           description: PostgreSQL or the application dependency is unavailable
 components:
   securitySchemes:
-    authenticatedOwner:
-      type: http
-      scheme: basic
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
       description: >-
-        Development and contract-test authentication surface. Production traffic requires
-        the separately approved signed identity bridge before this operation can be active.
+        Internal-only `JobTraceBridge <compact-JWS>` assertion defined by signed identity
+        bridge contract v1. Browser credentials and public identity headers are not accepted.
   schemas:
     AnalyticsSummary:
       type: object

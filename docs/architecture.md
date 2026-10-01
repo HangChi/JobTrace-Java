@@ -4,10 +4,11 @@ JobTrace Java is a modular monolith delivered as one executable Spring Boot JAR.
 
 ```mermaid
 flowchart LR
-  Browser -->|HTML, CSS, JS| Spring[Spring Boot]
-  Browser -->|REST API| Spring
+  Browser -->|session cookie| Legacy[Legacy Next.js]
+  Legacy -->|30s request-bound JWS| Spring[Spring Boot]
   Spring --> Modules[Domain modules]
   Modules --> PG[(PostgreSQL 17)]
+  Spring --> Replay[(Shared Valkey replay guard)]
 ```
 
 ## Dependency direction
@@ -36,4 +37,8 @@ The existing PostgreSQL schema remains authoritative. Flyway is present for futu
 
 ## Security boundary
 
-The initial health routes are anonymous. Future routes default to authenticated. The migration must not trust identity headers from public traffic. Better Auth remains the identity owner until a signed internal bridge and eventual Spring Security migration are separately specified.
+Health routes are anonymous and protected routes default to authenticated. Better Auth remains the
+identity and session owner. The legacy server reads fresh role, disabled state, and access version,
+then signs one request-bound JWS for the internal Java analytics call. Java validates every header,
+claim, signature, time bound, request binding, and atomic replay claim before creating a principal.
+Public identity headers, browser cookies, URLs, bodies, and query fields are never authoritative.

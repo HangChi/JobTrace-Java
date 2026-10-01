@@ -38,6 +38,18 @@ The required database settings are:
 - `JOBTRACE_DATABASE_USERNAME`
 - `JOBTRACE_DATABASE_PASSWORD`
 
+The signed identity bridge remains off unless all of these are configured:
+
+- `JOBTRACE_AUTH_BRIDGE_ENABLED=true`
+- `JOBTRACE_AUTH_BRIDGE_ISSUER=legacy-jobtrace`
+- `JOBTRACE_AUTH_BRIDGE_AUDIENCE=jobtrace-java`
+- `JOBTRACE_AUTH_BRIDGE_KEYS_0_ID` and `JOBTRACE_AUTH_BRIDGE_KEYS_0_SECRET`
+- `JOBTRACE_REDIS_URL` for a shared Redis-compatible replay store
+
+Expose the Java analytics route only to the legacy service over the trusted
+internal network. Ingress must reject browser and public network access. Never
+forward browser cookies or public identity headers to Java.
+
 Keep `JOBTRACE_FLYWAY_ENABLED=false` while the legacy database baseline is not
 approved. Expose port 8080 and route probes as follows:
 
@@ -75,3 +87,32 @@ window. To roll back:
 The foundation release does not own schema changes, so application rollback does
 not require a database migration. If a future release changes that rule, its own
 migration specification must provide a tested data-restoration procedure.
+
+### Analytics canary rollback
+
+The legacy deployment controls analytics routing with
+`ANALYTICS_JAVA_CANARY_ENABLED` and `ANALYTICS_JAVA_CANARY_PERCENT`. On any
+contract mismatch, replay/unknown-key spike, owner-isolation failure, error-rate
+increase, or p95 above 500 ms:
+
+1. Set `ANALYTICS_JAVA_CANARY_ENABLED=false` (or percentage to `0`) and deploy.
+2. Confirm all analytics responses come from legacy within five minutes.
+3. Leave the Java route deployed but unreachable from public ingress.
+4. Record only revision, request ID, status class, mismatch class, and duration.
+
+No database repair is needed because Java has no write ownership.
+
+### Signing-key rotation
+
+1. Generate a random 32-byte base64url secret in the secret manager with a new
+   versioned key ID.
+2. Add the new ID/secret to Java while retaining the previous key and verify
+   readiness.
+3. Change the legacy `IDENTITY_BRIDGE_ACTIVE_KEY_ID` and
+   `IDENTITY_BRIDGE_ACTIVE_SECRET` to the new key.
+4. Verify current and previous fixtures, then wait at least 35 seconds.
+5. Remove the previous Java key and prove that it is rejected.
+
+Alert on `jobtrace.auth.bridge.requests` failures by bounded reason and on
+`jobtrace.auth.bridge.duration` p95. Key material, assertions, owner IDs, and
+response bodies must never be logged.
