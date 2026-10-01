@@ -1,6 +1,6 @@
 # Validation Report: Signed Identity Bridge
 
-Validation date: 2026-10-01
+Validation date: 2026-10-02
 
 ## Java service
 
@@ -26,6 +26,10 @@ existing dirty checkout was not modified.
 - `corepack pnpm test`: PASS; 96 files and 389 tests
 - Coverage: 92.92% statements/lines, 83.12% branches, 92.92% functions
 - `corepack pnpm build`: PASS with non-secret build-only placeholder environment values
+- `corepack pnpm contract`: PASS; 42 tests
+- `corepack pnpm integration`: PASS; 60 tests
+- `corepack pnpm performance`: PASS
+- `corepack pnpm performance:auth`: PASS; 6 tests
 - Targeted bridge coverage: 12 issuer, canary, parity, timeout, and fallback tests
 
 The initial clean-worktree build stopped because the normal database and Better Auth
@@ -42,6 +46,11 @@ completed successfully; no external database connection was required by the buil
 - The documented rollback disables the canary within five minutes without transferring
   write ownership.
 - Replay p95 and analytics read p95 tests satisfy the budgets in the quickstart.
+- Java pull request [#15](https://github.com/HangChi/JobTrace-Java/pull/15): backend,
+  frontend, dependency review, secret scan, and production-artifact checks passed.
+- Legacy pull request [#1](https://github.com/HangChi/JobTrace/pull/1): static, database,
+  acceptance, and performance checks passed in
+  [workflow run 36871815566](https://github.com/HangChi/JobTrace/actions/runs/36871815566).
 
 ## Release status
 
@@ -51,10 +60,9 @@ remain with the legacy service.
 
 Remaining release evidence:
 
-1. Open pull requests and pass repository CI/security checks.
-2. Deploy through non-public ingress and exercise the operational rollback.
-3. Record seven consecutive clean production-canary days.
-4. Record an explicit production-active or rolled-back decision and final traffic owner.
+1. Deploy through non-public ingress and exercise the operational rollback.
+2. Record seven consecutive clean production-canary days.
+3. Record an explicit production-active or rolled-back decision and final traffic owner.
 
 ## Solo-Maintainer Mode self-review
 
@@ -75,7 +83,8 @@ Remaining release evidence:
   500 ms analytics-read p95 budgets. Canary logs contain bounded classifications and timing only.
 - **Delivery and rollback**: The canary is disabled by default, legacy remains the immediate
   fallback, and the documented rollback is a configuration-only change with a five-minute target.
-  Production activation remains blocked on pull-request CI and seven clean observation days.
+  Both repository pull requests pass CI and security gates. Production activation remains blocked
+  on deployment approval and seven clean observation days.
 
 Self-review result: no unresolved standards or specification findings after the fail-closed role
 validation correction. No exception to the constitution is requested.

@@ -136,7 +136,7 @@ seven-day production observation and explicit activation decision finish.
 - [x] T040 Run Java `./mvnw verify` and record coverage, static-analysis, and test evidence in `specs/003-signed-identity-bridge/validation-report.md`
 - [x] T041 Run legacy `npm run lint`, `npm test`, and `npm run build` after isolating 003 changes from the existing dirty working tree and record evidence in `specs/003-signed-identity-bridge/validation-report.md`
 - [x] T042 Execute the rotation, cross-service, performance, and rollback scenarios from `specs/003-signed-identity-bridge/quickstart.md`
-- [ ] T043 Open a pull request, pass all CI/security checks, and record the Solo-Maintainer Mode self-review against the specification and four constitution principles
+- [x] T043 Open a pull request, pass all CI/security checks, and record the Solo-Maintainer Mode self-review against the specification and four constitution principles
 - [ ] T044 Observe the production canary for seven consecutive clean days and record zero mismatches, security incidents, or budget breaches in `specs/003-signed-identity-bridge/validation-report.md`
 - [ ] T045 Record the explicit production-active or rolled-back decision and final traffic owner in `docs/migration-slices/analytics-summary.md`
 
