@@ -6,7 +6,7 @@
 
 ## Summary
 
-Establish a new repository that can incrementally replace the existing Next.js backend while retaining a React and TypeScript browser application. Spring Boot owns the future API and runtime, Vite produces static browser assets, and Gradle packages both into one deployable artifact. The existing PostgreSQL schema remains authoritative; Flyway execution is disabled until a reviewed baseline is defined. Migration proceeds by contract-tested slices with one writer per aggregate and authentication migrated last.
+Establish a new repository that can incrementally replace the existing Next.js backend while retaining a React and TypeScript browser application. Spring Boot owns the future API and runtime, Vite produces static browser assets, and Maven packages both into one deployable artifact. The existing PostgreSQL schema remains authoritative; Flyway execution is disabled until a reviewed baseline is defined. Migration proceeds by contract-tested slices with one writer per aggregate and authentication migrated last.
 
 ## Technical Context
 
@@ -48,9 +48,9 @@ No constitution exception is required. The frontend toolchain is a build-time de
 
 - Use Java 21 LTS because it is installed locally, broadly supported, and sufficient for the selected Spring line.
 - Use the current stable Spring Boot line selected from official Initializr metadata.
-- Use Gradle Wrapper so contributors and CI do not depend on a globally installed Gradle.
+- Use Maven Wrapper so contributors and CI do not depend on a globally installed Maven.
 - Prefer jOOQ and Spring JDBC over JPA because the existing system relies on PostgreSQL functions, JSONB, custom enums, reporting queries, leases, and explicit transaction behavior.
-- Build the frontend independently with Vite, then include `frontend/dist` in the executable JAR during `bootJar`.
+- Build the frontend independently with Vite, then include `frontend/dist` in the executable JAR during `package`.
 - Keep Flyway disabled by default until legacy migration checksums and the baseline version are documented and verified.
 - Keep Better Auth as the identity owner during early slices; specify and test a signed server-to-server identity bridge before protected API migration.
 
@@ -120,9 +120,8 @@ docs/
 .github/workflows/ci.yml
 ```
 
-**Structure Decision**: Use a single Gradle project at the repository root and a `frontend/` Vite project. Backend code is organized as a modular monolith matching the existing domain vocabulary. The production JAR embeds the compiled frontend, while development runs the Vite and Spring processes independently.
+**Structure Decision**: Use a single Maven project at the repository root and a `frontend/` Vite project. Backend code is organized as a modular monolith matching the existing domain vocabulary. The production JAR embeds the compiled frontend, while development runs the Vite and Spring processes independently.
 
 ## Complexity Tracking
 
 No constitution violations require justification.
-

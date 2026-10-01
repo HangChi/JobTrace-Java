@@ -16,7 +16,7 @@ JobTrace Java reads configuration from Spring Boot property sources. Environment
 
 Use `.env.example` only as a field reference. Export values in the shell, use an ignored local environment file through your chosen runner, or configure the IDE. Spring Boot does not automatically load `.env` files.
 
-Never place real credentials in `application.yaml`, Gradle properties, npm configuration, test fixtures, or command output committed to Git.
+Never place real credentials in `application.yaml`, Maven settings, npm configuration, test fixtures, or command output committed to Git.
 
 ## Precedence
 
@@ -35,4 +35,3 @@ Production should use the platform secret manager. CI integration tests should u
 - Keep Flyway disabled for every legacy database until `docs/database-baseline.md` is approved.
 - Development credentials must not grant access to production.
 - Read-only migration pilots should use a database role without schema privileges where practical.
-

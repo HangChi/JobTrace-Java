@@ -18,13 +18,27 @@ for required_file in "${required_files[@]}"; do
   fi
 done
 
+cd "$repo_dir"
+
+legacy_file_pattern='(^|/)(gra''dle|gra''dlew)|build\.gra''dle|settings\.gra''dle'
+legacy_reference_pattern='gra''dle|gra''dlew|boot''Jar|build/li''bs'
+
+if git ls-files | grep -Eiq "$legacy_file_pattern"; then
+  printf 'Legacy build-tool files are still tracked.\n' >&2
+  exit 1
+fi
+
+if git grep -nEi "$legacy_reference_pattern" -- ':!specs/002-maven-build-migration/**'; then
+  printf 'Legacy build-tool references are still active outside the migration record.\n' >&2
+  exit 1
+fi
+
 if ! docker info >/dev/null 2>&1; then
   printf 'Docker is required and its daemon is not reachable. Start Docker and retry.\n' >&2
   exit 1
 fi
 
-cd "$repo_dir"
-./gradlew clean check jacocoTestCoverageVerification bootJar --no-daemon
+./mvnw clean verify
 
 (
   cd frontend
@@ -34,7 +48,7 @@ cd "$repo_dir"
   npm run build
 )
 
-jar_file="$repo_dir/build/libs/jobtrace-0.1.0-SNAPSHOT.jar"
+jar_file="$repo_dir/target/jobtrace-0.1.0-SNAPSHOT.jar"
 jar tf "$jar_file" | grep -q 'BOOT-INF/classes/static/index.html'
 
 printf 'Quickstart verification passed.\n'

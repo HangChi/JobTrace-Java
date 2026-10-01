@@ -18,7 +18,7 @@
 **Purpose**: Complete repository-level conventions that support every later slice.
 
 - [x] T001 Record the source repository API, module, migration, and test inventory in `docs/source-inventory.md`
-- [x] T002 [P] Configure Java formatting and static analysis in `build.gradle.kts` and `config/checkstyle/checkstyle.xml`
+- [x] T002 [P] Configure Java formatting and static analysis in `pom.xml` and `config/checkstyle/checkstyle.xml`
 - [x] T003 [P] Configure frontend coverage thresholds in `frontend/vite.config.ts` and `frontend/package.json`
 - [x] T004 [P] Add dependency update policy and automated update configuration in `.github/dependabot.yml`
 - [x] T005 Document local secret handling and configuration precedence in `docs/configuration.md`
@@ -60,7 +60,7 @@
 - [x] T016 [P] [US1] Add a local PostgreSQL service with health checks in `compose.yaml`
 - [x] T017 [P] [US1] Implement the typed health client in `frontend/src/shared/api/health.ts`
 - [x] T018 [US1] Show backend liveness and readiness states in `frontend/src/App.tsx`
-- [x] T019 [US1] Add Gradle development orchestration commands in `build.gradle.kts`
+- [x] T019 [US1] Document Maven, npm, and Docker Compose development commands in `specs/001-java-migration/quickstart.md`
 - [x] T020 [US1] Verify and correct every command and expected response in `specs/001-java-migration/quickstart.md`
 
 **Checkpoint**: A clean clone can be configured, tested, and run locally in under 20 minutes.
@@ -83,7 +83,7 @@
 
 - [x] T024 [US2] Implement safe SPA route fallback without intercepting API paths in `src/main/java/com/jobtrace/shared/web/SpaForwardController.java`
 - [x] T025 [US2] Add a minimal Java-only runtime image in `Dockerfile`
-- [x] T026 [US2] Add frontend asset digest and source revision to build metadata in `build.gradle.kts`
+- [x] T026 [US2] Add frontend asset digest and source revision to build metadata in `pom.xml`
 - [x] T027 [US2] Add production artifact verification to `.github/workflows/ci.yml`
 - [x] T028 [US2] Document Java-only deployment and rollback in `docs/operations.md`
 

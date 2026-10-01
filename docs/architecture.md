@@ -28,7 +28,7 @@ Cross-module calls use explicit application contracts. Database access remains s
 
 ## Runtime modes
 
-During development, Vite and Spring Boot run separately. Vite proxies `/api` to port 8080. In production, Gradle builds the frontend and embeds it in the JAR; only Java and PostgreSQL run on the host.
+During development, Vite and Spring Boot run separately. Vite proxies `/api` to port 8080. In production, Maven builds the frontend and embeds it in the JAR; only Java and PostgreSQL run on the host.
 
 ## Database ownership
 
@@ -37,4 +37,3 @@ The existing PostgreSQL schema remains authoritative. Flyway is present for futu
 ## Security boundary
 
 The initial health routes are anonymous. Future routes default to authenticated. The migration must not trust identity headers from public traffic. Better Auth remains the identity owner until a signed internal bridge and eventual Spring Security migration are separately specified.
-

@@ -22,7 +22,7 @@ if ! docker info >/dev/null 2>&1; then
 fi
 
 cd "$repo_dir"
-./gradlew packagedApplicationTest --no-daemon
+./mvnw -Ppackaged-test clean verify
 docker build --tag "$image" .
 
 [[ "$(docker image inspect --format '{{.Config.User}}' "$image")" == '10001:10001' ]]
