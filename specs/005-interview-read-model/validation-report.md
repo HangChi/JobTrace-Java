@@ -35,6 +35,6 @@ All fixtures and database rows are synthetic. The Testcontainers schema is under
 - Principle III, consistent and accessible UX: no browser UI or interaction was changed. The API preserves established JSON fields, empty/null forms, collection order, validation and not-found behavior; private responses are no-store.
 - Principle IV, measured performance: fixed synthetic representative load, 10 warm-ups and 40 samples per operation produced p95 below the 500 ms read budget with constant query counts 2/3/4. This is local evidence, not a production latency claim.
 
-## Remaining release gate
+## Pull request and release boundary
 
-PR [#19](https://github.com/HangChi/JobTrace-Java/pull/19) targets `main`. Required `backend`, `frontend`, `production-artifact`, `dependency-review`, and `secret-scan` checks must pass and conversations must be resolved before merge. Deployment remains unscheduled.
+PR [#19](https://github.com/HangChi/JobTrace-Java/pull/19) targets `main`. At commit `fe4582e`, required `backend`, `frontend`, `production-artifact`, `dependency-review`, and `secret-scan` checks all passed. GitHub reported `CLEAN` merge state; there were no review comments or conversations to resolve. The sole maintainer's written self-review is above. This record-only update will rerun CI on its own commit before merge. Deployment remains unscheduled.
