@@ -132,6 +132,29 @@ class BridgeAuthenticationFilterTest {
     }
 
     @Test
+    void protectsOnlyExactPrivateInterviewAndApplicationPaths() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        String id = "00000000-0000-0000-0000-000000000101";
+        for (String path : new String[] {
+                "/api/interviews", "/api/interviews/" + id,
+                "/api/applications/" + id + "/detail"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+        }
+        for (String path : new String[] {
+                "/api/interviews/public", "/api/interviews/public/" + id,
+                "/api/interviews/" + id + "/comments",
+                "/api/applications/" + id + "/detail/extra"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
     void rejectsWrongEmptyAndMultiPartAuthorizationSchemes() throws Exception {
         BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
 

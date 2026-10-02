@@ -65,7 +65,7 @@ specs/005-interview-read-model/
 └── tasks.md
 ```
 
-`tasks.md` is generated in the task phase and remains a plan for future implementation.
+`tasks.md` was generated in the task phase and tracks implementation and validation progress.
 
 ### Source Code (future implementation)
 

@@ -12,10 +12,10 @@
 
 **Purpose**: Establish reproducible evidence without changing Java runtime behavior or the production schema.
 
-- [ ] T001 Document committed legacy source locations, fixture provenance, timestamp normalization, cursor regeneration, and synthetic-data rules in `src/test/resources/contracts/interviews/README.md`.
-- [ ] T002 [P] Add synthetic empty, representative, filtered, and cursor-page legacy list fixtures in `src/test/resources/contracts/interviews/empty-page.legacy.json`, `src/test/resources/contracts/interviews/representative-page.legacy.json`, `src/test/resources/contracts/interviews/filtered-page.legacy.json`, and `src/test/resources/contracts/interviews/cursor-page.legacy.json`.
-- [ ] T003 [P] Add a minimal test-only PostgreSQL 17 schema with applications, stage occurrences, interview reviews, questions, action items, current assessment/publication enum values, and relevant indexes in `src/test/resources/postgres/interviews-read-model.sql`; do not add a production migration.
-- [ ] T004 [P] Add parsing and path/schema assertions for all three feature operations in `src/test/java/com/jobtrace/interviews/InterviewReadOpenApiTest.java` against `specs/005-interview-read-model/contracts/openapi.yaml`.
+- [X] T001 Document committed legacy source locations, fixture provenance, timestamp normalization, cursor regeneration, and synthetic-data rules in `src/test/resources/contracts/interviews/README.md`.
+- [X] T002 [P] Add synthetic empty, representative, filtered, and cursor-page legacy list fixtures in `src/test/resources/contracts/interviews/empty-page.legacy.json`, `src/test/resources/contracts/interviews/representative-page.legacy.json`, `src/test/resources/contracts/interviews/filtered-page.legacy.json`, and `src/test/resources/contracts/interviews/cursor-page.legacy.json`.
+- [X] T003 [P] Add a minimal test-only PostgreSQL 17 schema with applications, stage occurrences, interview reviews, questions, action items, current assessment/publication enum values, and relevant indexes in `src/test/resources/postgres/interviews-read-model.sql`; do not add a production migration.
+- [X] T004 [P] Add parsing and path/schema assertions for all three feature operations in `src/test/java/com/jobtrace/interviews/InterviewReadOpenApiTest.java` against `specs/005-interview-read-model/contracts/openapi.yaml`.
 
 **Checkpoint**: Legacy contract evidence and isolated data setup are available to later story tests.
 
@@ -27,17 +27,17 @@
 
 **⚠️ CRITICAL**: Complete this phase before user-story implementation.
 
-- [ ] T005 [P] Define interview stage, review status, round result, publication, author mode, format, and question category catalogs matching the legacy values in `src/main/java/com/jobtrace/interviews/domain/InterviewCatalog.java`.
-- [ ] T006 Define immutable interview summary, page, and application-stage summary records with the fields and nullability from `data-model.md` in `src/main/java/com/jobtrace/interviews/domain/InterviewSummary.java`, `src/main/java/com/jobtrace/interviews/domain/InterviewPage.java`, and `src/main/java/com/jobtrace/interviews/domain/StageInterviewSummary.java`.
-- [ ] T007 [P] Write tests for trimmed search, repeated valid/empty filters, strict invalid enum/date/UUID/limit failures, inclusive date boundaries, and default limit in `src/test/java/com/jobtrace/interviews/InterviewListCriteriaTest.java`.
-- [ ] T008 [P] Write base64url JSON cursor tests for required date value and UUID, malformed payloads, same-date ties, and owner-independent navigation in `src/test/java/com/jobtrace/interviews/InterviewCursorCodecTest.java`.
-- [ ] T009 Implement interview-specific bounded and strict criteria normalization in `src/main/java/com/jobtrace/interviews/domain/InterviewListCriteria.java` to satisfy T007 without reusing the tolerant feature 004 parser.
-- [ ] T010 Implement the legacy-compatible cursor codec in `src/main/java/com/jobtrace/interviews/domain/InterviewCursorCodec.java` to satisfy T008; treat the cursor as navigation data, never authorization.
-- [ ] T011 Define owner-scoped list, count, detail, and application-summary read operations in `src/main/java/com/jobtrace/interviews/application/InterviewReadQuery.java`.
-- [ ] T012 [P] Write tests rejecting null principals, ordinary authenticated principals, and mismatched principal names in `src/test/java/com/jobtrace/identityaccess/BridgePrincipalOwnerTest.java`.
-- [ ] T013 Implement a reusable trusted-owner extractor for controllers in `src/main/java/com/jobtrace/identityaccess/application/BridgePrincipalOwner.java` to satisfy T012; accept only matching `BridgeIdentity` details.
-- [ ] T014 [P] Add bridge-filter regression tests for exact private interview list/detail and application-dialog paths, path-bound assertions, and excluded public/community paths in `src/test/java/com/jobtrace/identityaccess/BridgeAuthenticationFilterTest.java`.
-- [ ] T015 Extend the feature 003 bridge path matcher in `src/main/java/com/jobtrace/identityaccess/web/BridgeAuthenticationFilter.java` to satisfy T014 without broadly matching public interview paths or changing the default-disabled bridge setting.
+- [X] T005 [P] Define interview stage, review status, round result, publication, author mode, format, and question category catalogs matching the legacy values in `src/main/java/com/jobtrace/interviews/domain/InterviewCatalog.java`.
+- [X] T006 Define immutable interview summary, page, and application-stage summary records with the fields and nullability from `data-model.md` in `src/main/java/com/jobtrace/interviews/domain/InterviewSummary.java`, `src/main/java/com/jobtrace/interviews/domain/InterviewPage.java`, and `src/main/java/com/jobtrace/interviews/domain/StageInterviewSummary.java`.
+- [X] T007 [P] Write tests for trimmed search, repeated valid/empty filters, strict invalid enum/date/UUID/limit failures, inclusive date boundaries, and default limit in `src/test/java/com/jobtrace/interviews/InterviewListCriteriaTest.java`.
+- [X] T008 [P] Write base64url JSON cursor tests for required date value and UUID, malformed payloads, same-date ties, and owner-independent navigation in `src/test/java/com/jobtrace/interviews/InterviewCursorCodecTest.java`.
+- [X] T009 Implement interview-specific bounded and strict criteria normalization in `src/main/java/com/jobtrace/interviews/domain/InterviewListCriteria.java` to satisfy T007 without reusing the tolerant feature 004 parser.
+- [X] T010 Implement the legacy-compatible cursor codec in `src/main/java/com/jobtrace/interviews/domain/InterviewCursorCodec.java` to satisfy T008; treat the cursor as navigation data, never authorization.
+- [X] T011 Define owner-scoped list (including full filtered total), detail, and application-summary read operations in `src/main/java/com/jobtrace/interviews/application/InterviewReadQuery.java`.
+- [X] T012 [P] Write tests rejecting null principals, ordinary authenticated principals, and mismatched principal names in `src/test/java/com/jobtrace/identityaccess/BridgePrincipalOwnerTest.java`.
+- [X] T013 Implement a reusable trusted-owner extractor for controllers in `src/main/java/com/jobtrace/identityaccess/web/BridgePrincipalOwner.java` to satisfy T012; accept only matching `BridgeIdentity` details and keep web problems out of the application layer.
+- [X] T014 [P] Add bridge-filter regression tests for exact private interview list/detail and application-dialog paths, path-bound assertions, and excluded public/community paths in `src/test/java/com/jobtrace/identityaccess/BridgeAuthenticationFilterTest.java`.
+- [X] T015 Extend the feature 003 bridge path matcher in `src/main/java/com/jobtrace/identityaccess/web/BridgeAuthenticationFilter.java` to satisfy T014 without broadly matching public interview paths or changing the default-disabled bridge setting.
 
 **Checkpoint**: The three stories can use the same trusted owner and query contract without transferring session or write ownership.
 
@@ -51,22 +51,22 @@
 
 ### Tests for User Story 1
 
-- [ ] T016 [P] [US1] Add structural JSON parity tests for empty, representative, filtered, and cursor-page fixtures in `src/test/java/com/jobtrace/interviews/InterviewListContractTest.java`.
-- [ ] T017 [P] [US1] Add HTTP parameter and response tests for defaults, repeated filters, strict 400 failures, `private, no-store`, and the ordinary-principal 401 case in `src/test/java/com/jobtrace/interviews/InterviewListControllerTest.java`.
-- [ ] T018 [P] [US1] Add Testcontainers tests proving owner isolation in list items, totals, company/position/question search, and publication modes in `src/test/java/com/jobtrace/interviews/InterviewListOwnerIsolationIntegrationTest.java`.
-- [ ] T019 [P] [US1] Add Testcontainers tests for application/status/stage/result/date filter combinations, inclusive boundaries, assessment reviews, and unlinked stage snapshots in `src/test/java/com/jobtrace/interviews/InterviewListQueryIntegrationTest.java`.
-- [ ] T020 [P] [US1] Add same-date UUID tie-break, cursor traversal exactly once, filtered total-before-cursor, malformed cursor, and cursor reuse under another filter tests in `src/test/java/com/jobtrace/interviews/InterviewPaginationIntegrationTest.java`.
-- [ ] T021 [P] [US1] Add unit tests for owner validation, criteria forwarding, empty results, and query failure propagation in `src/test/java/com/jobtrace/interviews/ListPrivateInterviewsTest.java`.
+- [X] T016 [P] [US1] Add structural JSON parity tests for empty, representative, filtered, and cursor-page fixtures in `src/test/java/com/jobtrace/interviews/InterviewListContractTest.java`.
+- [X] T017 [P] [US1] Add HTTP parameter and response tests for defaults, repeated filters, strict 400 failures, `private, no-store`, and the ordinary-principal 401 case in `src/test/java/com/jobtrace/interviews/InterviewListControllerTest.java`.
+- [X] T018 [P] [US1] Add Testcontainers tests proving owner isolation in list items, totals, company/position/question search, and publication modes in `src/test/java/com/jobtrace/interviews/InterviewListOwnerIsolationIntegrationTest.java`.
+- [X] T019 [P] [US1] Add Testcontainers tests for application/status/stage/result/date filter combinations, inclusive boundaries, assessment reviews, and unlinked stage snapshots in `src/test/java/com/jobtrace/interviews/InterviewListQueryIntegrationTest.java`.
+- [X] T020 [P] [US1] Add same-date UUID tie-break, cursor traversal exactly once, filtered total-before-cursor, malformed cursor, and cursor reuse under another filter tests in `src/test/java/com/jobtrace/interviews/InterviewPaginationIntegrationTest.java`.
+- [X] T021 [P] [US1] Add unit tests for owner validation, criteria forwarding, empty results, and query failure propagation in `src/test/java/com/jobtrace/interviews/ListPrivateInterviewsTest.java`.
 
 ### Implementation for User Story 1
 
-- [ ] T022 [US1] Implement the list use case using the shared query port in `src/main/java/com/jobtrace/interviews/application/ListPrivateInterviews.java` to satisfy T021.
-- [ ] T023 [US1] Implement parameterized, owner-bound list/count SQL, question-text search, fixed date/UUID ordering, tuple cursor predicate, count fields, and summary mapping in `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T018–T020.
-- [ ] T024 [US1] Bind repeated query values and strict validation in `src/main/java/com/jobtrace/interviews/web/InterviewListParameters.java` to satisfy T017.
-- [ ] T025 [US1] Expose only `GET /api/interviews` with trusted owner, safe errors, and `private, no-store` in `src/main/java/com/jobtrace/interviews/web/InterviewReadController.java` to satisfy T016–T017.
-- [ ] T026 [US1] Add bounded operation/outcome and latency metrics without owner, review ID, query, token, or response labels in `src/main/java/com/jobtrace/interviews/web/InterviewReadMetrics.java`.
-- [ ] T027 [US1] Map invalid filters and malformed cursors to the established safe problem envelope in `src/main/java/com/jobtrace/interviews/web/InterviewReadExceptionHandler.java`.
-- [ ] T028 [US1] Run the US1 unit, contract, HTTP, and PostgreSQL tests from T016–T021 and record the independent MVP result in `specs/005-interview-read-model/validation-report.md`.
+- [X] T022 [US1] Implement the list use case using the shared query port in `src/main/java/com/jobtrace/interviews/application/ListPrivateInterviews.java` to satisfy T021.
+- [X] T023 [US1] Implement parameterized, owner-bound list/count SQL, question-text search, fixed date/UUID ordering, tuple cursor predicate, count fields, and summary mapping in `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T018–T020.
+- [X] T024 [US1] Bind repeated query values and strict validation in `src/main/java/com/jobtrace/interviews/web/InterviewListParameters.java` to satisfy T017.
+- [X] T025 [US1] Expose only `GET /api/interviews` with trusted owner, safe errors, and `private, no-store` in `src/main/java/com/jobtrace/interviews/web/InterviewReadController.java` to satisfy T016–T017.
+- [X] T026 [US1] Add bounded operation/outcome and latency metrics without owner, review ID, query, token, or response labels in `src/main/java/com/jobtrace/interviews/web/InterviewReadMetrics.java`.
+- [X] T027 [US1] Reuse `src/main/java/com/jobtrace/shared/web/GlobalExceptionHandler.java` for safe invalid-filter/cursor problems and add interview-specific not-found mapping in `src/main/java/com/jobtrace/interviews/web/InterviewReadExceptionHandler.java`.
+- [X] T028 [US1] Run the US1 unit, contract, HTTP, and PostgreSQL tests from T016–T021 and record the independent MVP result in `specs/005-interview-read-model/validation-report.md`.
 
 **Checkpoint**: User Story 1 is independently testable and remains read-only; no detail or dialog route is required for the MVP.
 
@@ -80,18 +80,18 @@
 
 ### Tests for User Story 2
 
-- [ ] T029 [P] [US2] Add synthetic complete, empty-child, and unlinked-stage legacy detail fixtures in `src/test/resources/contracts/interviews/representative-detail.legacy.json`, `src/test/resources/contracts/interviews/empty-detail.legacy.json`, and `src/test/resources/contracts/interviews/unlinked-detail.legacy.json`.
-- [ ] T030 [US2] Add detail JSON parity and child-order tests against T029 fixtures in `src/test/java/com/jobtrace/interviews/InterviewDetailContractTest.java`.
-- [ ] T031 [P] [US2] Add Testcontainers tests for ordered questions/action items, null fields, assessment and stage-snapshot fallback, and owner-bound child reads in `src/test/java/com/jobtrace/interviews/InterviewDetailQueryIntegrationTest.java`.
-- [ ] T032 [P] [US2] Add missing-versus-cross-owner 404 equivalence and valid-owner detail HTTP tests in `src/test/java/com/jobtrace/interviews/InterviewDetailIsolationTest.java`.
-- [ ] T033 [P] [US2] Add detail use-case tests for blank owner, null ID, owned result, and missing result in `src/test/java/com/jobtrace/interviews/GetPrivateInterviewTest.java`.
+- [X] T029 [P] [US2] Add synthetic complete, empty-child, and unlinked-stage legacy detail fixtures in `src/test/resources/contracts/interviews/representative-detail.legacy.json`, `src/test/resources/contracts/interviews/empty-detail.legacy.json`, and `src/test/resources/contracts/interviews/unlinked-detail.legacy.json`.
+- [X] T030 [US2] Add detail JSON parity and child-order tests against T029 fixtures in `src/test/java/com/jobtrace/interviews/InterviewDetailContractTest.java`.
+- [X] T031 [P] [US2] Add Testcontainers tests for ordered questions/action items, null fields, assessment and stage-snapshot fallback, and owner-bound child reads in `src/test/java/com/jobtrace/interviews/InterviewDetailQueryIntegrationTest.java`.
+- [X] T032 [P] [US2] Add missing-versus-cross-owner 404 equivalence and valid-owner detail HTTP tests in `src/test/java/com/jobtrace/interviews/InterviewDetailIsolationTest.java`.
+- [X] T033 [P] [US2] Add detail use-case tests for blank owner, null ID, owned result, and missing result in `src/test/java/com/jobtrace/interviews/GetPrivateInterviewTest.java`.
 
 ### Implementation for User Story 2
 
-- [ ] T034 [P] [US2] Define immutable detail, question, and action-item models with empty collections and nullable optional values in `src/main/java/com/jobtrace/interviews/domain/InterviewDetail.java`, `src/main/java/com/jobtrace/interviews/domain/InterviewQuestion.java`, and `src/main/java/com/jobtrace/interviews/domain/InterviewActionItem.java`.
-- [ ] T035 [US2] Implement owned detail lookup and a uniform not-found outcome in `src/main/java/com/jobtrace/interviews/application/GetPrivateInterview.java` to satisfy T033.
-- [ ] T036 [US2] Add owner-bound detail and child queries ordered by saved `sort_order` to `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T031–T032.
-- [ ] T037 [US2] Add only `GET /api/interviews/{id}` to `src/main/java/com/jobtrace/interviews/web/InterviewReadController.java`, using the shared owner extractor, no-store response, metrics, and safe problem mapping.
+- [X] T034 [P] [US2] Define immutable detail, question, and action-item models with empty collections and nullable optional values in `src/main/java/com/jobtrace/interviews/domain/InterviewDetail.java`, `src/main/java/com/jobtrace/interviews/domain/InterviewQuestion.java`, and `src/main/java/com/jobtrace/interviews/domain/InterviewActionItem.java`.
+- [X] T035 [US2] Implement owned detail lookup and a uniform not-found outcome in `src/main/java/com/jobtrace/interviews/application/GetPrivateInterview.java` to satisfy T033.
+- [X] T036 [US2] Add owner-bound detail and child queries ordered by saved `sort_order` to `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T031–T032.
+- [X] T037 [US2] Add only `GET /api/interviews/{id}` to `src/main/java/com/jobtrace/interviews/web/InterviewReadController.java`, using the shared owner extractor, no-store response, metrics, and safe problem mapping.
 
 **Checkpoint**: User Stories 1 and 2 each work independently; public/community reads and every write remain outside Java.
 
@@ -105,18 +105,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T038 [P] [US3] Add synthetic application-dialog fixtures with interviews and no interviews in `src/test/resources/contracts/interviews/representative-dialog.legacy.json` and `src/test/resources/contracts/interviews/empty-dialog.legacy.json`.
-- [ ] T039 [US3] Add dialog contract tests verifying the feature 004 application object remains unchanged and interview summaries match T038 fixtures in `src/test/java/com/jobtrace/applicationdialog/ApplicationDialogContractTest.java`.
-- [ ] T040 [P] [US3] Add PostgreSQL tests for application/review owner predicates, linked/unlinked stages, descending date/ID order, and zero cross-owner summary/count disclosure in `src/test/java/com/jobtrace/applicationdialog/ApplicationDialogIsolationIntegrationTest.java`.
-- [ ] T041 [P] [US3] Add composition tests proving application ownership is checked before interview summaries and missing/cross-owner applications produce identical 404 outcomes in `src/test/java/com/jobtrace/applicationdialog/GetApplicationDialogDataTest.java`.
+- [X] T038 [P] [US3] Add synthetic application-dialog fixtures with interviews and no interviews in `src/test/resources/contracts/interviews/representative-dialog.legacy.json` and `src/test/resources/contracts/interviews/empty-dialog.legacy.json`.
+- [X] T039 [US3] Add dialog contract tests verifying the feature 004 application object remains unchanged and interview summaries match T038 fixtures in `src/test/java/com/jobtrace/applicationdialog/ApplicationDialogContractTest.java`.
+- [X] T040 [P] [US3] Add PostgreSQL tests for application/review owner predicates, linked/unlinked stages, descending date/ID order, and zero cross-owner summary/count disclosure in `src/test/java/com/jobtrace/applicationdialog/ApplicationDialogIsolationIntegrationTest.java`.
+- [X] T041 [P] [US3] Add composition tests proving application ownership is checked before interview summaries and missing/cross-owner applications produce identical 404 outcomes in `src/test/java/com/jobtrace/applicationdialog/GetApplicationDialogDataTest.java`.
 
 ### Implementation for User Story 3
 
-- [ ] T042 [US3] Add an owner-scoped stage-summary use case to the existing interview query port in `src/main/java/com/jobtrace/interviews/application/ListInterviewsForApplication.java` and `src/main/java/com/jobtrace/interviews/application/InterviewReadQuery.java`.
-- [ ] T043 [US3] Implement the application-specific summary query with both application and review owner predicates in `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T040.
-- [ ] T044 [US3] Compose `GetApplicationDetail` from feature 004 with T042 in `src/main/java/com/jobtrace/applicationdialog/application/GetApplicationDialogData.java` and `src/main/java/com/jobtrace/applicationdialog/application/ApplicationDialogData.java` to satisfy T041.
-- [ ] T045 [US3] Expose only `GET /api/applications/{id}/detail` with trusted owner, uniform 404, metrics, and `private, no-store` in `src/main/java/com/jobtrace/applicationdialog/web/ApplicationDialogController.java` to satisfy T039.
-- [ ] T046 [US3] Add architecture rules that keep `applications` and `interviews` independent and allow only the thin `applicationdialog` orchestration edge in `src/test/java/com/jobtrace/ArchitectureTest.java`.
+- [X] T042 [US3] Add an owner-scoped stage-summary use case to the existing interview query port in `src/main/java/com/jobtrace/interviews/application/ListInterviewsForApplication.java` and `src/main/java/com/jobtrace/interviews/application/InterviewReadQuery.java`.
+- [X] T043 [US3] Implement the application-specific summary query with both application and review owner predicates in `src/main/java/com/jobtrace/interviews/infrastructure/PostgresInterviewReadQuery.java` to satisfy T040.
+- [X] T044 [US3] Compose `GetApplicationDetail` from feature 004 with T042 in `src/main/java/com/jobtrace/applicationdialog/application/GetApplicationDialogData.java` and `src/main/java/com/jobtrace/applicationdialog/application/ApplicationDialogData.java` to satisfy T041.
+- [X] T045 [US3] Expose only `GET /api/applications/{id}/detail` with trusted owner, uniform 404, metrics, and `private, no-store` in `src/main/java/com/jobtrace/applicationdialog/web/ApplicationDialogController.java` to satisfy T039.
+- [X] T046 [US3] Add architecture rules that keep `applications` and `interviews` independent and allow only the thin `applicationdialog` orchestration edge in `src/test/java/com/jobtrace/ArchitectureTest.java`.
 
 **Checkpoint**: All three user stories are independently verified and no production traffic or write ownership has moved.
 
@@ -126,14 +126,14 @@
 
 **Purpose**: Prove security, compatibility, performance, schema safety, and review readiness without deployment.
 
-- [ ] T047 [P] Add the three protected GET operations and schemas to the repository API baseline in `specs/001-java-migration/contracts/openapi.yaml` without adding mutation or public interview routes.
-- [ ] T048 [P] Add bounded success, invalid, denied, not-found, dependency-failure, and latency-breach metrics tests for all three operations in `src/test/java/com/jobtrace/interviews/InterviewReadMetricsTest.java`.
-- [ ] T049 [P] Add missing, forged, expired, path-mismatched, and replayed assertion tests for each route plus ordinary-principal and public-header denial in `src/test/java/com/jobtrace/interviews/InterviewReadSecurityTest.java`.
-- [ ] T050 [P] Add safe database-outage responses and absence of private data in logs/problems for list, detail, and dialog in `src/test/java/com/jobtrace/interviews/InterviewReadDependencyFailureTest.java`.
-- [ ] T051 [P] Add fixed-clock, documented representative-load tests with at least 40 measured samples and bounded query counts for list, detail, and dialog p95 ≤ 500 ms in `src/test/java/com/jobtrace/interviews/InterviewReadPerformanceTest.java`.
-- [ ] T052 [P] Assert that 005 adds no production migration, Flyway activation, non-GET interview handler, public feed route, view-count mutation, export, or other write surface in `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java` and `src/test/java/com/jobtrace/interviews/InterviewReadOnlySurfaceTest.java`.
-- [ ] T053 [P] Document the private read slice, unchanged legacy writer/session/schema owner, excluded public/write flows, and no-deployment decision in `docs/migration-slices/interview-read-model.md` and `docs/migration.md`.
-- [ ] T054 Run `./mvnw verify` with Docker and record contract parity, Testcontainers isolation, OpenAPI, architecture, coverage ≥ 80% line/branch, Checkstyle, p95, query-count, and Java-only artifact evidence in `specs/005-interview-read-model/validation-report.md`.
+- [X] T047 [P] Add the three protected GET operations and schemas to the repository API baseline in `specs/001-java-migration/contracts/openapi.yaml` without adding mutation or public interview routes.
+- [X] T048 [P] Add bounded success, invalid, denied, not-found, dependency-failure, and latency-breach metrics tests for all three operations in `src/test/java/com/jobtrace/interviews/InterviewReadMetricsTest.java`.
+- [X] T049 [P] Add missing, forged, expired, path-mismatched, and replayed assertion tests for each route plus ordinary-principal and public-header denial in `src/test/java/com/jobtrace/interviews/InterviewReadSecurityTest.java`.
+- [X] T050 [P] Add safe database-outage responses and absence of private data in logs/problems for list, detail, and dialog in `src/test/java/com/jobtrace/interviews/InterviewReadDependencyFailureTest.java`.
+- [X] T051 [P] Add fixed-clock, documented representative-load tests with at least 40 measured samples and bounded query counts for list, detail, and dialog p95 ≤ 500 ms in `src/test/java/com/jobtrace/interviews/InterviewReadPerformanceTest.java`.
+- [X] T052 [P] Assert that 005 adds no production migration, Flyway activation, non-GET interview handler, public feed route, view-count mutation, export, or other write surface in `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java` and `src/test/java/com/jobtrace/interviews/InterviewReadOnlySurfaceTest.java`.
+- [X] T053 [P] Document the private read slice, unchanged legacy writer/session/schema owner, excluded public/write flows, and no-deployment decision in `docs/migration-slices/interview-read-model.md` and `docs/migration.md`.
+- [X] T054 Run `./mvnw verify` with Docker and record contract parity, Testcontainers isolation, OpenAPI, architecture, coverage ≥ 80% line/branch, Checkstyle, p95, query-count, and Java-only artifact evidence in `specs/005-interview-read-model/validation-report.md`.
 - [ ] T055 Review the implementation against `spec.md` and all four constitution principles, record the Solo-Maintainer Mode self-review in `specs/005-interview-read-model/validation-report.md`, then open a PR to `main`, pass required CI/security checks, and record its URL and unscheduled deployment status there.
 
 ---

@@ -1,6 +1,6 @@
 # Quickstart: Validate the Private Interview Read Model
 
-This is the validation guide for future implementation of feature 005. The feature is currently at the **task-planning stage**: the routes and tests described below are not yet implemented in Java. No production credentials, deployment, or traffic change are required.
+This is the validation guide for feature 005 implementation. The three private GET routes are implemented in the Java worktree; passing all gates and PR review remain necessary before merge. No production credentials, deployment, or traffic change are required.
 
 ## Prerequisites
 

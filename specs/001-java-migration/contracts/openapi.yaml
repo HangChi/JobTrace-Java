@@ -4,6 +4,77 @@ info:
   version: 0.3.0
   description: Health and verified read-only pilot contracts for the Java migration runtime.
 paths:
+  /api/interviews:
+    get:
+      operationId: listPrivateInterviews
+      summary: List the authenticated owner's private interview reviews
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - { name: applicationId, in: query, schema: { type: string, format: uuid } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: status, in: query, explode: true, schema: { type: array, items: { type: string, enum: [draft, pending_review, completed] } } }
+        - { name: stage, in: query, explode: true, schema: { type: array, items: { type: string, enum: [assessment, interview_1, interview_2, interview_3, hr_interview, final_interview] } } }
+        - { name: result, in: query, explode: true, schema: { type: array, items: { type: string, enum: [pending, passed, failed] } } }
+        - { name: publication, in: query, explode: true, schema: { type: array, items: { type: string, enum: [private, anonymous, attributed] } } }
+        - { name: interviewedFrom, in: query, schema: { type: string, format: date } }
+        - { name: interviewedTo, in: query, schema: { type: string, format: date } }
+        - { name: cursor, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        "200":
+          description: Owner-scoped interview review page
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InterviewPage" }
+        "400": { description: Invalid filter or cursor }
+        "401": { description: No trusted authenticated owner }
+        "503": { description: Data store unavailable }
+  /api/interviews/{id}:
+    get:
+      operationId: getPrivateInterview
+      summary: Return an owned private interview review
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Complete owner-scoped review
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InterviewDetail" }
+        "400": { description: Invalid identifier }
+        "401": { description: No trusted authenticated owner }
+        "404": { description: Review missing or owned by another user }
+        "503": { description: Data store unavailable }
+  /api/applications/{id}/detail:
+    get:
+      operationId: getApplicationDialogData
+      summary: Return owned application detail with interview summaries
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        "200":
+          description: Application dialog data
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ApplicationDialogData" }
+        "400": { description: Invalid identifier }
+        "401": { description: No trusted authenticated owner }
+        "404": { description: Application missing or owned by another user }
+        "503": { description: Data store unavailable }
   /api/applications:
     get:
       operationId: listApplications
@@ -122,6 +193,86 @@ components:
         Internal-only `JobTraceBridge <compact-JWS>` assertion defined by signed identity
         bridge contract v1. Browser credentials and public identity headers are not accepted.
   schemas:
+    InterviewSummary:
+      type: object
+      additionalProperties: false
+      required: [id, applicationId, stageOccurrenceId, companyName, positionName, stage, interviewedOn, status, roundResult, linked, questionCount, actionCount, visibility, authorMode, publishedAt]
+      properties:
+        id: { type: string, format: uuid }
+        applicationId: { type: string, format: uuid }
+        stageOccurrenceId: { type: [string, "null"], format: uuid }
+        companyName: { type: string }
+        positionName: { type: string }
+        stage: { type: string, enum: [assessment, interview_1, interview_2, interview_3, hr_interview, final_interview] }
+        interviewedOn: { type: string, format: date }
+        status: { type: string, enum: [draft, pending_review, completed] }
+        roundResult: { type: string, enum: [pending, passed, failed] }
+        linked: { type: boolean }
+        questionCount: { type: integer, minimum: 0 }
+        actionCount: { type: integer, minimum: 0 }
+        visibility: { type: string, enum: [private, public] }
+        authorMode: { type: string, enum: [anonymous, attributed] }
+        publishedAt: { type: [string, "null"] }
+    InterviewPage:
+      type: object
+      additionalProperties: false
+      required: [items, nextCursor, total, limit]
+      properties:
+        items: { type: array, items: { $ref: "#/components/schemas/InterviewSummary" } }
+        nextCursor: { type: [string, "null"] }
+        total: { type: integer, minimum: 0 }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+    InterviewQuestion:
+      type: object
+      required: [id, category, question, originalAnswer, followUpNotes, improvedAnswer, selfRating]
+      properties:
+        id: { type: string, format: uuid }
+        category: { type: string, enum: [technical, project, behavioral, system_design, other] }
+        question: { type: string }
+        originalAnswer: { type: [string, "null"] }
+        followUpNotes: { type: [string, "null"] }
+        improvedAnswer: { type: [string, "null"] }
+        selfRating: { type: [integer, "null"], minimum: 1, maximum: 5 }
+    InterviewActionItem:
+      type: object
+      required: [id, content, completed]
+      properties:
+        id: { type: string, format: uuid }
+        content: { type: string }
+        completed: { type: boolean }
+    InterviewDetail:
+      allOf:
+        - { $ref: "#/components/schemas/InterviewSummary" }
+        - type: object
+          required: [format, durationMinutes, interviewerNotes, highlights, gaps, version, questions, actionItems, createdAt, updatedAt]
+          properties:
+            format: { type: [string, "null"], enum: [online, offline, phone, null] }
+            durationMinutes: { type: [integer, "null"], minimum: 1, maximum: 600 }
+            interviewerNotes: { type: [string, "null"] }
+            highlights: { type: [string, "null"] }
+            gaps: { type: [string, "null"] }
+            version: { type: integer, minimum: 1 }
+            questions: { type: array, items: { $ref: "#/components/schemas/InterviewQuestion" } }
+            actionItems: { type: array, items: { $ref: "#/components/schemas/InterviewActionItem" } }
+            createdAt: { type: string }
+            updatedAt: { type: string }
+    StageInterviewSummary:
+      type: object
+      required: [id, stage, interviewedOn, status, questionCount, stageOccurrenceId]
+      properties:
+        id: { type: string, format: uuid }
+        stage: { type: string, enum: [assessment, interview_1, interview_2, interview_3, hr_interview, final_interview] }
+        interviewedOn: { type: string, format: date }
+        status: { type: string, enum: [draft, pending_review, completed] }
+        questionCount: { type: integer, minimum: 0 }
+        stageOccurrenceId: { type: [string, "null"], format: uuid }
+    ApplicationDialogData:
+      type: object
+      additionalProperties: false
+      required: [application, interviews]
+      properties:
+        application: { $ref: "#/components/schemas/ApplicationDetail" }
+        interviews: { type: array, items: { $ref: "#/components/schemas/StageInterviewSummary" } }
     ApplicationSummary:
       type: object
       additionalProperties: false

@@ -3,11 +3,12 @@ package com.jobtrace;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
 
-@AnalyzeClasses(packages = "com.jobtrace")
+@AnalyzeClasses(packages = "com.jobtrace", importOptions = ImportOption.DoNotIncludeTests.class)
 class ArchitectureTest {
 
     @ArchTest
@@ -49,4 +50,23 @@ class ArchitectureTest {
     static final ArchRule APPLICATION_READ_STORAGE_DOES_NOT_DEPEND_ON_HTTP = noClasses()
             .that().resideInAPackage("..applications.infrastructure..")
             .should().dependOnClassesThat().resideInAnyPackage("..applications.web..");
+
+    @ArchTest
+    static final ArchRule APPLICATIONS_DO_NOT_DEPEND_ON_INTERVIEWS_OR_DIALOG = noClasses()
+            .that().resideInAPackage("..applications..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..interviews..", "..applicationdialog..");
+
+    @ArchTest
+    static final ArchRule INTERVIEWS_DO_NOT_DEPEND_ON_APPLICATIONS_OR_DIALOG = noClasses()
+            .that().resideInAPackage("..interviews..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications..", "..applicationdialog..");
+
+    @ArchTest
+    static final ArchRule DIALOG_HAS_NO_ADAPTER_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..applicationdialog.application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications.infrastructure..", "..applications.web..",
+                    "..interviews.infrastructure..", "..interviews.web..");
 }
