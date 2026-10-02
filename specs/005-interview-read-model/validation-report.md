@@ -37,4 +37,4 @@ All fixtures and database rows are synthetic. The Testcontainers schema is under
 
 ## Remaining release gate
 
-Open a pull request to `main`, pass required `backend`, `frontend`, `production-artifact`, `dependency-review`, and `secret-scan` checks, resolve conversations, and record the PR URL here. Deployment remains unscheduled.
+PR [#19](https://github.com/HangChi/JobTrace-Java/pull/19) targets `main`. Required `backend`, `frontend`, `production-artifact`, `dependency-review`, and `secret-scan` checks must pass and conversations must be resolved before merge. Deployment remains unscheduled.
