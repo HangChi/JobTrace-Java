@@ -130,7 +130,10 @@ public class PostgresJobMarketReadQuery implements JobMarketReadQuery {
         if (summaries.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new CampaignDetail(summaries.getFirst(), jobs(ownerId, companyId)));
+        CampaignSummary summary = summaries.getFirst();
+        List<CampaignJob> jobs = summary.listingKind() == ListingKind.RECRUITMENT_DIRECTORY
+                ? List.of() : jobs(ownerId, companyId);
+        return Optional.of(new CampaignDetail(summary, jobs));
     }
 
     private List<CampaignJob> jobs(String ownerId, UUID companyId) {
@@ -139,17 +142,19 @@ public class PostgresJobMarketReadQuery implements JobMarketReadQuery {
         return jdbc.query("""
                 select post.id, post.title, post.status, post.primary_apply_url,
                   post.published_at, post.valid_through, source.adapter as source_name,
-                  company.website_url as source_url, link.application_id,
+                  source.base_url as source_url, link.application_id,
                   coalesce((select jsonb_agg(jsonb_build_object(
-                    'name', location.display_name, 'isRemote', location.is_remote)
-                    order by location.display_name)
-                    from job_market_post_locations relation
-                    join job_market_locations location on location.id = relation.location_id
-                    where relation.post_id = post.id), '[]')::text as locations
+                    'name', location_values.display_name,
+                    'isRemote', location_values.is_remote)
+                    order by location_values.display_name, location_values.is_remote)
+                    from (select distinct location.display_name, location.is_remote
+                      from job_market_post_locations relation
+                      join job_market_locations location on location.id = relation.location_id
+                      where relation.post_id = post.id) location_values), '[]')::text as locations
                 from job_market_posts post
                 join job_market_companies company on company.id = post.company_id
                 left join lateral (
-                  select job_source.adapter
+                  select job_source.adapter, job_source.base_url
                   from job_market_source_records record
                   join job_market_sources job_source on job_source.id = record.source_id
                   where record.post_id = post.id and job_source.status = 'active'

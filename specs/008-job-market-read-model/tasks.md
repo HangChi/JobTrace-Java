@@ -95,18 +95,18 @@
 
 ### Tests for User Story 3
 
-- [ ] T028 [P] [US3] Add structural JSON parity tests for synced, directory, stale, unsafe-link, missing-link, duplicate-location, and complete-position detail fixtures in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailContractTest.java`.
-- [ ] T029 [P] [US3] Add use-case tests for trusted owner, valid/missing/ineligible campaign results, safe not-found behavior, and query failure propagation in `src/test/java/com/jobtrace/jobmarket/GetCampaignDetailTest.java`.
-- [ ] T030 [P] [US3] Add PostgreSQL tests for campaign-to-company resolution, current representative summary, complete positions, closed-job exclusion, active/official/recent source selection, deduplicated locations, established job order, unsafe targets, and fixed query count in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailQueryIntegrationTest.java`.
-- [ ] T031 [P] [US3] Add two-owner PostgreSQL tests proving tracked-application references are owner-bound and missing/foreign links never alter shared job content in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailOwnerIsolationIntegrationTest.java`.
-- [ ] T032 [P] [US3] Add HTTP tests for valid UUID detail, malformed UUID validation, missing/ineligible not-found, no-store success, ordinary-principal rejection, and safe storage failure in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailControllerTest.java`.
+- [X] T028 [P] [US3] Add structural JSON parity tests for synced, directory, stale, unsafe-link, missing-link, duplicate-location, and complete-position detail fixtures in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailContractTest.java`.
+- [X] T029 [P] [US3] Add use-case tests for trusted owner, valid/missing/ineligible campaign results, safe not-found behavior, and query failure propagation in `src/test/java/com/jobtrace/jobmarket/GetCampaignDetailTest.java`.
+- [X] T030 [P] [US3] Add PostgreSQL tests for campaign-to-company resolution, current representative summary, complete positions, closed-job exclusion, active/official/recent source selection, deduplicated locations, established job order, unsafe targets, and fixed query count in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailQueryIntegrationTest.java`.
+- [X] T031 [P] [US3] Add two-owner PostgreSQL tests proving tracked-application references are owner-bound and missing/foreign links never alter shared job content in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailOwnerIsolationIntegrationTest.java`.
+- [X] T032 [P] [US3] Add HTTP tests for valid UUID detail, malformed UUID validation, missing/ineligible not-found, no-store success, ordinary-principal rejection, and safe storage failure in `src/test/java/com/jobtrace/jobmarket/JobMarketDetailControllerTest.java`.
 
 ### Implementation for User Story 3
 
-- [ ] T033 [US3] Implement trusted-owner detail orchestration and safe not-found mapping in `src/main/java/com/jobtrace/jobmarket/application/GetCampaignDetail.java` to satisfy T029.
-- [ ] T034 [US3] Implement campaign resolution, complete summary, set-based eligible-job/location/source selection, owner-bound application links, safe target mapping, and fixed query count in `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` to satisfy T030–T031 without N+1 reads.
-- [ ] T035 [US3] Expose only `GET /api/job-market/campaigns/{campaignId}` with UUID validation, trusted owner, `private, no-store`, bounded metrics, and safe validation/not-found/dependency errors in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` to satisfy T028 and T032.
-- [ ] T036 [US3] Run T028–T032 and record independent synced/directory parity, tracked-link isolation, target safety, query bounds, no-store, and read-only evidence in `specs/008-job-market-read-model/validation-report.md`.
+- [X] T033 [US3] Implement trusted-owner detail orchestration and safe not-found mapping in `src/main/java/com/jobtrace/jobmarket/application/GetCampaignDetail.java` to satisfy T029.
+- [X] T034 [US3] Implement campaign resolution, complete summary, set-based eligible-job/location/source selection, owner-bound application links, safe target mapping, and fixed query count in `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` to satisfy T030–T031 without N+1 reads.
+- [X] T035 [US3] Expose only `GET /api/job-market/campaigns/{campaignId}` with UUID validation, trusted owner, `private, no-store`, bounded metrics, and safe validation/not-found/dependency errors in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` to satisfy T028 and T032.
+- [X] T036 [US3] Run T028–T032 and record independent synced/directory parity, tracked-link isolation, target safety, query bounds, no-store, and read-only evidence in `specs/008-job-market-read-model/validation-report.md`.
 
 **Checkpoint**: All three read stories work independently; the legacy service still owns synchronization, marketplace/favorite/tracking writes, schema, sessions, frontend routing, and production traffic.
 

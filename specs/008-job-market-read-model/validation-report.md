@@ -29,3 +29,20 @@ Solo-Maintainer review evidence here.
 - `MarketplaceQueryParametersTest`, `JobMarketFilterQueryIntegrationTest`, and
   `JobMarketFilterControllerTest` pass (12 tests, zero failures). The adapter still
   executes only the two SELECT statements established in Phase 3.
+
+## Phase 5 — Inspect Campaign Jobs
+
+- Synced and directory-backed detail responses match the representative legacy
+  fixture fields. Detail summaries retain complete positions; directory rows do not
+  synthesize jobs from a different campaign type.
+- The PostgreSQL adapter resolves campaign to company, selects the current no-closed
+  projection, and loads eligible jobs, deduplicated locations, preferred active
+  official sources, and owner-bound tracking links with three fixed set-based reads.
+- Closed jobs and inactive sources are excluded. Stale and unsafe application targets
+  use the specified Chinese unavailable reasons; unsafe source and application URLs
+  are never returned.
+- Two-owner tests prove tracked-application and favorite state isolation while shared
+  job content remains identical. Missing and ineligible campaigns map to a safe 404.
+- Contract, use-case, query, isolation, and controller suites pass (16 tests, zero
+  failures), including UUID validation, ordinary-principal denial, no-store headers,
+  and safe storage-unavailable responses without partial detail content.
