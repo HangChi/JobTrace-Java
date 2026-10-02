@@ -61,10 +61,11 @@ specs/005-interview-read-model/
 ├── data-model.md
 ├── quickstart.md
 ├── contracts/openapi.yaml
-└── checklists/requirements.md
+├── checklists/requirements.md
+└── tasks.md
 ```
 
-`tasks.md` is intentionally not created in the plan phase.
+`tasks.md` is generated in the task phase and remains a plan for future implementation.
 
 ### Source Code (future implementation)
 
