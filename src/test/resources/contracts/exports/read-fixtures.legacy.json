@@ -1,0 +1,35 @@
+{
+  "ownerA": "owner-a",
+  "ownerB": "owner-b",
+  "application": {
+    "id": "00000000-0000-0000-0000-000000000101",
+    "companyName": "示例,科技",
+    "positionName": "后端\"工程师",
+    "city": "上海",
+    "jobUrl": "https://example.test/jobs/101",
+    "appliedDate": "2026-09-30",
+    "type": "spring_recruitment",
+    "typeLabel": "春招",
+    "status": "submitted",
+    "statusLabel": "已投递",
+    "latestDate": "2026-10-01",
+    "stageHistory": "interview_1/一面/AI面 + 2026-10-01",
+    "notes": "=2+3\n第二行",
+    "createdAt": "2026-09-30T01:02:03.000Z",
+    "updatedAt": "2026-10-01T01:02:03.000Z"
+  },
+  "applicationHeaders": ["ID", "公司", "岗位", "城市", "职位链接", "投递日期", "类型", "状态", "最新日期", "阶段历史", "备注", "创建时间", "更新时间"],
+  "csvFormulaCell": "'=2+3\n第二行",
+  "interview": {
+    "id": "00000000-0000-0000-0000-000000000301",
+    "companyName": "示例科技",
+    "positionName": "后端工程师",
+    "stage": "interview_1",
+    "durationMinutes": 45,
+    "filename": "示例科技-后端工程师-一面面经-45分钟.md",
+    "plainMarkdown": "# 一面复盘\n\n面经正文",
+    "collisionFilename": "示例科技-后端工程师-一面面经-45分钟-2.md"
+  },
+  "invalidHyperlink": "javascript:alert(1)",
+  "foreignCompanyName": "不可见公司"
+}

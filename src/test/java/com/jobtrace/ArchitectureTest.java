@@ -32,6 +32,17 @@ class ArchitectureTest {
             .should().beFreeOfCycles();
 
     @ArchTest
+    static final ArchRule EXPORT_READ_CONTEXT_HAS_NO_REVERSE_DEPENDENCIES = noClasses()
+            .that().resideInAnyPackage("..applications..", "..interviews..", "..analytics..")
+            .should().dependOnClassesThat().resideInAPackage("..datatransfer..");
+
+    @ArchTest
+    static final ArchRule EXPORT_CONTEXT_DOES_NOT_START_JOBS_OR_IMPORTS = noClasses()
+            .that().resideInAPackage("..datatransfer..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..reminders..", "..jobs..", "..email..");
+
+    @ArchTest
     static final ArchRule APPLICATION_READ_DOMAIN_HAS_NO_OUTWARD_DEPENDENCIES = noClasses()
             .that().resideInAPackage("..applications.domain..")
             .should().dependOnClassesThat().resideInAnyPackage(

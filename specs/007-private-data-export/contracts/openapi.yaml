@@ -113,6 +113,8 @@ paths:
           $ref: '#/components/responses/NoOwnedExport'
         '503':
           $ref: '#/components/responses/Unavailable'
+        '500':
+          description: Export encoding failed without returning a partial file.
   /api/exports/interviews:
     get:
       operationId: exportInterviews
@@ -161,6 +163,8 @@ paths:
           $ref: '#/components/responses/NoOwnedExport'
         '503':
           $ref: '#/components/responses/Unavailable'
+        '500':
+          description: Export encoding failed without returning a partial file.
 components:
   securitySchemes:
     signedBridge:

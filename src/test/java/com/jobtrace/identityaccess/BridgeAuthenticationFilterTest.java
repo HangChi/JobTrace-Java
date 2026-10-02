@@ -216,6 +216,69 @@ class BridgeAuthenticationFilterTest {
     }
 
     @Test
+    void protectsOnlyExactExportGetsAndNotImportOrMutations() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        for (String path : new String[] {
+                "/api/exports/applications", "/api/exports/interviews"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+            for (String method : new String[] {"POST", "PATCH", "DELETE"}) {
+                MockHttpServletRequest mutation = new MockHttpServletRequest(method, path);
+                MockFilterChain chain = new MockFilterChain();
+                filter.doFilter(mutation, new MockHttpServletResponse(), chain);
+                assertThat(chain.getRequest()).as(method + " " + path).isSameAs(mutation);
+            }
+        }
+        for (String path : new String[] {
+                "/api/imports/preview", "/api/exports/applications/extra",
+                "/api/exports/interviews/extra"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
+    void exportAssertionCannotBeReplayedAcrossPathsOrMethods() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        String token = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "owner-a", java.util.Map.of("pth", "/api/exports/applications"));
+        MockHttpServletRequest wrongPath = new MockHttpServletRequest(
+                "GET", "/api/exports/interviews");
+        wrongPath.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        wrongPath.addHeader("Authorization", "JobTraceBridge " + token);
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+        filter.doFilter(wrongPath, rejected, new MockFilterChain());
+        assertThat(rejected.getStatus()).isEqualTo(401);
+
+        MockHttpServletRequest exactPath = new MockHttpServletRequest(
+                "GET", "/api/exports/applications");
+        exactPath.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        exactPath.addHeader("Authorization", "JobTraceBridge " + token);
+        MockFilterChain chain = new MockFilterChain();
+        filter.doFilter(exactPath, new MockHttpServletResponse(), chain);
+        assertThat(chain.getRequest()).isSameAs(exactPath);
+
+        String wrongMethodToken = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "owner-a", java.util.Map.of("pth", "/api/exports/applications", "mth", "POST"));
+        MockHttpServletRequest wrongMethod = new MockHttpServletRequest(
+                "GET", "/api/exports/applications");
+        wrongMethod.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        wrongMethod.addHeader("Authorization", "JobTraceBridge " + wrongMethodToken);
+        MockHttpServletResponse methodRejected = new MockHttpServletResponse();
+        filter.doFilter(wrongMethod, methodRejected, new MockFilterChain());
+        assertThat(methodRejected.getStatus()).isEqualTo(401);
+    }
+
+    @Test
     void rejectsWrongEmptyAndMultiPartAuthorizationSchemes() throws Exception {
         BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
 

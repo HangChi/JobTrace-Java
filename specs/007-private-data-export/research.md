@@ -32,6 +32,11 @@
 
 **Alternatives considered**: Hand-written OOXML (less dependency cost but substantially more correctness risk); in-memory XSSF for every export (high memory use for unrestricted all/filtered exports); adding a ZIP library (unnecessary for simple archives).
 
+The writer dependency is pinned to `org.apache.poi:poi-ooxml:5.5.1`, the latest
+stable release listed by the [Apache POI download page](https://poi.apache.org/download.html)
+when 007 began. It is used only for workbook writing/readback, not importing
+untrusted XLSX files. Dependency review remains a required PR gate.
+
 ## Decision 5: Performance and failure boundaries
 
 **Decision**: Capture one clock for filenames, use deterministic representative datasets of up to 100 selected records for p95 ≤ 500 ms and fixed query-count checks, and separately stress all/filtered streaming behavior and cleanup without inventing an output truncation. Reject invalid selected IDs early, fail closed for absent identity/storage, return established validation/not-found responses and safe request IDs, and never log or metric-label exported content.
