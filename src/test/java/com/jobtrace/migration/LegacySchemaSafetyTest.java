@@ -34,5 +34,7 @@ class LegacySchemaSafetyTest extends PostgresIntegrationTest {
         assertThat(Files.exists(Path.of("src/main/resources/db/migration"))).isFalse();
         assertThat(Files.exists(Path.of("src/test/resources/postgres/interviews-read-model.sql")))
                 .isTrue();
+        assertThat(Files.exists(Path.of("src/test/resources/postgres/reminders-read-model.sql")))
+                .isTrue();
     }
 }

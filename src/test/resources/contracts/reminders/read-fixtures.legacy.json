@@ -1,0 +1,111 @@
+{
+  "active": {
+    "overdue": [
+      {
+        "id": "00000000-0000-0000-0000-000000000101",
+        "applicationId": "00000000-0000-0000-0000-000000000201",
+        "sourceStageOccurrenceId": null,
+        "companyName": "Example Labs",
+        "positionName": "Backend Engineer",
+        "title": "Follow up",
+        "eventAt": "2026-10-03T00:00:00.000Z",
+        "notifyAt": "2026-10-02T00:00:00.000Z",
+        "emailEnabled": true,
+        "status": "pending",
+        "version": 1,
+        "emailStatus": "failed",
+        "completedAt": null,
+        "cancelledAt": null
+      }
+    ],
+    "upcoming": [
+      {
+        "id": "00000000-0000-0000-0000-000000000102",
+        "applicationId": "00000000-0000-0000-0000-000000000201",
+        "sourceStageOccurrenceId": null,
+        "companyName": "Example Labs",
+        "positionName": "Backend Engineer",
+        "title": "Prepare interview",
+        "eventAt": "2026-10-04T00:00:00.000Z",
+        "notifyAt": "2026-10-03T00:00:00.000Z",
+        "emailEnabled": false,
+        "status": "pending",
+        "version": 2,
+        "emailStatus": null,
+        "completedAt": null,
+        "cancelledAt": null
+      }
+    ],
+    "history": [],
+    "email": { "available": true, "address": "owner@example.test" }
+  },
+  "due-boundary": { "notifyAt": "2026-10-02T00:00:00.000Z", "group": "overdue" },
+  "empty": {
+    "overdue": [],
+    "upcoming": [],
+    "history": [],
+    "email": { "available": false, "address": null }
+  },
+  "completed": {
+    "overdue": [],
+    "upcoming": [],
+    "history": [
+      {
+        "id": "00000000-0000-0000-0000-000000000103",
+        "applicationId": "00000000-0000-0000-0000-000000000201",
+        "sourceStageOccurrenceId": null,
+        "companyName": "Example Labs",
+        "positionName": "Backend Engineer",
+        "title": "Send thank-you note",
+        "eventAt": "2026-09-20T00:00:00.000Z",
+        "notifyAt": "2026-09-19T00:00:00.000Z",
+        "emailEnabled": false,
+        "status": "completed",
+        "version": 2,
+        "emailStatus": null,
+        "completedAt": "2026-09-20T01:00:00.000Z",
+        "cancelledAt": null
+      }
+    ],
+    "email": { "available": true, "address": "owner@example.test" }
+  },
+  "cancelled": {
+    "overdue": [],
+    "upcoming": [],
+    "history": [
+      {
+        "id": "00000000-0000-0000-0000-000000000104",
+        "applicationId": "00000000-0000-0000-0000-000000000201",
+        "sourceStageOccurrenceId": null,
+        "companyName": "Example Labs",
+        "positionName": "Backend Engineer",
+        "title": "Old plan",
+        "eventAt": "2026-09-22T00:00:00.000Z",
+        "notifyAt": "2026-09-21T00:00:00.000Z",
+        "emailEnabled": false,
+        "status": "cancelled",
+        "version": 3,
+        "emailStatus": null,
+        "completedAt": null,
+        "cancelledAt": "2026-09-21T02:00:00.000Z"
+      }
+    ],
+    "email": { "available": true, "address": "owner@example.test" }
+  },
+  "verified-email": { "available": true, "address": "owner@example.test" },
+  "unverified-email": { "available": false, "address": null },
+  "custom-preferences": {
+    "homeEnabled": false,
+    "homeView": "suggestions",
+    "defaultLead": "30m",
+    "defaultSnoozeMinutes": 60,
+    "emailDefault": true
+  },
+  "default-preferences": {
+    "homeEnabled": true,
+    "homeView": "scheduled",
+    "defaultLead": "1h",
+    "defaultSnoozeMinutes": 30,
+    "emailDefault": false
+  }
+}
