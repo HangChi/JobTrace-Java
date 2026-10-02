@@ -1,0 +1,126 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Private Reminder Read Model API
+  version: 0.1.0
+  description: Owner-scoped read compatibility for feature 006; no production routing is enabled.
+paths:
+  /api/reminders:
+    get:
+      operationId: getPrivateReminderSummary
+      summary: Read the authenticated owner's active or historical reminder overview
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - name: status
+          in: query
+          description: Unknown or absent values use the established active default.
+          schema: { type: string, default: active }
+      responses:
+        '200':
+          description: Bounded owner-scoped reminder groups and current verified email availability
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReminderSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /api/reminder-settings:
+    get:
+      operationId: getPrivateReminderPreferences
+      summary: Read the authenticated owner's reminder display and creation defaults
+      security:
+        - signedIdentityBridge: []
+      responses:
+        '200':
+          description: Owner-scoped reminder preferences
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReminderPreferences' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Internal-only, request-bound signed assertion from feature 003.
+  responses:
+    Unauthorized:
+      description: No trusted authenticated owner
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: Required storage or identity dependency is unavailable
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Reminder:
+      type: object
+      required: [id, applicationId, sourceStageOccurrenceId, companyName, positionName, title, eventAt, notifyAt, emailEnabled, status, version, emailStatus, completedAt, cancelledAt]
+      properties:
+        id: { type: string, format: uuid }
+        applicationId: { type: string, format: uuid }
+        sourceStageOccurrenceId: { type: [string, 'null'], format: uuid }
+        companyName: { type: string }
+        positionName: { type: string }
+        title: { type: string }
+        eventAt: { type: string, format: date-time }
+        notifyAt: { type: string, format: date-time }
+        emailEnabled: { type: boolean }
+        status: { type: string, enum: [pending, due, completed, cancelled] }
+        version: { type: integer, minimum: 1 }
+        emailStatus:
+          type: [string, 'null']
+          enum: [claimed, sent, failed, skipped, null]
+        completedAt: { type: [string, 'null'], format: date-time }
+        cancelledAt: { type: [string, 'null'], format: date-time }
+    ReminderEmailAvailability:
+      type: object
+      required: [available, address]
+      properties:
+        available: { type: boolean }
+        address: { type: [string, 'null'], format: email }
+    ReminderSummary:
+      type: object
+      required: [overdue, upcoming, history, email]
+      properties:
+        overdue:
+          type: array
+          maxItems: 200
+          items: { $ref: '#/components/schemas/Reminder' }
+        upcoming:
+          type: array
+          maxItems: 200
+          items: { $ref: '#/components/schemas/Reminder' }
+        history:
+          type: array
+          maxItems: 200
+          items: { $ref: '#/components/schemas/Reminder' }
+        email: { $ref: '#/components/schemas/ReminderEmailAvailability' }
+    ReminderPreferences:
+      type: object
+      required: [homeEnabled, homeView, defaultLead, defaultSnoozeMinutes, emailDefault]
+      properties:
+        homeEnabled: { type: boolean }
+        homeView: { type: string, enum: [scheduled, suggestions] }
+        defaultLead: { type: string, enum: [on_time, 30m, 1h, 1d] }
+        defaultSnoozeMinutes: { type: integer, enum: [30, 60, 1440] }
+        emailDefault: { type: boolean }
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
