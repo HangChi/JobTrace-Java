@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -28,6 +29,12 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
 
     public static final String PROTECTED_PATH = "/api/analytics/summary";
     private static final String SCHEME = "JobTraceBridge ";
+    private static final String UUID_PATH =
+            "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}";
+    private static final Pattern APPLICATION_DETAIL = Pattern.compile(
+            "/api/applications/" + UUID_PATH + "(?:/detail)?");
+    private static final Pattern INTERVIEW_DETAIL = Pattern.compile(
+            "/api/interviews/" + UUID_PATH);
 
     private final ClaimAssertionUseCase claimAssertion;
     private final BridgeAuthenticationEntryPoint entryPoint;
@@ -47,7 +54,9 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return !PROTECTED_PATH.equals(path)
                 && !"/api/applications".equals(path)
-                && !path.startsWith("/api/applications/");
+                && !APPLICATION_DETAIL.matcher(path).matches()
+                && !"/api/interviews".equals(path)
+                && !INTERVIEW_DETAIL.matcher(path).matches();
     }
 
     @Override
