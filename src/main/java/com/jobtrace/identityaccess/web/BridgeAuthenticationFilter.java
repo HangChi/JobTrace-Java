@@ -56,7 +56,10 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                 && !"/api/applications".equals(path)
                 && !APPLICATION_DETAIL.matcher(path).matches()
                 && !"/api/interviews".equals(path)
-                && !INTERVIEW_DETAIL.matcher(path).matches();
+                && !INTERVIEW_DETAIL.matcher(path).matches()
+                && !("GET".equals(request.getMethod())
+                    && ("/api/reminders".equals(path)
+                        || "/api/reminder-settings".equals(path)));
     }
 
     @Override

@@ -69,4 +69,28 @@ class ArchitectureTest {
             .should().dependOnClassesThat().resideInAnyPackage(
                     "..applications.infrastructure..", "..applications.web..",
                     "..interviews.infrastructure..", "..interviews.web..");
+
+    @ArchTest
+    static final ArchRule REMINDER_DOMAIN_HAS_NO_OUTWARD_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..reminders.domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..reminders.application..", "..reminders.infrastructure..",
+                    "..reminders.web..");
+
+    @ArchTest
+    static final ArchRule REMINDER_USE_CASES_HAVE_NO_ADAPTER_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..reminders.application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..reminders.infrastructure..", "..reminders.web..");
+
+    @ArchTest
+    static final ArchRule REMINDER_STORAGE_DOES_NOT_DEPEND_ON_HTTP = noClasses()
+            .that().resideInAPackage("..reminders.infrastructure..")
+            .should().dependOnClassesThat().resideInAnyPackage("..reminders.web..");
+
+    @ArchTest
+    static final ArchRule REMINDERS_DO_NOT_DEPEND_ON_APPLICATIONS_OR_ANALYTICS = noClasses()
+            .that().resideInAPackage("..reminders..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications..", "..analytics..");
 }

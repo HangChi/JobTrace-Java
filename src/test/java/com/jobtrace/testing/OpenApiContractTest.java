@@ -26,12 +26,14 @@ class OpenApiContractTest {
                 .containsKeys("/api/health/live", "/api/health/ready",
                         "/api/applications", "/api/applications/{id}",
                         "/api/interviews", "/api/interviews/{id}",
-                        "/api/applications/{id}/detail");
+                        "/api/applications/{id}/detail", "/api/reminders",
+                        "/api/reminder-settings");
         assertThat(result.getOpenAPI().getComponents().getSchemas())
                 .containsKeys("ApplicationSummary", "ApplicationPage", "ApplicationDetail",
                         "ApplicationStageOccurrence", "ApplicationEvent",
                         "InterviewSummary", "InterviewPage", "InterviewDetail",
-                        "ApplicationDialogData");
+                        "ApplicationDialogData", "Reminder", "ReminderSummary",
+                        "ReminderEmailAvailability", "ReminderPreferences");
         var analytics = result.getOpenAPI().getPaths()
                 .get("/api/analytics/summary")
                 .getGet();

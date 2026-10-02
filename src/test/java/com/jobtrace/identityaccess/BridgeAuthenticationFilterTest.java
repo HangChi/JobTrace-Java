@@ -155,6 +155,67 @@ class BridgeAuthenticationFilterTest {
     }
 
     @Test
+    void protectsOnlyReminderReadPathsAndNotMutationOrDeliveryPaths() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        for (String path : new String[] {"/api/reminders", "/api/reminder-settings"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+        }
+        for (String path : new String[] {
+                "/api/reminders/internal", "/api/internal/reminders/deliver",
+                "/api/reminders/00000000-0000-0000-0000-000000000101"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+        for (String path : new String[] {"/api/reminders", "/api/reminder-settings"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("POST", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
+    void reminderAssertionIsBoundToExactMethodAndPath() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        String token = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "owner-a", java.util.Map.of("pth", "/api/reminders"));
+        MockHttpServletRequest wrongPath = new MockHttpServletRequest(
+                "GET", "/api/reminder-settings");
+        wrongPath.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        wrongPath.addHeader("Authorization", "JobTraceBridge " + token);
+
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+        filter.doFilter(wrongPath, rejected, new MockFilterChain());
+        assertThat(rejected.getStatus()).isEqualTo(401);
+
+        MockHttpServletRequest exactPath = new MockHttpServletRequest("GET", "/api/reminders");
+        exactPath.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        exactPath.addHeader("Authorization", "JobTraceBridge " + token);
+        MockFilterChain acceptedChain = new MockFilterChain();
+        filter.doFilter(exactPath, new MockHttpServletResponse(), acceptedChain);
+        assertThat(acceptedChain.getRequest()).isSameAs(exactPath);
+
+        String wrongMethodToken = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "owner-a", java.util.Map.of("pth", "/api/reminders", "mth", "POST"));
+        MockHttpServletRequest wrongMethod = new MockHttpServletRequest("GET", "/api/reminders");
+        wrongMethod.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        wrongMethod.addHeader("Authorization", "JobTraceBridge " + wrongMethodToken);
+        MockHttpServletResponse methodRejected = new MockHttpServletResponse();
+        filter.doFilter(wrongMethod, methodRejected, new MockFilterChain());
+        assertThat(methodRejected.getStatus()).isEqualTo(401);
+    }
+
+    @Test
     void rejectsWrongEmptyAndMultiPartAuthorizationSchemes() throws Exception {
         BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
 

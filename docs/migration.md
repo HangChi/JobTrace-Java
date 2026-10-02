@@ -25,6 +25,11 @@ The private interview read slice is documented in
 [`migration-slices/interview-read-model.md`](migration-slices/interview-read-model.md).
 Feature 005 likewise has no Java deployment or production traffic activation.
 
+The private reminder read slice is documented in
+[`migration-slices/reminder-read-model.md`](migration-slices/reminder-read-model.md).
+Feature 006 likewise leaves reminder writes, delivery and production traffic with the
+existing service; no Java deployment is planned.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -52,7 +57,8 @@ Do not enable Flyway against a legacy database until all of these are complete:
 
 Better Auth remains authoritative during incremental migration. The signed identity bridge v1
 protects `GET /api/analytics/summary`, the two feature 004 application read routes,
-and the three feature 005 private interview/dialog read routes.
+the three feature 005 private interview/dialog read routes, and the two feature 006
+private reminder/settings read routes.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
