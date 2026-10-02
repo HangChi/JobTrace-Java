@@ -50,6 +50,7 @@ not authorize deployment.
 
 ## Final status
 
-Local implementation and verification are complete. GitHub CLI authentication on this machine
-currently reports an invalid token, so PR creation and required remote CI/security checks
-remain pending. No Java deployment or production traffic activation is scheduled.
+Local implementation and verification are complete. PR
+[#21](https://github.com/HangChi/JobTrace-Java/pull/21) is open against `main`.
+Dependency review and secret scan passed; backend and frontend CI checks were still pending
+at the first status check. No Java deployment or production traffic activation is scheduled.
