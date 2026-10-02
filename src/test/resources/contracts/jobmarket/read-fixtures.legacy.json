@@ -1,0 +1,86 @@
+{
+  "defaultPage": {
+    "items": [
+      {
+        "id": "30000000-0000-4000-8000-000000000001",
+        "listingKind": "synced_jobs",
+        "company": {
+          "id": "10000000-0000-4000-8000-000000000001",
+          "name": "Example Labs",
+          "type": "private",
+          "industry": "software"
+        },
+        "campaignName": null,
+        "recruitmentType": null,
+        "batchLabel": null,
+        "positions": ["Backend Engineer", "Frontend Engineer"],
+        "positionCount": 2,
+        "locations": [{"name": "Shanghai", "isRemote": false}],
+        "status": "open",
+        "applyMode": "single",
+        "primaryApplyUrl": "https://jobs.example.test",
+        "source": {"name": "greenhouse", "url": "https://jobs.example.test"},
+        "publishedAt": "2026-09-02T00:00:00.000Z",
+        "validThrough": null,
+        "lastConfirmedAt": "2026-09-03T00:00:00.000Z",
+        "isFavorite": true
+      }
+    ],
+    "page": 1,
+    "limit": 20,
+    "total": 1
+  },
+  "emptyPage": {"items": [], "page": 3, "limit": 20, "total": 1},
+  "closedFavorite": {
+    "status": "closed",
+    "isFavorite": true
+  },
+  "filtered": {
+    "q": "backend",
+    "company": "example",
+    "location": "shanghai",
+    "status": "open",
+    "postedFrom": "2026-09-02"
+  },
+  "directoryDetail": {
+    "listingKind": "recruitment_directory",
+    "recruitmentType": "招聘官网",
+    "jobs": []
+  },
+  "syncedDetail": {
+    "id": "30000000-0000-4000-8000-000000000001",
+    "jobs": [
+      {
+        "id": "40000000-0000-4000-8000-000000000001",
+        "title": "Backend Engineer",
+        "locations": [{"name": "Shanghai", "isRemote": false}],
+        "status": "open",
+        "applyUrl": "https://jobs.example.test/apply/1",
+        "applyUnavailableReason": null,
+        "publishedAt": "2026-09-02T00:00:00.000Z",
+        "validThrough": null,
+        "sourceName": "greenhouse",
+        "sourceUrl": "https://jobs.example.test",
+        "alreadyTrackedApplicationId": "50000000-0000-4000-8000-000000000001"
+      }
+    ]
+  },
+  "unsafeOpenJob": {
+    "applyUrl": null,
+    "applyUnavailableReason": "来源未提供安全的官方投递地址"
+  },
+  "staleJob": {
+    "applyUrl": "https://jobs.example.test/apply/stale",
+    "applyUnavailableReason": "该岗位已失效"
+  },
+  "nullTimes": {
+    "publishedAt": null,
+    "validThrough": null,
+    "lastConfirmedAt": null
+  },
+  "positionPreview": {"returned": 50, "positionCount": 51},
+  "ownerIsolation": {
+    "ownerA": {"isFavorite": true, "alreadyTrackedApplicationId": "50000000-0000-4000-8000-000000000001"},
+    "ownerB": {"isFavorite": false, "alreadyTrackedApplicationId": null}
+  }
+}

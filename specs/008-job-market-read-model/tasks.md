@@ -12,10 +12,10 @@
 
 **Purpose**: Establish a trustworthy current-service oracle without production data or Java behavior changes.
 
-- [ ] T001 Record current campaign routes, source files, defaults, `favorite=false` omission semantics, closed-projection rules, list/detail ordering, 50-position preview, source preference, unavailable reasons, and intentional no-store hardening in `src/test/resources/contracts/jobmarket/README.md`.
-- [ ] T002 [P] Add synthetic default, empty, filtered, closed, favorite, synced, directory, unsafe-link, null-time, over-50-position, and two-owner list/detail expectations in `src/test/resources/contracts/jobmarket/read-fixtures.legacy.json`.
-- [ ] T003 [P] Add a minimal migration-head-compatible test-only schema for job-market companies, projections, campaigns, posts, sources, source records, locations, favorites, applications, and application links in `src/test/resources/postgres/job-market-read-model.sql`; add no production migration or refresh trigger invocation.
-- [ ] T004 [P] Add parser, path, parameter, response, no-store, and error-schema assertions for both planned GET operations in `src/test/java/com/jobtrace/jobmarket/JobMarketReadOpenApiTest.java` against `specs/008-job-market-read-model/contracts/openapi.yaml`.
+- [X] T001 Record current campaign routes, source files, defaults, `favorite=false` omission semantics, closed-projection rules, list/detail ordering, 50-position preview, source preference, unavailable reasons, and intentional no-store hardening in `src/test/resources/contracts/jobmarket/README.md`.
+- [X] T002 [P] Add synthetic default, empty, filtered, closed, favorite, synced, directory, unsafe-link, null-time, over-50-position, and two-owner list/detail expectations in `src/test/resources/contracts/jobmarket/read-fixtures.legacy.json`.
+- [X] T003 [P] Add a minimal migration-head-compatible test-only schema for job-market companies, projections, campaigns, posts, sources, source records, locations, favorites, applications, and application links in `src/test/resources/postgres/job-market-read-model.sql`; add no production migration or refresh trigger invocation.
+- [X] T004 [P] Add parser, path, parameter, response, no-store, and error-schema assertions for both planned GET operations in `src/test/java/com/jobtrace/jobmarket/JobMarketReadOpenApiTest.java` against `specs/008-job-market-read-model/contracts/openapi.yaml`.
 
 **Checkpoint**: Synthetic runtime oracle, isolated legacy-shaped storage, and feature contract validation are ready; no production behavior has changed.
 
