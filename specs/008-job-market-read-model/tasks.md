@@ -27,12 +27,12 @@
 
 **⚠️ CRITICAL**: Complete this phase before user-story implementation.
 
-- [ ] T005 [P] Add unit tests for page/limit defaults, derived include-closed selection, HTTPS canonicalization, list application mode, stale-job reason `该岗位已失效`, unsafe-link reason `来源未提供安全的官方投递地址`, and null timestamps in `src/test/java/com/jobtrace/jobmarket/JobMarketReadRulesTest.java`.
-- [ ] T006 [P] Add bridge regression tests for exact campaign list and UUID detail GET paths, method/path-bound assertions, replay handling, and excluded favorite, sync, admin, and non-UUID paths in `src/test/java/com/jobtrace/identityaccess/BridgeAuthenticationFilterTest.java`.
-- [ ] T007 Define immutable query, company, location, source, summary, page, job, and detail types plus safe-target rules in `src/main/java/com/jobtrace/jobmarket/domain/MarketplaceQuery.java`, `CampaignCompany.java`, `CampaignLocation.java`, `CampaignSource.java`, `CampaignSummary.java`, `CampaignPage.java`, `CampaignJob.java`, `CampaignDetail.java`, and `ApplyTargetPolicy.java` to satisfy T005; never carry a caller-selected owner.
-- [ ] T008 Define owner-scoped list and detail operations in `src/main/java/com/jobtrace/jobmarket/application/JobMarketReadQuery.java`; expose no mutation, refresh, synchronization, or caller-owner operation.
-- [ ] T009 Extend `src/main/java/com/jobtrace/identityaccess/web/BridgeAuthenticationFilter.java` for only the exact list GET and UUID-shaped detail GET paths to satisfy T006; reuse `BridgePrincipalOwner` and keep bridge enablement opt-in.
-- [ ] T010 [P] Add test-container schema startup, representative insert, SELECT-only connectivity, and Flyway-disabled assertions in `src/test/java/com/jobtrace/jobmarket/JobMarketReadDatabaseTest.java` using `src/test/resources/postgres/job-market-read-model.sql`.
+- [X] T005 [P] Add unit tests for page/limit defaults, derived include-closed selection, HTTPS canonicalization, list application mode, stale-job reason `该岗位已失效`, unsafe-link reason `来源未提供安全的官方投递地址`, and null timestamps in `src/test/java/com/jobtrace/jobmarket/JobMarketReadRulesTest.java`.
+- [X] T006 [P] Add bridge regression tests for exact campaign list and UUID detail GET paths, method/path-bound assertions, replay handling, and excluded favorite, sync, admin, and non-UUID paths in `src/test/java/com/jobtrace/identityaccess/BridgeAuthenticationFilterTest.java`.
+- [X] T007 Define immutable query, company, location, source, summary, page, job, and detail types plus safe-target rules in `src/main/java/com/jobtrace/jobmarket/domain/MarketplaceQuery.java`, `CampaignCompany.java`, `CampaignLocation.java`, `CampaignSource.java`, `CampaignSummary.java`, `CampaignPage.java`, `CampaignJob.java`, `CampaignDetail.java`, and `ApplyTargetPolicy.java` to satisfy T005; never carry a caller-selected owner.
+- [X] T008 Define owner-scoped list and detail operations in `src/main/java/com/jobtrace/jobmarket/application/JobMarketReadQuery.java`; expose no mutation, refresh, synchronization, or caller-owner operation.
+- [X] T009 Extend `src/main/java/com/jobtrace/identityaccess/web/BridgeAuthenticationFilter.java` for only the exact list GET and UUID-shaped detail GET paths to satisfy T006; reuse `BridgePrincipalOwner` and keep bridge enablement opt-in.
+- [X] T010 [P] Add test-container schema startup, representative insert, SELECT-only connectivity, and Flyway-disabled assertions in `src/test/java/com/jobtrace/jobmarket/JobMarketReadDatabaseTest.java` using `src/test/resources/postgres/job-market-read-model.sql`.
 
 **Checkpoint**: All stories can use one trusted-owner boundary, immutable contract, safe-link rule, isolated schema, and read-only query port.
 

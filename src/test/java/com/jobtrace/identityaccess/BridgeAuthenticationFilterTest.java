@@ -242,6 +242,34 @@ class BridgeAuthenticationFilterTest {
     }
 
     @Test
+    void protectsOnlyExactJobMarketReadGets() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        String id = "00000000-0000-0000-0000-000000000101";
+        for (String path : new String[] {
+                "/api/job-market/campaigns", "/api/job-market/campaigns/" + id}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+            for (String method : new String[] {"POST", "PATCH", "DELETE"}) {
+                MockHttpServletRequest mutation = new MockHttpServletRequest(method, path);
+                MockFilterChain chain = new MockFilterChain();
+                filter.doFilter(mutation, new MockHttpServletResponse(), chain);
+                assertThat(chain.getRequest()).as(method + " " + path).isSameAs(mutation);
+            }
+        }
+        for (String path : new String[] {
+                "/api/job-market/campaigns/not-a-uuid",
+                "/api/job-market/campaigns/" + id + "/favorite",
+                "/api/job-market/admin/sources", "/api/internal/job-market/sync"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
     void exportAssertionCannotBeReplayedAcrossPathsOrMethods() throws Exception {
         BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
         String token = BridgeTokenFixtures.token(
