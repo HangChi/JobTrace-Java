@@ -52,5 +52,5 @@ not authorize deployment.
 
 Local implementation and verification are complete. PR
 [#21](https://github.com/HangChi/JobTrace-Java/pull/21) is open against `main`.
-Dependency review and secret scan passed; backend and frontend CI checks were still pending
-at the first status check. No Java deployment or production traffic activation is scheduled.
+Backend, frontend, production-artifact, dependency-review and secret-scan checks all passed
+for the implementation commit. No Java deployment or production traffic activation is scheduled.

@@ -129,7 +129,7 @@
 - [X] T047 [P] Add architecture rules preserving the data-transfer read context boundary and avoiding applications/interviews/analytics package cycles in `src/test/java/com/jobtrace/ArchitectureTest.java`.
 - [X] T048 [P] Document current-service import/writer/session/schema ownership, application no-store hardening, and no-deployment decision in `docs/migration-slices/private-data-export.md` and `docs/migration.md`.
 - [X] T049 Run `./mvnw verify` with Docker and record fixture parity, two-owner isolation, OpenAPI, architecture, ≥80% changed-code line/branch coverage, Checkstyle, p95/query counts, large-export cleanup and Java-only artifact evidence in `specs/007-private-data-export/validation-report.md`.
-- [ ] T050 Review against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/007-private-data-export/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and unscheduled deployment status.
+- [X] T050 Review against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/007-private-data-export/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and unscheduled deployment status.
 
 ---
 
