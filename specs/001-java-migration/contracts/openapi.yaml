@@ -4,6 +4,67 @@ info:
   version: 0.4.0
   description: Health and verified read-only pilot contracts for the Java migration runtime.
 paths:
+  /api/exports/applications:
+    get:
+      operationId: exportPrivateApplications
+      summary: Download owned application records as CSV or XLSX
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - { name: scope, in: query, schema: { type: string, enum: [all, filtered, selected], default: filtered } }
+        - { name: format, in: query, schema: { type: string, enum: [csv, xlsx], default: xlsx } }
+        - { name: id, in: query, explode: true, schema: { type: array, maxItems: 100, items: { type: string, format: uuid } } }
+        - { name: q, in: query, schema: { type: string, maxLength: 200 } }
+        - { name: status, in: query, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: type, in: query, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: stage, in: query, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: city, in: query, explode: true, schema: { type: array, items: { type: string } } }
+        - { name: appliedFrom, in: query, schema: { type: string, format: date } }
+        - { name: appliedTo, in: query, schema: { type: string, format: date } }
+      responses:
+        "200":
+          description: Private application download
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema: { type: string, format: binary }
+        "400": { description: Invalid selection }
+        "401": { description: No trusted authenticated owner }
+        "404": { description: No owned export data }
+        "503": { description: Data store unavailable }
+        "500": { description: Export encoding unavailable }
+  /api/exports/interviews:
+    get:
+      operationId: exportPrivateInterviews
+      summary: Download owned review Markdown or ZIP
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - { name: id, in: query, required: true, explode: true, schema: { type: array, minItems: 1, maxItems: 100, items: { type: string, format: uuid } } }
+      responses:
+        "200":
+          description: One owned review as Markdown, multiple as ZIP
+          headers:
+            Cache-Control:
+              schema: { type: string, const: "private, no-store" }
+            Content-Disposition:
+              schema: { type: string }
+          content:
+            text/markdown:
+              schema: { type: string, format: binary }
+            application/zip:
+              schema: { type: string, format: binary }
+        "400": { description: Invalid selection }
+        "401": { description: No trusted authenticated owner }
+        "404": { description: No owned export data }
+        "503": { description: Data store unavailable }
+        "500": { description: Export encoding unavailable }
   /api/reminders:
     get:
       operationId: getPrivateReminderSummary

@@ -30,6 +30,11 @@ The private reminder read slice is documented in
 Feature 006 likewise leaves reminder writes, delivery and production traffic with the
 existing service; no Java deployment is planned.
 
+The private data export read slice is documented in
+[`migration-slices/private-data-export.md`](migration-slices/private-data-export.md).
+Feature 007 leaves imports, writes, sessions, schema ownership and production traffic with
+the existing service; no Java deployment is planned.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -59,6 +64,7 @@ Better Auth remains authoritative during incremental migration. The signed ident
 protects `GET /api/analytics/summary`, the two feature 004 application read routes,
 the three feature 005 private interview/dialog read routes, and the two feature 006
 private reminder/settings read routes.
+The feature 007 bridge also covers only the exact two private export GET routes.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
