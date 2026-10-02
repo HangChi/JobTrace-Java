@@ -130,7 +130,7 @@ deployment.
 - [x] T036 Verify no production migration or non-GET application handler was introduced using `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java` and `src/test/java/com/jobtrace/applications/ApplicationReadOnlySurfaceTest.java`
 - [x] T037 Run `./mvnw verify` and record tests, coverage, static analysis, contracts, performance, and Java-only artifact evidence in `specs/004-application-read-model/validation-report.md`
 - [x] T038 Review the diff against the specification and all four constitution principles and record the Solo-Maintainer Mode self-review in `specs/004-application-read-model/validation-report.md`
-- [ ] T039 Open a stacked pull request with feature 003 as its dependency, pass all CI/security checks, and record its URL and unscheduled deployment status in `specs/004-application-read-model/validation-report.md`
+- [x] T039 Open a stacked pull request with feature 003 as its dependency, pass all CI/security checks, and record its URL and unscheduled deployment status in `specs/004-application-read-model/validation-report.md`
 
 ---
 

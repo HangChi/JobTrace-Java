@@ -83,6 +83,13 @@ will require a separate release decision if Java is ever activated.
 
 ## Pull request and CI
 
-The pull request is stacked on `codex/003-signed-identity-bridge`. Its URL,
-continuous-integration result, security checks, and review conversation
-status will be recorded after the remote branch is pushed.
+- Stacked Java pull request: [#16](https://github.com/HangChi/JobTrace-Java/pull/16),
+  based on `codex/003-signed-identity-bridge` (PR #15).
+- Backend, frontend, production-artifact, dependency-review, and secret-scan
+  checks passed on implementation commit `b618a8c`.
+- There were no open review conversations when the self-review was recorded.
+- Java deployment and production traffic activation remain unscheduled.
+
+Feature 003 must merge before this PR is retargeted to `main`; retargeting
+requires a fresh diff and CI check. No merge or release action is part of
+feature 004 verification.
