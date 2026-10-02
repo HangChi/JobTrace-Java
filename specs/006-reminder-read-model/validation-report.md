@@ -53,5 +53,9 @@ database migration changed.
 - **IV — Performance**: Both documented p95 limits and fixed query budgets passed
   under reproducible synthetic load; no background delivery runs on either read.
 
-The self-review found no constitution exception. PR creation, required remote CI and
-security checks are the remaining merge gate. No deployment or cutover is in scope.
+The self-review found no constitution exception. The review PR is
+[HangChi/JobTrace-Java#20](https://github.com/HangChi/JobTrace-Java/pull/20).
+Its backend, frontend, production-artifact, secret-scan, and dependency-review
+checks all passed on implementation commit `f54b401`. There are no inline review
+comments to resolve. No deployment or cutover is in scope; the PR remains open
+for merge as a separate decision.

@@ -120,7 +120,7 @@
 - [X] T038 [P] Add architecture rules preserving the reminder read context boundary and avoiding application/analytics package cycles in `src/test/java/com/jobtrace/ArchitectureTest.java`.
 - [X] T039 [P] Document the current-service writer/delivery/session/schema owner and no-deployment decision in `docs/migration-slices/reminder-read-model.md` and `docs/migration.md`.
 - [X] T040 Run `./mvnw verify` with Docker and record fixture parity, two-owner PostgreSQL isolation, OpenAPI, architecture, ≥ 80% changed-code line/branch coverage, Checkstyle, p95, query counts, and Java-only artifact evidence in `specs/006-reminder-read-model/validation-report.md`.
-- [ ] T041 Review the result against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/006-reminder-read-model/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and unscheduled deployment status.
+- [X] T041 Review the result against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/006-reminder-read-model/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and unscheduled deployment status.
 
 ---
 
