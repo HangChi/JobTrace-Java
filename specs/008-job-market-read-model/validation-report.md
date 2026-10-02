@@ -13,3 +13,19 @@
 
 Later phases append filter, detail, cross-cutting, performance, coverage, and
 Solo-Maintainer review evidence here.
+
+## Phase 4 — Find Relevant Opportunities
+
+- Parameter tests cover trimming, blank omission, multilingual and mixed-case text,
+  the 100-character boundary, canonical status/boolean/date values, and pagination
+  bounds. `favorite=false` retains the default no-closed projection.
+- PostgreSQL tests prove conjunctive keyword/company/location/status/date filtering,
+  inclusive date behavior, exact totals, stable out-of-range pages, explicit closed
+  selection, and owner-isolated favorites. Inactive sources cannot independently
+  create list rows because the legacy-owned company projection remains the sole list
+  source.
+- HTTP tests cover all accepted filters together and verify malformed values return
+  a generic problem with a request ID and without reflecting private filter text.
+- `MarketplaceQueryParametersTest`, `JobMarketFilterQueryIntegrationTest`, and
+  `JobMarketFilterControllerTest` pass (12 tests, zero failures). The adapter still
+  executes only the two SELECT statements established in Phase 3.

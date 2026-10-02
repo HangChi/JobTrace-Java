@@ -72,16 +72,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T021 [P] [US2] Add parameter normalization tests for blank/trimmed/mixed-case/multilingual text, 100/101-character bounds, strict status/boolean/date values, page/limit limits, and `favorite=false` omission behavior in `src/test/java/com/jobtrace/jobmarket/MarketplaceQueryParametersTest.java`.
-- [ ] T022 [P] [US2] Add PostgreSQL tests for each filter and combined filters, inclusive `postedFrom`, exact totals, stable multi-page ordering, `favorite=true` owner isolation, explicit closed projection, and inactive-source hiding in `src/test/java/com/jobtrace/jobmarket/JobMarketFilterQueryIntegrationTest.java`.
-- [ ] T023 [P] [US2] Add HTTP tests for all accepted filters, combined requests, trimmed blanks, malformed values, out-of-range pagination, safe validation problems, and no private echo in `src/test/java/com/jobtrace/jobmarket/JobMarketFilterControllerTest.java`.
+- [X] T021 [P] [US2] Add parameter normalization tests for blank/trimmed/mixed-case/multilingual text, 100/101-character bounds, strict status/boolean/date values, page/limit limits, and `favorite=false` omission behavior in `src/test/java/com/jobtrace/jobmarket/MarketplaceQueryParametersTest.java`.
+- [X] T022 [P] [US2] Add PostgreSQL tests for each filter and combined filters, inclusive `postedFrom`, exact totals, stable multi-page ordering, `favorite=true` owner isolation, explicit closed projection, and inactive-source hiding in `src/test/java/com/jobtrace/jobmarket/JobMarketFilterQueryIntegrationTest.java`.
+- [X] T023 [P] [US2] Add HTTP tests for all accepted filters, combined requests, trimmed blanks, malformed values, out-of-range pagination, safe validation problems, and no private echo in `src/test/java/com/jobtrace/jobmarket/JobMarketFilterControllerTest.java`.
 
 ### Implementation for User Story 2
 
-- [ ] T024 [US2] Implement exact query-string normalization and validation in `src/main/java/com/jobtrace/jobmarket/web/MarketplaceQueryParameters.java`, deriving `includeClosed` inside `src/main/java/com/jobtrace/jobmarket/domain/MarketplaceQuery.java` to satisfy T021.
-- [ ] T025 [US2] Extend `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` with bound conjunctive search, company, location, status, inclusive date, favorite, and include-closed predicates while preserving US1 totals and ordering to satisfy T022.
-- [ ] T026 [US2] Wire validated filtering into `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` and `src/main/java/com/jobtrace/jobmarket/application/ListCampaigns.java` without adding filter values to diagnostics to satisfy T023.
-- [ ] T027 [US2] Run T021–T023 and record filter, validation, closed/favorite, total, stable-pagination, isolation, and no-write parity in `specs/008-job-market-read-model/validation-report.md`.
+- [X] T024 [US2] Implement exact query-string normalization and validation in `src/main/java/com/jobtrace/jobmarket/web/MarketplaceQueryParameters.java`, deriving `includeClosed` inside `src/main/java/com/jobtrace/jobmarket/domain/MarketplaceQuery.java` to satisfy T021.
+- [X] T025 [US2] Extend `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` with bound conjunctive search, company, location, status, inclusive date, favorite, and include-closed predicates while preserving US1 totals and ordering to satisfy T022.
+- [X] T026 [US2] Wire validated filtering into `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` and `src/main/java/com/jobtrace/jobmarket/application/ListCampaigns.java` without adding filter values to diagnostics to satisfy T023.
+- [X] T027 [US2] Run T021–T023 and record filter, validation, closed/favorite, total, stable-pagination, isolation, and no-write parity in `specs/008-job-market-read-model/validation-report.md`.
 
 **Checkpoint**: Browsing and discovery filters are independently verified; campaign detail remains separate.
 
