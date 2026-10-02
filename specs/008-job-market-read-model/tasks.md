@@ -46,19 +46,19 @@
 
 ### Tests for User Story 1
 
-- [ ] T011 [P] [US1] Add structural JSON parity tests for representative default, empty, null-time, and 50-position-preview fixtures in `src/test/java/com/jobtrace/jobmarket/JobMarketListContractTest.java`.
-- [ ] T012 [P] [US1] Add use-case tests for required trusted owner, default criteria, immutable page propagation, and query failure propagation in `src/test/java/com/jobtrace/jobmarket/ListCampaignsTest.java`.
-- [ ] T013 [P] [US1] Add PostgreSQL two-owner favorite tests proving identical shared summaries and zero foreign favorite disclosure in `src/test/java/com/jobtrace/jobmarket/JobMarketListOwnerIsolationIntegrationTest.java`.
-- [ ] T014 [P] [US1] Add PostgreSQL tests for default closed exclusion, company aggregation, publication/confirmation/company ordering, nulls-last behavior, empty/out-of-range pages, exact totals, 50-position preview, complete count, and fixed query count in `src/test/java/com/jobtrace/jobmarket/JobMarketListQueryIntegrationTest.java`.
-- [ ] T015 [P] [US1] Add HTTP tests for default page/limit, explicit pagination, no-store success, empty page, ordinary-principal rejection, and safe unavailable storage response in `src/test/java/com/jobtrace/jobmarket/JobMarketListControllerTest.java`.
+- [X] T011 [P] [US1] Add structural JSON parity tests for representative default, empty, null-time, and 50-position-preview fixtures in `src/test/java/com/jobtrace/jobmarket/JobMarketListContractTest.java`.
+- [X] T012 [P] [US1] Add use-case tests for required trusted owner, default criteria, immutable page propagation, and query failure propagation in `src/test/java/com/jobtrace/jobmarket/ListCampaignsTest.java`.
+- [X] T013 [P] [US1] Add PostgreSQL two-owner favorite tests proving identical shared summaries and zero foreign favorite disclosure in `src/test/java/com/jobtrace/jobmarket/JobMarketListOwnerIsolationIntegrationTest.java`.
+- [X] T014 [P] [US1] Add PostgreSQL tests for default closed exclusion, company aggregation, publication/confirmation/company ordering, nulls-last behavior, empty/out-of-range pages, exact totals, 50-position preview, complete count, and fixed query count in `src/test/java/com/jobtrace/jobmarket/JobMarketListQueryIntegrationTest.java`.
+- [X] T015 [P] [US1] Add HTTP tests for default page/limit, explicit pagination, no-store success, empty page, ordinary-principal rejection, and safe unavailable storage response in `src/test/java/com/jobtrace/jobmarket/JobMarketListControllerTest.java`.
 
 ### Implementation for User Story 1
 
-- [ ] T016 [US1] Implement trusted-owner default/paged list orchestration in `src/main/java/com/jobtrace/jobmarket/application/ListCampaigns.java` to satisfy T012 without caching personalized results.
-- [ ] T017 [US1] Implement the parameterized owner-bound company projection, favorite overlay, total, 50-position preview, and stable ordering query in `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` to satisfy T013–T014 without invoking projection refresh functions.
-- [ ] T018 [US1] Expose only `GET /api/job-market/campaigns` with trusted owner, default/paged parameters, `private, no-store`, and safe errors in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` to satisfy T011 and T015.
-- [ ] T019 [US1] Add bounded list operation/outcome/latency metrics without owner, filter, company, campaign, URL, favorite, or returned-content labels in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadMetrics.java`.
-- [ ] T020 [US1] Run T011–T015 and record independent MVP fixture parity, favorite isolation, fixed query count, no-store, and read-only evidence in `specs/008-job-market-read-model/validation-report.md`.
+- [X] T016 [US1] Implement trusted-owner default/paged list orchestration in `src/main/java/com/jobtrace/jobmarket/application/ListCampaigns.java` to satisfy T012 without caching personalized results.
+- [X] T017 [US1] Implement the parameterized owner-bound company projection, favorite overlay, total, 50-position preview, and stable ordering query in `src/main/java/com/jobtrace/jobmarket/infrastructure/PostgresJobMarketReadQuery.java` to satisfy T013–T014 without invoking projection refresh functions.
+- [X] T018 [US1] Expose only `GET /api/job-market/campaigns` with trusted owner, default/paged parameters, `private, no-store`, and safe errors in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadController.java` to satisfy T011 and T015.
+- [X] T019 [US1] Add bounded list operation/outcome/latency metrics without owner, filter, company, campaign, URL, favorite, or returned-content labels in `src/main/java/com/jobtrace/jobmarket/web/JobMarketReadMetrics.java`.
+- [X] T020 [US1] Run T011–T015 and record independent MVP fixture parity, favorite isolation, fixed query count, no-store, and read-only evidence in `specs/008-job-market-read-model/validation-report.md`.
 
 **Checkpoint**: The default/paged current campaign list works independently; search/filter behavior and detail are not required for this MVP.
 
