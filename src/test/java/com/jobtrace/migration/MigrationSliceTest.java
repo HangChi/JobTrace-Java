@@ -27,6 +27,8 @@ class MigrationSliceTest {
                 .hasMessageContaining("evidence");
 
         MigrationSlice verified = implemented.withEvidence("contract fixtures pass")
+                .withEvidence(MigrationSlice.BRIDGE_EVIDENCE)
+                .withEvidence(MigrationSlice.ROLLBACK_EVIDENCE)
                 .transitionTo(MigrationSlice.State.VERIFIED);
         assertThat(verified.transitionTo(MigrationSlice.State.ACTIVE).state())
                 .isEqualTo(MigrationSlice.State.ACTIVE);
@@ -68,7 +70,10 @@ class MigrationSliceTest {
                         "jobtrace-java",
                         "legacy-jobtrace")
                 .transitionTo(MigrationSlice.State.IMPLEMENTED)
-                .withEvidence("contract fixtures pass");
+                .withEvidence("contract fixtures pass")
+                .withEvidence(MigrationSlice.BRIDGE_EVIDENCE)
+                .withEvidence(MigrationSlice.ROLLBACK_EVIDENCE)
+                .withEvidence(MigrationSlice.OBSERVATION_EVIDENCE);
 
         MigrationSlice verified = implemented.transitionTo(MigrationSlice.State.VERIFIED);
         MigrationSlice active = new MigrationSlice(
@@ -121,5 +126,40 @@ class MigrationSliceTest {
                 null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("capabilities");
+    }
+
+    @Test
+    void activeAndObservedStatesRequireBridgeRollbackAndObservationEvidence() {
+        MigrationSlice verified = MigrationSlice.planned(
+                        "analytics-summary",
+                        MigrationSlice.Module.ANALYTICS,
+                        Set.of("GET /api/analytics/summary"),
+                        "legacy-jobtrace",
+                        "jobtrace-java",
+                        "legacy-jobtrace")
+                .transitionTo(MigrationSlice.State.IMPLEMENTED)
+                .withEvidence("contract fixtures pass")
+                .transitionTo(MigrationSlice.State.VERIFIED);
+
+        MigrationSlice routable = new MigrationSlice(
+                verified.id(),
+                verified.module(),
+                verified.capabilities(),
+                verified.legacyOwner(),
+                verified.targetOwner(),
+                verified.writeOwner(),
+                verified.state(),
+                "route analytics-summary to legacy-jobtrace",
+                verified.evidence());
+
+        assertThatThrownBy(() -> routable.transitionTo(MigrationSlice.State.ACTIVE))
+                .hasMessageContaining("bridge and rollback");
+
+        MigrationSlice active = routable
+                .withEvidence(MigrationSlice.BRIDGE_EVIDENCE)
+                .withEvidence(MigrationSlice.ROLLBACK_EVIDENCE)
+                .transitionTo(MigrationSlice.State.ACTIVE);
+        assertThatThrownBy(() -> active.transitionTo(MigrationSlice.State.OBSERVED))
+                .hasMessageContaining("seven-day observation");
     }
 }

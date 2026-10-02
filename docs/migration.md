@@ -41,9 +41,12 @@ Do not enable Flyway against a legacy database until all of these are complete:
 
 ## Authentication
 
-Authentication is explicitly out of the first migration slices. Protected APIs require a separately specified bridge that validates a short-lived signature, issuer, audience, expiry, request identity, user ID, role, and access version. The Java service must only accept it through the trusted server-to-server path.
+Better Auth remains authoritative during incremental migration. The signed identity bridge v1 is
+limited to `GET /api/analytics/summary`: legacy validates the browser session, reads fresh account
+state, and issues a 30-second request-bound assertion. Java accepts configured current/previous keys
+only, atomically consumes the one-time ID in shared Valkey, and fails closed if validation or replay
+protection is unavailable. This does not authorize other routes or move session ownership to Java.
 
 ## Rollback
 
 Prefer routing rollback over database rollback. Database changes must use expand-and-contract sequencing. Stop new writes, direct traffic back to the existing service, preserve new columns and audit records, and investigate using request IDs without logging sensitive content.
-

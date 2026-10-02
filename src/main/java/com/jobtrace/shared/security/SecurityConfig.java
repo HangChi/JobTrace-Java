@@ -1,6 +1,7 @@
 package com.jobtrace.shared.security;
 
 import com.jobtrace.shared.web.SpaForwardController;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -11,8 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
+    SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            ObjectProvider<SecurityChainCustomizer> customizers) throws Exception {
+        http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(
                                 "/",
@@ -26,7 +29,10 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .httpBasic(Customizer.withDefaults())
-                .build();
+                .httpBasic(Customizer.withDefaults());
+        for (SecurityChainCustomizer customizer : customizers) {
+            customizer.customize(http);
+        }
+        return http.build();
     }
 }

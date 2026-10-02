@@ -15,7 +15,17 @@ services:
       start_period: 5s
     volumes:
       - jobtrace-postgres-data:/var/lib/postgresql/data
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:${JOBTRACE_VALKEY_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+      start_period: 3s
 
 volumes:
   jobtrace-postgres-data:
-

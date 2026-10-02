@@ -22,7 +22,7 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule APPLICATION_DOES_NOT_DEPEND_ON_WEB = noClasses()
             .that().resideInAPackage("..application..")
-            .should().dependOnClassesThat().resideInAPackage("..web..")
+            .should().dependOnClassesThat().resideInAnyPackage("..web..", "..infrastructure..")
             .allowEmptyShould(true);
 
     @ArchTest
@@ -30,4 +30,3 @@ class ArchitectureTest {
             .matching("com.jobtrace.(*)..")
             .should().beFreeOfCycles();
 }
-

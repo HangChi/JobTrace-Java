@@ -35,10 +35,13 @@ Legacy remains the only production traffic owner. Test traffic may reach Java on
 trusted Spring Security principal has been established; the query derives `owner_id` exclusively
 from that principal. Public request headers are not an identity bridge.
 
-Production activation is blocked until the signed identity bridge has a separately reviewed
-design, key rotation and replay controls, expiry validation, and negative acceptance tests. Once
-approved, routing may send a canary only to this exact read-only path. No other analytics or write endpoint
-is part of the slice.
+The signed identity bridge v1 is implemented and test-verified with request binding, 30-second
+expiry, current/previous key rotation, shared atomic replay control, uniform 401 responses, and
+owner-isolation coverage. It remains disabled by default. Routing may send a canary only to this
+exact read-only path; no other analytics or write endpoint is part of the slice.
+
+Activation still requires recorded evidence named `identity bridge verified` and
+`rollback exercised`. OBSERVED additionally requires `seven-day observation complete`.
 
 ## Observation plan
 
@@ -49,6 +52,13 @@ For a canary, compare legacy and Java responses after the documented normalizati
 - PostgreSQL errors, timeouts, and connection-pool saturation;
 - request error rate and p95 latency, with an initial p95 budget of 500 ms;
 - a minimum seven-day observation window before considering retirement of the legacy read path.
+
+| Observation day | Java share | Mismatches | Security incidents | p95 budget breaches | Evidence |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Not started | 0% | — | — | — | Awaiting reviewed non-public deployment |
+
+The state remains `VERIFIED` until seven consecutive real production days are entered above. A
+test run or synthetic clock advance cannot satisfy this gate.
 
 Never log response bodies, owner identifiers, URLs, company names, or position names as comparison
 evidence. Store only request IDs, implementation labels, durations, and mismatch classifications.
