@@ -1,0 +1,49 @@
+{
+  "id": "10000000-0000-4000-8000-000000000001",
+  "companyName": "Contract Company",
+  "positionName": "Platform Engineer",
+  "city": "上海",
+  "jobUrl": "https://jobs.example.test/platform-engineer",
+  "appliedDate": "2026-09-01",
+  "type": "campus_recruitment",
+  "status": "submitted",
+  "latestDate": "2026-09-10",
+  "stages": ["screening", "assessment"],
+  "needsFollowUp": true,
+  "followUpDays": 17,
+  "followUpReason": "timeline",
+  "version": 3,
+  "notes": "Synthetic contract note",
+  "stageOccurrences": [
+    {
+      "id": "20000000-0000-4000-8000-000000000001",
+      "stage": "screening",
+      "occurredOn": "2026-09-01"
+    },
+    {
+      "id": "20000000-0000-4000-8000-000000000002",
+      "stage": "assessment",
+      "occurredOn": "2026-09-15"
+    }
+  ],
+  "events": [
+    {
+      "id": "30000000-0000-4000-8000-000000000002",
+      "type": "stage_added",
+      "occurredOn": "2026-09-15",
+      "before": null,
+      "after": { "stage": "assessment" },
+      "createdAt": "2026-09-15T01:00:00.000Z"
+    },
+    {
+      "id": "30000000-0000-4000-8000-000000000001",
+      "type": "created",
+      "occurredOn": "2026-09-01",
+      "before": null,
+      "after": { "status": "submitted" },
+      "createdAt": "2026-09-01T01:00:00.000Z"
+    }
+  ],
+  "createdAt": "2026-09-01T01:00:00.000Z",
+  "updatedAt": "2026-09-15T01:00:00.000Z"
+}
