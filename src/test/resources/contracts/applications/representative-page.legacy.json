@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "id": "10000000-0000-4000-8000-000000000001",
+      "companyName": "Contract Company",
+      "positionName": "Platform Engineer",
+      "city": "上海",
+      "jobUrl": "https://jobs.example.test/platform-engineer",
+      "appliedDate": "2026-09-01",
+      "type": "campus_recruitment",
+      "status": "submitted",
+      "latestDate": "2026-09-10",
+      "stages": ["screening", "assessment"],
+      "needsFollowUp": true,
+      "followUpDays": 17,
+      "followUpReason": "timeline",
+      "version": 3
+    }
+  ],
+  "nextCursor": "eyJ2YWx1ZSI6IjIwMjYtMDktMTAiLCJpZCI6IjEwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSIsInN0YXR1c1JhbmsiOjB9",
+  "total": 2,
+  "page": 1,
+  "limit": 1
+}

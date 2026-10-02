@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.jobtrace.shared.config.JobTraceProperties;
 import com.jobtrace.testing.PostgresIntegrationTest;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,5 +31,6 @@ class LegacySchemaSafetyTest extends PostgresIntegrationTest {
                 "select to_regclass('public.flyway_schema_history')::text",
                 String.class))
                 .isNull();
+        assertThat(Files.exists(Path.of("src/main/resources/db/migration"))).isFalse();
     }
 }

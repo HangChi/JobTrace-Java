@@ -12,6 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,6 +41,29 @@ public class GlobalExceptionHandler {
                 request);
         response.getBody().setProperty("fieldErrors", fieldErrors);
         return response;
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ProblemDetail> handleInvalidApplicationInput(
+            Exception exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "validation", "The request contains invalid values.", request);
+    }
+
+    @ExceptionHandler(DataAccessException.class)
+    public ResponseEntity<ProblemDetail> handleStorageUnavailable(
+            DataAccessException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.SERVICE_UNAVAILABLE, "storage_unavailable",
+                "The data store is unavailable.", request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ProblemDetail> handleUnsupportedMethod(
+            HttpRequestMethodNotSupportedException exception,
+            HttpServletRequest request) {
+        return response(HttpStatus.METHOD_NOT_ALLOWED, "method_not_allowed",
+                "The method is not supported for this route.", request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -71,4 +97,3 @@ public class GlobalExceptionHandler {
         return value instanceof String requestId ? requestId : "unavailable";
     }
 }
-

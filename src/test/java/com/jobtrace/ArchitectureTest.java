@@ -29,4 +29,24 @@ class ArchitectureTest {
     static final ArchRule MODULES_HAVE_NO_CYCLES = slices()
             .matching("com.jobtrace.(*)..")
             .should().beFreeOfCycles();
+
+    @ArchTest
+    static final ArchRule APPLICATION_READ_DOMAIN_HAS_NO_OUTWARD_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..applications.domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications.application..",
+                    "..applications.infrastructure..",
+                    "..applications.web..");
+
+    @ArchTest
+    static final ArchRule APPLICATION_READ_USE_CASES_HAVE_NO_ADAPTER_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..applications.application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications.infrastructure..",
+                    "..applications.web..");
+
+    @ArchTest
+    static final ArchRule APPLICATION_READ_STORAGE_DOES_NOT_DEPEND_ON_HTTP = noClasses()
+            .that().resideInAPackage("..applications.infrastructure..")
+            .should().dependOnClassesThat().resideInAnyPackage("..applications.web..");
 }

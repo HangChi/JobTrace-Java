@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.dao.DataAccessResourceFailureException;
 
 class GlobalExceptionHandlerTest {
 
@@ -38,10 +39,22 @@ class GlobalExceptionHandlerTest {
                 .containsEntry("requestId", "unavailable");
     }
 
+    @Test
+    void mapsStorageFailureToSafeUnavailableProblem() {
+        var response = handler.handleStorageUnavailable(
+                new DataAccessResourceFailureException("sensitive database address"),
+                requestWithId("request-1"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getBody().getDetail()).isEqualTo("The data store is unavailable.");
+        assertThat(response.getBody().getProperties())
+                .containsEntry("code", "storage_unavailable")
+                .containsEntry("requestId", "request-1");
+    }
+
     private MockHttpServletRequest requestWithId(String requestId) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE, requestId);
         return request;
     }
 }
-
