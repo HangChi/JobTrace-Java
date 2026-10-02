@@ -41,8 +41,14 @@ public final class ApplicationCursorCodec {
                     || !value.hasNonNull("value")
                     || !value.hasNonNull("id")
                     || !value.get("value").isTextual()
+                    || !value.get("id").isTextual()
                     || value.get("value").textValue().isEmpty()) {
                 throw new IllegalArgumentException("cursor is incomplete");
+            }
+            if (value.hasNonNull("statusRank")
+                    && (!value.get("statusRank").isIntegralNumber()
+                    || !value.get("statusRank").canConvertToInt())) {
+                throw new IllegalArgumentException("cursor rank is invalid");
             }
             Integer rank = value.has("statusRank") && !value.get("statusRank").isNull()
                     ? value.get("statusRank").intValue()

@@ -8,7 +8,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
 
+@Service
 public class GetApplicationDetail {
 
     private final ApplicationReadQuery query;

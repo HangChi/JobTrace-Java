@@ -16,6 +16,11 @@ Recommended order:
 8. Administration
 9. Identity and access
 
+The applications read-only implementation is documented in
+[`migration-slices/application-read-model.md`](migration-slices/application-read-model.md).
+Feature 004 ends with local and CI verification; Java deployment and traffic
+activation are unscheduled.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -41,11 +46,13 @@ Do not enable Flyway against a legacy database until all of these are complete:
 
 ## Authentication
 
-Better Auth remains authoritative during incremental migration. The signed identity bridge v1 is
-limited to `GET /api/analytics/summary`: legacy validates the browser session, reads fresh account
-state, and issues a 30-second request-bound assertion. Java accepts configured current/previous keys
-only, atomically consumes the one-time ID in shared Valkey, and fails closed if validation or replay
-protection is unavailable. This does not authorize other routes or move session ownership to Java.
+Better Auth remains authoritative during incremental migration. The signed identity bridge v1
+protects `GET /api/analytics/summary` and the two feature 004 application read routes.
+It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
+configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
+fails closed if validation or replay protection is unavailable. This does not authorize writes
+or move session ownership to Java. The current legacy issuer targets only analytics; any later
+application traffic activation needs a separately reviewed issuer and routing change.
 
 ## Rollback
 

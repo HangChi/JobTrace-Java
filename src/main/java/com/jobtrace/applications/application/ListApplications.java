@@ -7,7 +7,9 @@ import com.jobtrace.applications.domain.ApplicationPage;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Objects;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ListApplications {
 
     private final ApplicationReadQuery query;

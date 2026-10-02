@@ -23,7 +23,11 @@ class OpenApiContractTest {
         assertThat(result.getMessages()).isEmpty();
         assertThat(result.getOpenAPI()).isNotNull();
         assertThat(result.getOpenAPI().getPaths())
-                .containsKeys("/api/health/live", "/api/health/ready");
+                .containsKeys("/api/health/live", "/api/health/ready",
+                        "/api/applications", "/api/applications/{id}");
+        assertThat(result.getOpenAPI().getComponents().getSchemas())
+                .containsKeys("ApplicationSummary", "ApplicationPage", "ApplicationDetail",
+                        "ApplicationStageOccurrence", "ApplicationEvent");
         var analytics = result.getOpenAPI().getPaths()
                 .get("/api/analytics/summary")
                 .getGet();

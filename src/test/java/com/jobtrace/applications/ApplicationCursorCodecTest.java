@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jobtrace.applications.domain.ApplicationCursorCodec;
 import com.jobtrace.applications.domain.ApplicationCursorCodec.Cursor;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
@@ -38,6 +40,13 @@ class ApplicationCursorCodecTest {
                 .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> codec.decode("eyJ2YWx1ZSI6IjIwMjYtMDktMTAiLCJpZCI6Im5vdC1hLXV1aWQifQ"))
                 .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> codec.decode(jsonCursor(
+                        "{\"value\":\"date\",\"id\":12}")))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> codec.decode(jsonCursor(
+                        "{\"value\":\"date\",\"id\":\"10000000-0000-4000-8000-000000000001\","
+                                + "\"statusRank\":\"1\"}")))
+                .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Cursor(
                         "value",
                         UUID.fromString("10000000-0000-4000-8000-000000000001"),
@@ -64,5 +73,10 @@ class ApplicationCursorCodecTest {
         assertThat(encoded).isEqualTo(
                 "eyJ2YWx1ZSI6IkFjbWUiLCJpZCI6IjEwMDAwMDAwLTAwMDAtNDAwMC04MDAwLTAwMDAwMDAwMDAwMSJ9");
         assertThat(codec.decode(encoded)).isEqualTo(cursor);
+    }
+
+    private static String jsonCursor(String json) {
+        return Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(json.getBytes(StandardCharsets.UTF_8));
     }
 }

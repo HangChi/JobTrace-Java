@@ -54,15 +54,15 @@ their summaries and metadata; an owner with no records receives an empty page.
 
 ### Tests for User Story 1
 
-- [ ] T014 [P] [US1] Add empty and representative page contract tests in `src/test/java/com/jobtrace/applications/ApplicationReadContractTest.java`
-- [ ] T015 [P] [US1] Add authenticated, unauthenticated, and no-store controller tests in `src/test/java/com/jobtrace/applications/ApplicationReadControllerTest.java`
-- [ ] T016 [P] [US1] Add basic list and cross-owner isolation Testcontainers tests in `src/test/java/com/jobtrace/applications/ApplicationOwnerIsolationIntegrationTest.java`
+- [x] T014 [P] [US1] Add empty and representative page contract tests in `src/test/java/com/jobtrace/applications/ApplicationReadContractTest.java`
+- [x] T015 [P] [US1] Add authenticated, unauthenticated, and no-store controller tests in `src/test/java/com/jobtrace/applications/ApplicationReadControllerTest.java`
+- [x] T016 [P] [US1] Add basic list and cross-owner isolation Testcontainers tests in `src/test/java/com/jobtrace/applications/ApplicationOwnerIsolationIntegrationTest.java`
 
 ### Implementation for User Story 1
 
-- [ ] T017 [US1] Implement owner-scoped count, summary mapping, derived follow-up fields, and default list ordering in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
-- [ ] T018 [US1] Expose the signed-principal protected list operation with `private, no-store` in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java`
-- [ ] T019 [US1] Add bounded outcome and latency metrics without owner or query labels in `src/main/java/com/jobtrace/applications/web/ApplicationReadMetrics.java`
+- [x] T017 [US1] Implement owner-scoped count, summary mapping, derived follow-up fields, and default list ordering in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
+- [x] T018 [US1] Expose the signed-principal protected list operation with `private, no-store` in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java`
+- [x] T019 [US1] Add bounded outcome and latency metrics without owner or query labels in `src/main/java/com/jobtrace/applications/web/ApplicationReadMetrics.java`
 
 **Checkpoint**: User Story 1 is a complete read-only MVP and can be verified without User Stories 2
 or 3.
@@ -78,15 +78,15 @@ verify combined filters, totals, stable order, and exactly-once pagination.
 
 ### Tests for User Story 2
 
-- [ ] T020 [P] [US2] Add web parameter normalization and malformed cursor response tests in `src/test/java/com/jobtrace/applications/ApplicationListParametersTest.java`
-- [ ] T021 [P] [US2] Add combined-filter and applied-date boundary integration tests in `src/test/java/com/jobtrace/applications/ApplicationReadQueryIntegrationTest.java`
-- [ ] T022 [P] [US2] Add default-priority and all explicit sort/cursor traversal tests in `src/test/java/com/jobtrace/applications/ApplicationPaginationIntegrationTest.java`
+- [x] T020 [P] [US2] Add web parameter normalization and malformed cursor response tests in `src/test/java/com/jobtrace/applications/ApplicationListParametersTest.java`
+- [x] T021 [P] [US2] Add combined-filter and applied-date boundary integration tests in `src/test/java/com/jobtrace/applications/ApplicationReadQueryIntegrationTest.java`
+- [x] T022 [P] [US2] Add default-priority and all explicit sort/cursor traversal tests in `src/test/java/com/jobtrace/applications/ApplicationPaginationIntegrationTest.java`
 
 ### Implementation for User Story 2
 
-- [ ] T023 [US2] Bind repeated query parameters and legacy defaults in `src/main/java/com/jobtrace/applications/web/ApplicationListParameters.java`
-- [ ] T024 [US2] Implement allowlisted search, filters, explicit sorts, offset pages, and tuple cursor predicates in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
-- [ ] T025 [US2] Complete list controller validation and safe problem mapping in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java` and `src/main/java/com/jobtrace/shared/web/GlobalExceptionHandler.java`
+- [x] T023 [US2] Bind repeated query parameters and legacy defaults in `src/main/java/com/jobtrace/applications/web/ApplicationListParameters.java`
+- [x] T024 [US2] Implement allowlisted search, filters, explicit sorts, offset pages, and tuple cursor predicates in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
+- [x] T025 [US2] Complete list controller validation and safe problem mapping in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java` and `src/main/java/com/jobtrace/shared/web/GlobalExceptionHandler.java`
 
 **Checkpoint**: User Stories 1 and 2 reproduce the complete legacy list contract independently of
 the detail read.
@@ -103,15 +103,15 @@ UUID and another owner's UUID and verify the two denied outcomes are identical.
 
 ### Tests for User Story 3
 
-- [ ] T026 [P] [US3] Add representative detail fixture parity tests in `src/test/java/com/jobtrace/applications/ApplicationDetailContractTest.java`
-- [ ] T027 [P] [US3] Add stage/event ordering and optional-field integration tests in `src/test/java/com/jobtrace/applications/ApplicationDetailQueryIntegrationTest.java`
-- [ ] T028 [P] [US3] Add missing-versus-cross-owner indistinguishability tests in `src/test/java/com/jobtrace/applications/ApplicationDetailIsolationIntegrationTest.java`
-- [ ] T029 [P] [US3] Add forged, stale, path-mismatched, and replayed assertion tests for both application routes in `src/test/java/com/jobtrace/applications/ApplicationReadSecurityTest.java`
+- [x] T026 [P] [US3] Add representative detail fixture parity tests in `src/test/java/com/jobtrace/applications/ApplicationDetailContractTest.java`
+- [x] T027 [P] [US3] Add stage/event ordering and optional-field integration tests in `src/test/java/com/jobtrace/applications/ApplicationDetailQueryIntegrationTest.java`
+- [x] T028 [P] [US3] Add missing-versus-cross-owner indistinguishability tests in `src/test/java/com/jobtrace/applications/ApplicationDetailIsolationIntegrationTest.java`
+- [x] T029 [P] [US3] Add forged, stale, path-mismatched, and replayed assertion tests for both application routes in `src/test/java/com/jobtrace/applications/ApplicationReadSecurityTest.java`
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Implement owner-scoped core detail, stage occurrence, and complete event history mapping in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
-- [ ] T031 [US3] Expose the UUID detail operation and uniform not-found response in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java`
+- [x] T030 [US3] Implement owner-scoped core detail, stage occurrence, and complete event history mapping in `src/main/java/com/jobtrace/applications/infrastructure/PostgresApplicationReadQuery.java`
+- [x] T031 [US3] Expose the UUID detail operation and uniform not-found response in `src/main/java/com/jobtrace/applications/web/ApplicationReadController.java`
 
 **Checkpoint**: All three user stories are complete; the Java surface remains read-only and excludes
 interview-enriched detail and mutations.
@@ -123,13 +123,13 @@ interview-enriched detail and mutations.
 **Purpose**: Prove architecture, performance, compatibility, safety, and review readiness without
 deployment.
 
-- [ ] T032 [P] Add list/detail p95 tests with fixed clock and representative cardinality in `src/test/java/com/jobtrace/applications/ApplicationReadPerformanceTest.java`
-- [ ] T033 [P] Add applications package dependency rules to `src/test/java/com/jobtrace/ArchitectureTest.java`
-- [ ] T034 [P] Add application routes and schemas to the repository API baseline in `specs/001-java-migration/contracts/openapi.yaml`
-- [ ] T035 [P] Document the read-only slice, excluded writes, and no-deployment decision in `docs/migration-slices/application-read-model.md` and `docs/migration.md`
-- [ ] T036 Verify no production migration or non-GET application handler was introduced using `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java` and `src/test/java/com/jobtrace/applications/ApplicationReadOnlySurfaceTest.java`
-- [ ] T037 Run `./mvnw verify` and record tests, coverage, static analysis, contracts, performance, and Java-only artifact evidence in `specs/004-application-read-model/validation-report.md`
-- [ ] T038 Review the diff against the specification and all four constitution principles and record the Solo-Maintainer Mode self-review in `specs/004-application-read-model/validation-report.md`
+- [x] T032 [P] Add list/detail p95 tests with fixed clock and representative cardinality in `src/test/java/com/jobtrace/applications/ApplicationReadPerformanceTest.java`
+- [x] T033 [P] Add applications package dependency rules to `src/test/java/com/jobtrace/ArchitectureTest.java`
+- [x] T034 [P] Add application routes and schemas to the repository API baseline in `specs/001-java-migration/contracts/openapi.yaml`
+- [x] T035 [P] Document the read-only slice, excluded writes, and no-deployment decision in `docs/migration-slices/application-read-model.md` and `docs/migration.md`
+- [x] T036 Verify no production migration or non-GET application handler was introduced using `src/test/java/com/jobtrace/migration/LegacySchemaSafetyTest.java` and `src/test/java/com/jobtrace/applications/ApplicationReadOnlySurfaceTest.java`
+- [x] T037 Run `./mvnw verify` and record tests, coverage, static analysis, contracts, performance, and Java-only artifact evidence in `specs/004-application-read-model/validation-report.md`
+- [x] T038 Review the diff against the specification and all four constitution principles and record the Solo-Maintainer Mode self-review in `specs/004-application-read-model/validation-report.md`
 - [ ] T039 Open a stacked pull request with feature 003 as its dependency, pass all CI/security checks, and record its URL and unscheduled deployment status in `specs/004-application-read-model/validation-report.md`
 
 ---

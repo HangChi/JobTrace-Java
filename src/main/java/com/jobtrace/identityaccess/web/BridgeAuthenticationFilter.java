@@ -44,7 +44,10 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !PROTECTED_PATH.equals(request.getRequestURI());
+        String path = request.getRequestURI();
+        return !PROTECTED_PATH.equals(path)
+                && !"/api/applications".equals(path)
+                && !path.startsWith("/api/applications/");
     }
 
     @Override
