@@ -54,6 +54,13 @@ last-administrator, session-revocation, and audit invariant to the existing atom
 operation. Session issuance, ordinary identity settings, job-market administration, schema
 ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
 
+The account-session read slice is documented in
+[`migration-slices/session-read-model.md`](migration-slices/session-read-model.md). Feature 011
+adds only the active owner-scoped session-list GET and current-device projection. Better Auth and
+the existing service retain authentication, cookies, issuance, refresh, expiry, revocation, every
+other identity/profile operation, schema ownership, frontend routing, deployment, CI/CD, and
+production traffic.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -89,6 +96,9 @@ Feature 009 adds only the exact administration summary, user list, opaque-ID use
 event list GET paths, and additionally requires the verified administrator role.
 Feature 010 adds only PATCH on the same opaque-ID administrator user path and requires the verified
 administrator role; the database command independently revalidates the actor's current access.
+Feature 011 adds only GET on `/api/profile/sessions`, requires the verified owner subject, and uses
+bounded server-to-server current-session metadata only to derive the response marker after owner
+and active-expiry filtering.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

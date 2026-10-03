@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Account Session Read Model API
+  version: 0.1.0
+  description: Owner-scoped session read compatibility for feature 011; no production routing is enabled.
+paths:
+  /api/profile/sessions:
+    get:
+      operationId: listAccountSessions
+      summary: List the authenticated owner's active login sessions
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - name: X-JobTrace-Session-Id
+          in: header
+          required: true
+          description: Internal Better Auth session identifier used only for the current-device marker.
+          schema: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '200':
+          description: Active owner-scoped sessions in deterministic newest-first order
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AccountSession' }
+        '400': { $ref: '#/components/responses/Validation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Internal-only request-bound signed assertion from feature 003.
+  responses:
+    Validation:
+      description: Missing, blank, or overlong current-session metadata
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: No trusted authenticated owner
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: Required storage or identity dependency is unavailable
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    AccountSession:
+      type: object
+      required: [id, createdAt, expiresAt, userAgent, current]
+      properties:
+        id: { type: string, minLength: 1, maxLength: 255 }
+        createdAt: { type: string, format: date-time }
+        expiresAt: { type: string, format: date-time }
+        userAgent: { type: [string, 'null'] }
+        current: { type: boolean }
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
