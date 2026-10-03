@@ -17,6 +17,9 @@ import tools.jackson.databind.ObjectMapper;
 
 class JobMarketReadPerformanceTest extends JobMarketReadDatabaseTest {
 
+    private static final int GENERATED_JOB_COUNT = 99_997;
+    private static final int SEED_BATCH_SIZE = 10_000;
+
     @Autowired
     private DataSource dataSource;
 
@@ -91,6 +94,17 @@ class JobMarketReadPerformanceTest extends JobMarketReadDatabaseTest {
                   '2026-09-02T00:00:00Z','company engineer',''
                 from generate_series(2,99) n
                 """);
+        for (int first = 1; first <= GENERATED_JOB_COUNT; first += SEED_BATCH_SIZE) {
+            int last = Math.min(first + SEED_BATCH_SIZE - 1, GENERATED_JOB_COUNT);
+            seedJobBatch(first, last);
+            seedSourceRecordBatch(first, last);
+        }
+        jdbc.execute("analyze job_market_companies; analyze job_market_campaigns; "
+                + "analyze job_market_company_read_models; analyze job_market_posts; "
+                + "analyze job_market_source_records");
+    }
+
+    private void seedJobBatch(int first, int last) {
         jdbc.update("""
                 insert into job_market_posts(
                   id,company_id,campaign_id,title,status,primary_apply_url,published_at)
@@ -102,8 +116,11 @@ class JobMarketReadPerformanceTest extends JobMarketReadDatabaseTest {
                   'Engineer ' || n,'open','https://jobs.example.test/apply/' || n,
                   '2026-09-01T00:00:00Z'::timestamptz - (n || ' seconds')::interval
                 from (select n, ((n - 1) % 99) + 1 as company_number
-                  from generate_series(1,99997) n) generated
-                """, COMPANY, CAMPAIGN);
+                  from generate_series(?,?) n) generated
+                """, COMPANY, CAMPAIGN, first, last);
+    }
+
+    private void seedSourceRecordBatch(int first, int last) {
         jdbc.update("""
                 insert into job_market_source_records(source_id,post_id,last_seen_at)
                 select case when company_number = 1
@@ -111,11 +128,8 @@ class JobMarketReadPerformanceTest extends JobMarketReadDatabaseTest {
                     else md5('perf-source-' || company_number)::uuid end,
                   md5('perf-job-' || n)::uuid,'2026-09-03T00:00:00Z'
                 from (select n, ((n - 1) % 99) + 1 as company_number
-                  from generate_series(1,99997) n) generated
-                """);
-        jdbc.execute("analyze job_market_companies; analyze job_market_campaigns; "
-                + "analyze job_market_company_read_models; analyze job_market_posts; "
-                + "analyze job_market_source_records");
+                  from generate_series(?,?) n) generated
+                """, first, last);
     }
 
     private void serialize(Object value) {

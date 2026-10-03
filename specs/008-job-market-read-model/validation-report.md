@@ -63,7 +63,7 @@ Solo-Maintainer review evidence here.
   coverage (336/350) and 82.95% branch coverage (146/176), above both 80% gates.
 - The reproducible performance fixture contains 100 companies, 100,000 jobs, and two
   owners. After 10 warm-ups, 40 serialized list and 40 serialized detail samples
-  measured p95 at 1 ms and 9 ms respectively, below the 500 ms budget. SQL query
+  measured p95 at 2 ms and 10 ms respectively, below the 500 ms budget. SQL query
   counts remain fixed at two for list and three for detail.
 - The Maven lifecycle installs and builds the React/TypeScript frontend with zero
   reported npm vulnerabilities. `./scripts/test-production-artifact.sh` passed:
