@@ -74,6 +74,13 @@ owner-scoped PATCH of display name and an already-hosted avatar URL. Avatar uplo
 credentials, every other identity operation, schema ownership, frontend routing, deployment,
 CI/CD, and production traffic remain unchanged.
 
+The account-password change slice is documented in
+[`migration-slices/password-change.md`](migration-slices/password-change.md). Feature 014 adds only
+owner-scoped POST password replacement after compatible current-password verification, preserving
+the verified current session and atomically revoking other owner sessions. Password reset, email
+binding, login and registration, session issuance, schema ownership, frontend routing, deployment,
+CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -116,6 +123,9 @@ Feature 012 additionally protects only DELETE on `/api/profile/sessions`; its se
 assertion supplies the owner for one opaque, owner-scoped session deletion.
 Feature 013 additionally protects only PATCH on `/api/profile`; the verified subject selects the
 single profile row and no request field can select another account.
+Feature 014 additionally protects only POST on `/api/profile/password`; the verified subject and
+bounded current-session metadata select one owner credential transition, and Java independently
+proves current-session ownership before mutation.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
