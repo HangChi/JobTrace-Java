@@ -68,6 +68,12 @@ non-disclosing not-found response. Better Auth and the existing service retain e
 and identity operation, schema ownership, frontend routing, deployment, CI/CD, and production
 traffic.
 
+The account-profile update slice is documented in
+[`migration-slices/profile-update.md`](migration-slices/profile-update.md). Feature 013 adds only
+owner-scoped PATCH of display name and an already-hosted avatar URL. Avatar upload, email binding,
+credentials, every other identity operation, schema ownership, frontend routing, deployment,
+CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -108,6 +114,8 @@ bounded server-to-server current-session metadata only to derive the response ma
 and active-expiry filtering.
 Feature 012 additionally protects only DELETE on `/api/profile/sessions`; its separately bound
 assertion supplies the owner for one opaque, owner-scoped session deletion.
+Feature 013 additionally protects only PATCH on `/api/profile`; the verified subject selects the
+single profile row and no request field can select another account.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
