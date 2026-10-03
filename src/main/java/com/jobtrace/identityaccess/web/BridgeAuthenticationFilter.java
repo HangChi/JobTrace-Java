@@ -35,6 +35,8 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
             "/api/applications/" + UUID_PATH + "(?:/detail)?");
     private static final Pattern INTERVIEW_DETAIL = Pattern.compile(
             "/api/interviews/" + UUID_PATH);
+    private static final Pattern JOB_MARKET_DETAIL = Pattern.compile(
+            "/api/job-market/campaigns/" + UUID_PATH);
 
     private final ClaimAssertionUseCase claimAssertion;
     private final BridgeAuthenticationEntryPoint entryPoint;
@@ -57,6 +59,9 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                 && !APPLICATION_DETAIL.matcher(path).matches()
                 && !"/api/interviews".equals(path)
                 && !INTERVIEW_DETAIL.matcher(path).matches()
+                && !("GET".equals(request.getMethod())
+                    && ("/api/job-market/campaigns".equals(path)
+                        || JOB_MARKET_DETAIL.matcher(path).matches()))
                 && !("GET".equals(request.getMethod())
                     && ("/api/exports/applications".equals(path)
                         || "/api/exports/interviews".equals(path)))

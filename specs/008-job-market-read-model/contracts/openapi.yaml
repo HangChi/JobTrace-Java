@@ -1,0 +1,257 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Job Market Read Model API
+  version: 0.1.0
+  description: Authenticated read-only job-market compatibility contract for feature 008; no production routing is enabled.
+paths:
+  /api/job-market/campaigns:
+    get:
+      operationId: listJobMarketCampaigns
+      summary: Browse company-level recruitment campaigns with owner-specific favorite state
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - name: q
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: company
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: location
+          in: query
+          schema: { type: string, maxLength: 100 }
+        - name: status
+          in: query
+          schema: { $ref: '#/components/schemas/PostStatus' }
+        - name: postedFrom
+          in: query
+          description: Inclusive publication-date lower bound.
+          schema: { type: string, format: date }
+        - name: favorite
+          in: query
+          schema: { type: boolean }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Stable filtered company page with owner-specific favorite state
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CampaignPage' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+  /api/job-market/campaigns/{campaignId}:
+    get:
+      operationId: getJobMarketCampaign
+      summary: Read one campaign's company summary and current eligible jobs
+      security:
+        - signedIdentityBridge: []
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Campaign detail with owner-specific tracked-application references
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CampaignDetail' }
+        '400': { $ref: '#/components/responses/InvalidRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Internal-only request-bound signed identity assertion from feature 003.
+  responses:
+    InvalidRequest:
+      description: Invalid filter, pagination, date, boolean or campaign identifier
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: No trusted authenticated owner
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Campaign is missing or has no eligible company projection
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: Required storage or identity dependency is unavailable
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    PostStatus:
+      type: string
+      enum: [open, stale, closed]
+    CampaignCompany:
+      type: object
+      additionalProperties: false
+      required: [id, name, type, industry]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { type: [string, 'null'] }
+        industry: { type: [string, 'null'] }
+    CampaignLocation:
+      type: object
+      additionalProperties: false
+      required: [name, isRemote]
+      properties:
+        name: { type: string }
+        isRemote: { type: boolean }
+    CampaignSource:
+      type: object
+      additionalProperties: false
+      required: [name, url]
+      properties:
+        name: { type: string }
+        url:
+          type: [string, 'null']
+          format: uri
+          description: Null unless the stored destination canonicalizes to HTTPS.
+    CampaignSummary:
+      type: object
+      required:
+        - id
+        - listingKind
+        - company
+        - campaignName
+        - recruitmentType
+        - batchLabel
+        - positions
+        - positionCount
+        - locations
+        - status
+        - applyMode
+        - primaryApplyUrl
+        - source
+        - publishedAt
+        - validThrough
+        - lastConfirmedAt
+        - isFavorite
+      properties:
+        id: { type: string, format: uuid }
+        listingKind: { type: string, enum: [synced_jobs, recruitment_directory] }
+        company: { $ref: '#/components/schemas/CampaignCompany' }
+        campaignName: { type: [string, 'null'] }
+        recruitmentType: { type: [string, 'null'] }
+        batchLabel: { type: [string, 'null'] }
+        positions:
+          type: array
+          items: { type: string }
+          description: Position names; list responses apply the 50-item preview constraint.
+        positionCount: { type: integer, minimum: 0 }
+        locations:
+          type: array
+          items: { $ref: '#/components/schemas/CampaignLocation' }
+        status: { $ref: '#/components/schemas/PostStatus' }
+        applyMode: { type: string, enum: [single, select, unavailable] }
+        primaryApplyUrl:
+          type: [string, 'null']
+          format: uri
+          description: Null unless the application destination canonicalizes to HTTPS.
+        source: { $ref: '#/components/schemas/CampaignSource' }
+        publishedAt: { type: [string, 'null'], format: date-time }
+        validThrough: { type: [string, 'null'], format: date-time }
+        lastConfirmedAt: { type: [string, 'null'], format: date-time }
+        isFavorite: { type: boolean }
+    CampaignPage:
+      type: object
+      additionalProperties: false
+      required: [items, page, limit, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CampaignListSummary' }
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1, maximum: 100 }
+        total: { type: integer, minimum: 0 }
+    CampaignListSummary:
+      allOf:
+        - { $ref: '#/components/schemas/CampaignSummary' }
+        - type: object
+          properties:
+            positions:
+              type: array
+              maxItems: 50
+              items: { type: string }
+              description: Company position preview; positionCount remains complete.
+    CampaignJob:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - title
+        - locations
+        - status
+        - applyUrl
+        - applyUnavailableReason
+        - publishedAt
+        - validThrough
+        - sourceName
+        - sourceUrl
+        - alreadyTrackedApplicationId
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        locations:
+          type: array
+          items: { $ref: '#/components/schemas/CampaignLocation' }
+        status:
+          type: string
+          enum: [open, stale]
+        applyUrl:
+          type: [string, 'null']
+          format: uri
+          description: Null unless the job target canonicalizes to HTTPS.
+        applyUnavailableReason:
+          type: [string, 'null']
+          enum: ['该岗位已失效', '来源未提供安全的官方投递地址', null]
+        publishedAt: { type: [string, 'null'], format: date-time }
+        validThrough: { type: [string, 'null'], format: date-time }
+        sourceName: { type: string }
+        sourceUrl:
+          type: [string, 'null']
+          format: uri
+          description: Null unless the source destination canonicalizes to HTTPS.
+        alreadyTrackedApplicationId: { type: [string, 'null'], format: uuid }
+    CampaignDetail:
+      allOf:
+        - { $ref: '#/components/schemas/CampaignSummary' }
+        - type: object
+          required: [jobs]
+          properties:
+            jobs:
+              type: array
+              items: { $ref: '#/components/schemas/CampaignJob' }
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [status, title, detail, code, requestId]
+      properties:
+        status: { type: integer }
+        title: { type: string }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
