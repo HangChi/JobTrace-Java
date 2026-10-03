@@ -4,6 +4,90 @@ info:
   version: 0.4.0
   description: Health and verified read-only pilot contracts for the Java migration runtime.
 paths:
+  /api/admin/summary:
+    get:
+      operationId: getAdminSummary
+      summary: Read administrator operational totals and activity
+      security: [{ signedIdentityBridge: [] }]
+      responses:
+        "200":
+          description: Independently available counts and activity sections
+          headers:
+            Cache-Control: { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json: { schema: { type: object } }
+        "401": { description: No trusted identity }
+        "403": { description: Trusted identity is not an administrator }
+  /api/admin/users:
+    get:
+      operationId: listAdminUsers
+      summary: Search and page managed users
+      security: [{ signedIdentityBridge: [] }]
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: role, in: query, schema: { type: string, enum: [all, user, admin], default: all } }
+        - { name: status, in: query, schema: { type: string, enum: [all, active, disabled], default: all } }
+        - { name: registeredFrom, in: query, schema: { type: string, format: date } }
+        - { name: registeredTo, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        "200":
+          description: Managed user page
+          headers:
+            Cache-Control: { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json: { schema: { type: object } }
+        "400": { description: Invalid query }
+        "401": { description: No trusted identity }
+        "403": { description: Trusted identity is not an administrator }
+        "503": { description: Data store unavailable }
+  /api/admin/users/{id}:
+    get:
+      operationId: getAdminUserDetail
+      summary: Read a managed user and bounded recent content
+      security: [{ signedIdentityBridge: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { name: applicationsPage, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: interviewsPage, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+      responses:
+        "200":
+          description: Managed user detail
+          headers:
+            Cache-Control: { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json: { schema: { type: object } }
+        "400": { description: Invalid user identifier or page }
+        "401": { description: No trusted identity }
+        "403": { description: Trusted identity is not an administrator }
+        "404": { description: User not found }
+        "503": { description: Data store unavailable }
+  /api/admin/audit-events:
+    get:
+      operationId: listAdminAuditEvents
+      summary: Search immutable access audit events
+      security: [{ signedIdentityBridge: [] }]
+      parameters:
+        - { name: actor, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: target, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: eventType, in: query, schema: { type: string, enum: [all, promote_admin, demote_admin, disable_user, enable_user], default: all } }
+        - { name: outcome, in: query, schema: { type: string, enum: [all, succeeded, denied, conflict, failed], default: all } }
+        - { name: occurredFrom, in: query, schema: { type: string, format: date } }
+        - { name: occurredTo, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        "200":
+          description: Audit event page
+          headers:
+            Cache-Control: { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json: { schema: { type: object } }
+        "400": { description: Invalid query }
+        "401": { description: No trusted identity }
+        "403": { description: Trusted identity is not an administrator }
+        "503": { description: Data store unavailable }
   /api/job-market/campaigns:
     get:
       operationId: listJobMarketCampaigns

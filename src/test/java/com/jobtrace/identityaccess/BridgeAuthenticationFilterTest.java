@@ -270,6 +270,35 @@ class BridgeAuthenticationFilterTest {
     }
 
     @Test
+    void protectsOnlyExactAdministrationReadGets() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        for (String path : new String[] {
+                "/api/admin/summary", "/api/admin/users", "/api/admin/users/user-a",
+                "/api/admin/audit-events"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+        }
+        for (String path : new String[] {
+                "/api/admin/users/user-a/extra", "/api/admin/job-market/sources",
+                "/api/internal/job-market/sync"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+        for (String path : new String[] {
+                "/api/admin/summary", "/api/admin/users", "/api/admin/users/user-a",
+                "/api/admin/audit-events"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("PATCH", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
     void exportAssertionCannotBeReplayedAcrossPathsOrMethods() throws Exception {
         BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
         String token = BridgeTokenFixtures.token(

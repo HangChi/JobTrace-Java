@@ -4,6 +4,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.jobtrace.admin.application.AdminReadQuery;
 import com.jobtrace.jobmarket.application.JobMarketReadQuery;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -136,5 +137,31 @@ class ArchitectureTest {
             .that().resideInAPackage("..jobmarket..")
             .should().dependOnClassesThat().resideInAnyPackage(
                     "..applications.infrastructure..", "..reminders.infrastructure..",
+                    "..datatransfer.infrastructure..");
+
+    @ArchTest
+    static final ArchRule ADMIN_DOMAIN_HAS_NO_OUTWARD_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..admin.domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..admin.application..", "..admin.infrastructure..", "..admin.web..");
+
+    @ArchTest
+    static final ArchRule ADMIN_USE_CASES_HAVE_NO_ADAPTER_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..admin.application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..admin.infrastructure..", "..admin.web..");
+
+    @ArchTest
+    static final ArchRule ADMIN_STORAGE_IMPLEMENTS_READ_PORT = classes()
+            .that().resideInAPackage("..admin.infrastructure..")
+            .and().haveSimpleNameEndingWith("ReadQuery")
+            .should().implement(AdminReadQuery.class);
+
+    @ArchTest
+    static final ArchRule ADMIN_HAS_NO_OTHER_CONTEXT_INFRASTRUCTURE_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..admin..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications.infrastructure..", "..interviews.infrastructure..",
+                    "..jobmarket.infrastructure..", "..reminders.infrastructure..",
                     "..datatransfer.infrastructure..");
 }

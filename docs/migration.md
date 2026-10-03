@@ -41,6 +41,12 @@ Feature 008 leaves collection, synchronization, projection refresh, all writes, 
 schema ownership, frontend routing, deployment, and production traffic with the existing
 service.
 
+The administrator-only read slice is documented in
+[`migration-slices/admin-read-model.md`](migration-slices/admin-read-model.md). Feature 009 adds
+summary, managed-user, user-detail, and audit-history reads while leaving access changes, sessions,
+job-market administration, schema ownership, frontend routing, deployment, and production traffic
+with the existing service.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -72,6 +78,8 @@ the three feature 005 private interview/dialog read routes, and the two feature 
 private reminder/settings read routes.
 The feature 007 bridge also covers only the exact two private export GET routes.
 Feature 008 adds only the exact job-market campaign list GET and UUID-shaped detail GET.
+Feature 009 adds only the exact administration summary, user list, opaque-ID user detail, and audit
+event list GET paths, and additionally requires the verified administrator role.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
