@@ -5,16 +5,22 @@ import com.jobtrace.jobmarket.application.GetCampaignDetail;
 import com.jobtrace.jobmarket.application.ListCampaigns;
 import com.jobtrace.jobmarket.domain.CampaignDetail;
 import com.jobtrace.jobmarket.domain.CampaignPage;
+import com.jobtrace.jobmarket.domain.JobMarketNotFoundException;
 import com.jobtrace.shared.web.Problem;
+import com.jobtrace.shared.web.RequestIdFilter;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import java.security.Principal;
 import java.time.Duration;
 import java.util.UUID;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,6 +41,20 @@ public class JobMarketReadController {
         this.listCampaigns = listCampaigns;
         this.getCampaignDetail = getCampaignDetail;
         this.metrics = metrics;
+    }
+
+    @ExceptionHandler(JobMarketNotFoundException.class)
+    public ResponseEntity<ProblemDetail> notFound(
+            JobMarketNotFoundException exception, HttpServletRequest request) {
+        ProblemDetail body = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND, exception.getMessage());
+        body.setTitle(HttpStatus.NOT_FOUND.getReasonPhrase());
+        body.setType(URI.create("urn:jobtrace:problem:not_found"));
+        body.setProperty("code", "not_found");
+        Object requestId = request.getAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE);
+        body.setProperty("requestId", requestId instanceof String value ? value : "unavailable");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.CACHE_CONTROL, "private, no-store").body(body);
     }
 
     @GetMapping("/{campaignId}")
@@ -78,7 +98,7 @@ public class JobMarketReadController {
         if (exception instanceof Problem problem && problem.status() == HttpStatus.UNAUTHORIZED) {
             return "denied_identity";
         }
-        if (exception instanceof Problem problem && problem.status() == HttpStatus.NOT_FOUND) {
+        if (exception instanceof JobMarketNotFoundException) {
             return "not_found";
         }
         if (exception instanceof IllegalArgumentException) {

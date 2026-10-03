@@ -1,10 +1,9 @@
 package com.jobtrace.jobmarket.application;
 
 import com.jobtrace.jobmarket.domain.CampaignDetail;
-import com.jobtrace.shared.web.Problem;
+import com.jobtrace.jobmarket.domain.JobMarketNotFoundException;
 import java.util.Objects;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +20,6 @@ public class GetCampaignDetail {
             throw new IllegalArgumentException("ownerId must not be blank");
         }
         return query.findDetail(ownerId, Objects.requireNonNull(campaignId))
-                .orElseThrow(() -> new Problem(
-                        "not_found", "没有找到这条招聘记录。", HttpStatus.NOT_FOUND));
+                .orElseThrow(JobMarketNotFoundException::new);
     }
 }

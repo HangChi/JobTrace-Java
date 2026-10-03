@@ -37,4 +37,29 @@ class JobMarketReadOpenApiTest {
         assertThat(paths.get("/api/job-market/campaigns/{campaignId}")
                 .getGet().getResponses()).containsKeys("400", "401", "404", "503");
     }
+
+    @Test
+    void repositoryContractContainsTheSameTwoProtectedReadOperations() {
+        var options = new ParseOptions();
+        options.setResolve(true);
+        var result = new OpenAPIV3Parser().readLocation(Path.of(
+                "specs/001-java-migration/contracts/openapi.yaml")
+                .toAbsolutePath().toString(), null, options);
+
+        assertThat(result.getMessages()).isEmpty();
+        var paths = result.getOpenAPI().getPaths();
+        for (String path : new String[] {
+            "/api/job-market/campaigns",
+            "/api/job-market/campaigns/{campaignId}"
+        }) {
+            assertThat(paths).containsKey(path);
+            assertThat(paths.get(path).readOperations()).hasSize(1);
+            assertThat(paths.get(path).getGet().getSecurity()).isNotEmpty();
+            assertThat(paths.get(path).getGet().getResponses().get("200").getHeaders())
+                    .containsKey("Cache-Control");
+        }
+        assertThat(paths.keySet()).noneMatch(path -> path.startsWith("/api/job-market/")
+                && !path.equals("/api/job-market/campaigns")
+                && !path.equals("/api/job-market/campaigns/{campaignId}"));
+    }
 }

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import com.jobtrace.jobmarket.application.GetCampaignDetail;
 import com.jobtrace.jobmarket.application.JobMarketReadQuery;
 import com.jobtrace.jobmarket.domain.CampaignDetail;
-import com.jobtrace.shared.web.Problem;
+import com.jobtrace.jobmarket.domain.JobMarketNotFoundException;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,7 @@ class GetCampaignDetailTest {
         when(query.findDetail("owner-a", ID)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> new GetCampaignDetail(query).execute("owner-a", ID))
-                .isInstanceOfSatisfying(Problem.class, problem -> {
-                    assertThat(problem.code()).isEqualTo("not_found");
+                .isInstanceOfSatisfying(JobMarketNotFoundException.class, problem -> {
                     assertThat(problem.getMessage()).doesNotContain(ID.toString());
                 });
     }

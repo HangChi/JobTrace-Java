@@ -35,6 +35,12 @@ The private data export read slice is documented in
 Feature 007 leaves imports, writes, sessions, schema ownership and production traffic with
 the existing service; no Java deployment is planned.
 
+The private job-market read slice is documented in
+[`migration-slices/job-market-read-model.md`](migration-slices/job-market-read-model.md).
+Feature 008 leaves collection, synchronization, projection refresh, all writes, sessions,
+schema ownership, frontend routing, deployment, and production traffic with the existing
+service.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -65,6 +71,7 @@ protects `GET /api/analytics/summary`, the two feature 004 application read rout
 the three feature 005 private interview/dialog read routes, and the two feature 006
 private reminder/settings read routes.
 The feature 007 bridge also covers only the exact two private export GET routes.
+Feature 008 adds only the exact job-market campaign list GET and UUID-shaped detail GET.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

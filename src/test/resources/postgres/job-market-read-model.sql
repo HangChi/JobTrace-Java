@@ -100,3 +100,13 @@ create index job_market_company_read_model_browse_idx
   on job_market_company_read_models(include_closed, published_at desc, last_confirmed_at desc, company_id);
 create index job_market_company_read_model_status_idx
   on job_market_company_read_models(include_closed, status, published_at desc, company_id);
+create index job_market_posts_company_status_idx
+  on job_market_posts(company_id, status, published_at desc, id);
+create index job_market_source_records_post_seen_idx
+  on job_market_source_records(post_id, last_seen_at desc, source_id);
+create index job_market_post_locations_post_idx
+  on job_market_post_locations(post_id, location_id);
+create index application_job_market_links_post_owner_idx
+  on application_job_market_links(post_id, owner_id);
+create index job_market_campaign_favorites_campaign_owner_idx
+  on job_market_campaign_favorites(campaign_id, owner_id);

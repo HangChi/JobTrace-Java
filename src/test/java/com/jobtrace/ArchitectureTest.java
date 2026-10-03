@@ -1,8 +1,10 @@
 package com.jobtrace;
 
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
+import com.jobtrace.jobmarket.application.JobMarketReadQuery;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -104,4 +106,35 @@ class ArchitectureTest {
             .that().resideInAPackage("..reminders..")
             .should().dependOnClassesThat().resideInAnyPackage(
                     "..applications..", "..analytics..");
+
+    @ArchTest
+    static final ArchRule JOB_MARKET_DOMAIN_HAS_NO_OUTWARD_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..jobmarket.domain..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..jobmarket.application..", "..jobmarket.infrastructure..",
+                    "..jobmarket.web..");
+
+    @ArchTest
+    static final ArchRule JOB_MARKET_USE_CASES_HAVE_NO_ADAPTER_DEPENDENCIES = noClasses()
+            .that().resideInAPackage("..jobmarket.application..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..jobmarket.infrastructure..", "..jobmarket.web..");
+
+    @ArchTest
+    static final ArchRule JOB_MARKET_STORAGE_DOES_NOT_DEPEND_ON_HTTP = noClasses()
+            .that().resideInAPackage("..jobmarket.infrastructure..")
+            .should().dependOnClassesThat().resideInAnyPackage("..jobmarket.web..");
+
+    @ArchTest
+    static final ArchRule JOB_MARKET_STORAGE_IMPLEMENTS_READ_PORT = classes()
+            .that().resideInAPackage("..jobmarket.infrastructure..")
+            .and().haveSimpleNameEndingWith("ReadQuery")
+            .should().implement(JobMarketReadQuery.class);
+
+    @ArchTest
+    static final ArchRule JOB_MARKET_HAS_NO_PRIVATE_CONTEXT_INFRASTRUCTURE_CYCLES = noClasses()
+            .that().resideInAPackage("..jobmarket..")
+            .should().dependOnClassesThat().resideInAnyPackage(
+                    "..applications.infrastructure..", "..reminders.infrastructure..",
+                    "..datatransfer.infrastructure..");
 }
