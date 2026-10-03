@@ -74,7 +74,9 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                     && ("/api/admin/summary".equals(path)
                         || "/api/admin/users".equals(path)
                         || ADMIN_USER_DETAIL.matcher(path).matches()
-                        || "/api/admin/audit-events".equals(path)));
+                        || "/api/admin/audit-events".equals(path)))
+                && !("PATCH".equals(request.getMethod())
+                    && ADMIN_USER_DETAIL.matcher(path).matches());
     }
 
     @Override

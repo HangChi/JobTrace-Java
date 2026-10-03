@@ -17,7 +17,7 @@ class AdminReadOnlySurfaceTest {
                 .toLowerCase();
 
         assertThat(controller).contains("@GetMapping")
-                .doesNotContain("@PostMapping", "@PatchMapping", "@PutMapping", "@DeleteMapping");
+                .doesNotContain("@PostMapping", "@PutMapping", "@DeleteMapping");
         assertThat(repository).doesNotContain(" insert into ", " update ", " delete from ",
                 "change_user_access_as", " for update", "refresh materialized");
         assertThat(Files.exists(Path.of("src/main/resources/db/migration"))).isFalse();

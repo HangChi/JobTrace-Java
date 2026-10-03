@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.jobtrace.admin.application.AdminReadQuery;
+import com.jobtrace.admin.application.ChangeManagedUserAccess;
 import com.jobtrace.admin.application.GetAdminSummary;
 import com.jobtrace.admin.application.GetManagedUserDetail;
 import com.jobtrace.admin.application.ListAdminAuditEvents;
@@ -75,7 +76,10 @@ class AdminWebTest {
         Clock clock = Clock.fixed(Instant.parse("2026-10-03T00:00:00Z"), ZoneOffset.UTC);
         return new AdminReadController(new GetAdminSummary(query, clock),
                 new ListManagedUsers(query), new GetManagedUserDetail(query),
-                new ListAdminAuditEvents(query), new AdminReadMetrics(registry));
+                new ListAdminAuditEvents(query),
+                new ChangeManagedUserAccess(mock(com.jobtrace.admin.application.AdminAccessCommand.class),
+                        query),
+                new AdminReadMetrics(registry));
     }
 
     private static UsernamePasswordAuthenticationToken principal(BridgeIdentity.Role role) {

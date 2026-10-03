@@ -17,3 +17,16 @@ Source routes are `GET /api/admin/summary`, `GET /api/admin/users`,
 - Responses are intentionally hardened with `private, no-store` in Java.
 - PATCH access changes, sessions, market administration, sync, collectors, schema changes, frontend,
   deployment, traffic routing, and any SQL write are excluded.
+# Feature 010 access-change compatibility
+
+`PATCH /api/admin/users/{id}` accepts a UUID `requestId`, positive `expectedVersion`, one of
+`promote_admin`, `demote_admin`, `disable_user`, or `enable_user`, a trimmed 10–500 character
+reason, and optional `confirmSelf=false`. The verified actor must be a current active administrator.
+
+The existing `change_user_access_as` database command is the compatibility boundary. It serializes
+request IDs, rejects changed-payload reuse, checks optimistic versions and action state, requires
+self-confirmation, protects the last active administrator, increments the version once, deletes
+sessions when disabling, and appends one immutable audit event. Identical retries return the
+original audit/result with `replayed=true`. Policy conflicts are HTTP 409 with the stable code,
+audit ID, and latest role/disabled/version when available. Unknown users are 404; invalid commands
+are 400. All administration responses remain `private, no-store`.

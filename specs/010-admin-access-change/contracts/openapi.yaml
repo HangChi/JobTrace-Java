@@ -1,0 +1,101 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Administrator Access Change
+  version: 010
+paths:
+  /api/admin/users/{id}:
+    patch:
+      operationId: changeManagedUserAccess
+      summary: Change a managed user's account access
+      security: [{ signedIdentityBridge: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, minLength: 1, maxLength: 128 }
+        - in: header
+          name: X-Request-ID
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccessChangeCommand'
+      responses:
+        '200':
+          description: Changed or replayed successfully
+          headers:
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccessChangeResponse' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '409': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+  schemas:
+    AccessChangeCommand:
+      type: object
+      additionalProperties: false
+      required: [requestId, expectedVersion, action, reason]
+      properties:
+        requestId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        action:
+          type: string
+          enum: [promote_admin, demote_admin, disable_user, enable_user]
+        reason: { type: string, minLength: 10, maxLength: 500 }
+        confirmSelf: { type: boolean, default: false }
+    AccessState:
+      type: object
+      required: [role, disabled, accessVersion]
+      properties:
+        role: { type: string, enum: [user, admin] }
+        disabled: { type: boolean }
+        accessVersion: { type: integer, minimum: 1 }
+    ManagedUserSummary:
+      type: object
+      additionalProperties: true
+      required: [id, role, disabled, accessVersion]
+      properties:
+        id: { type: string }
+        role: { type: string, enum: [user, admin] }
+        disabled: { type: boolean }
+        accessVersion: { type: integer, minimum: 1 }
+    AccessChangeResponse:
+      type: object
+      required: [user, auditEventId, replayed]
+      properties:
+        user: { $ref: '#/components/schemas/ManagedUserSummary' }
+        auditEventId: { type: string }
+        replayed: { type: boolean }
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+        auditEventId: { type: string }
+        latestAccessState: { $ref: '#/components/schemas/AccessState' }
+  responses:
+    Problem:
+      description: Safe problem response
+      headers:
+        Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }

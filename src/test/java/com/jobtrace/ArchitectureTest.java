@@ -5,6 +5,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.library.dependencies.SlicesRuleDefinition.slices;
 
 import com.jobtrace.admin.application.AdminReadQuery;
+import com.jobtrace.admin.application.AdminAccessCommand;
 import com.jobtrace.jobmarket.application.JobMarketReadQuery;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -156,6 +157,12 @@ class ArchitectureTest {
             .that().resideInAPackage("..admin.infrastructure..")
             .and().haveSimpleNameEndingWith("ReadQuery")
             .should().implement(AdminReadQuery.class);
+
+    @ArchTest
+    static final ArchRule ADMIN_WRITE_STORAGE_IMPLEMENTS_COMMAND_PORT = classes()
+            .that().resideInAPackage("..admin.infrastructure..")
+            .and().haveSimpleNameEndingWith("AccessCommand")
+            .should().implement(AdminAccessCommand.class);
 
     @ArchTest
     static final ArchRule ADMIN_HAS_NO_OTHER_CONTEXT_INFRASTRUCTURE_DEPENDENCIES = noClasses()

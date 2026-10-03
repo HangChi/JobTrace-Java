@@ -47,11 +47,12 @@ class AdminReadOpenApiTest {
         for (String path : new String[] {"/api/admin/summary", "/api/admin/users",
                 "/api/admin/users/{id}", "/api/admin/audit-events"}) {
             assertThat(paths).containsKey(path);
-            assertThat(paths.get(path).readOperations()).hasSize(1);
+            assertThat(paths.get(path).getGet()).isNotNull();
             assertThat(paths.get(path).getGet().getSecurity()).isNotEmpty();
             assertThat(paths.get(path).getGet().getResponses().get("200").getHeaders())
                     .containsKey("Cache-Control");
         }
+        assertThat(paths.get("/api/admin/users/{id}").getPatch()).isNotNull();
         assertThat(paths.keySet()).noneMatch(path -> path.startsWith("/api/admin/")
                 && !path.equals("/api/admin/summary")
                 && !path.equals("/api/admin/users")

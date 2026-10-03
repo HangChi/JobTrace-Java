@@ -47,6 +47,13 @@ summary, managed-user, user-detail, and audit-history reads while leaving access
 job-market administration, schema ownership, frontend routing, deployment, and production traffic
 with the existing service.
 
+The administrator access-change slice is documented in
+[`migration-slices/admin-access-change.md`](migration-slices/admin-access-change.md). Feature 010
+adds only the managed-user access PATCH command and delegates every concurrency, idempotency,
+last-administrator, session-revocation, and audit invariant to the existing atomic database
+operation. Session issuance, ordinary identity settings, job-market administration, schema
+ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -80,6 +87,8 @@ The feature 007 bridge also covers only the exact two private export GET routes.
 Feature 008 adds only the exact job-market campaign list GET and UUID-shaped detail GET.
 Feature 009 adds only the exact administration summary, user list, opaque-ID user detail, and audit
 event list GET paths, and additionally requires the verified administrator role.
+Feature 010 adds only PATCH on the same opaque-ID administrator user path and requires the verified
+administrator role; the database command independently revalidates the actor's current access.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

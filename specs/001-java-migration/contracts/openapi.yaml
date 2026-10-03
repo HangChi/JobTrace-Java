@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: JobTrace Migration Foundation API
   version: 0.4.0
-  description: Health and verified read-only pilot contracts for the Java migration runtime.
+  description: Health and verified incremental compatibility contracts for the Java migration runtime.
 paths:
   /api/admin/summary:
     get:
@@ -62,6 +62,31 @@ paths:
         "401": { description: No trusted identity }
         "403": { description: Trusted identity is not an administrator }
         "404": { description: User not found }
+        "503": { description: Data store unavailable }
+    patch:
+      operationId: changeManagedUserAccess
+      summary: Change a managed user's account access
+      security: [{ signedIdentityBridge: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 128 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AdminAccessChangeCommand" }
+      responses:
+        "200":
+          description: Changed or replayed access result
+          headers:
+            Cache-Control: { schema: { type: string, const: "private, no-store" } }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminAccessChangeResponse" }
+        "400": { description: Invalid command }
+        "401": { description: No trusted identity }
+        "403": { description: Trusted identity is not a current administrator }
+        "404": { description: User not found }
+        "409": { description: "Version, state, confirmation, last-admin, or idempotency conflict" }
         "503": { description: Data store unavailable }
   /api/admin/audit-events:
     get:
@@ -425,6 +450,25 @@ components:
         Internal-only `JobTraceBridge <compact-JWS>` assertion defined by signed identity
         bridge contract v1. Browser credentials and public identity headers are not accepted.
   schemas:
+    AdminAccessChangeCommand:
+      type: object
+      additionalProperties: false
+      required: [requestId, expectedVersion, action, reason]
+      properties:
+        requestId: { type: string, format: uuid }
+        expectedVersion: { type: integer, minimum: 1 }
+        action:
+          type: string
+          enum: [promote_admin, demote_admin, disable_user, enable_user]
+        reason: { type: string, minLength: 10, maxLength: 500 }
+        confirmSelf: { type: boolean, default: false }
+    AdminAccessChangeResponse:
+      type: object
+      required: [user, auditEventId, replayed]
+      properties:
+        user: { type: object }
+        auditEventId: { type: string }
+        replayed: { type: boolean }
     JobMarketPostStatus:
       type: string
       enum: [open, stale, closed]
