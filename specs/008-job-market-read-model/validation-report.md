@@ -98,5 +98,14 @@ Solo-Maintainer review evidence here.
   automated and pass. This is reproducible local evidence, not a production claim.
 
 The self-review found no standards or constitution exception and no unresolved local
-finding. A pull request and its required CI/security results will be recorded below.
-Deployment and production traffic activation remain explicitly unscheduled.
+finding.
+
+## Pull request and release boundary
+
+PR [#22](https://github.com/HangChi/JobTrace-Java/pull/22) targets `main`. At
+implementation commit `761b0b3`, required `backend`, `frontend`,
+`production-artifact`, `dependency-review`, and `secret-scan` checks all passed.
+GitHub reported a `CLEAN` merge state with no review comments or conversations to
+resolve. This record-only commit will rerun those checks before merge. Deployment,
+production traffic activation, and legacy ownership transfer remain explicitly
+unscheduled.

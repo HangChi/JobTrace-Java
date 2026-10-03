@@ -124,7 +124,7 @@
 - [X] T042 [P] Add architecture rules preserving the `jobmarket` web-to-application-to-domain dependency direction, infrastructure port implementation, and freedom from applications/reminders/datatransfer infrastructure cycles in `src/test/java/com/jobtrace/ArchitectureTest.java`.
 - [X] T043 [P] Document legacy synchronization/writer/session/schema ownership, Java read-only consumption, no-store hardening, safe-link policy, performance dataset, and no-deployment decision in `docs/migration-slices/job-market-read-model.md` and `docs/migration.md`.
 - [X] T044 Run `./mvnw verify` with Docker and record fixture parity, two-owner isolation, feature/repository OpenAPI, security/failure behavior, read-only/schema checks, architecture, Checkstyle, at least 80% line/branch coverage, p95/query counts, and Java-only artifact evidence in `specs/008-job-market-read-model/validation-report.md`.
-- [ ] T045 Review the result against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/008-job-market-read-model/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and explicitly unscheduled deployment status.
+- [X] T045 Review the result against `spec.md` and all four constitution principles, record Solo-Maintainer Mode self-review in `specs/008-job-market-read-model/validation-report.md`, open a PR to `main`, pass required CI/security checks, and record its URL and explicitly unscheduled deployment status.
 
 ---
 
