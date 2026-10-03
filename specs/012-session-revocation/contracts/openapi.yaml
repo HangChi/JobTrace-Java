@@ -1,0 +1,78 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Account Session Revocation API
+  version: 0.1.0
+  description: Owner-scoped session revocation compatibility for feature 012; no production routing is enabled.
+paths:
+  /api/profile/sessions:
+    delete:
+      operationId: revokeAccountSession
+      summary: Revoke one session owned by the authenticated account
+      security:
+        - signedIdentityBridge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id: { type: string, minLength: 1, maxLength: 255 }
+      responses:
+        '200':
+          description: One owned session was durably revoked
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionRevocationResult' }
+        '400': { $ref: '#/components/responses/Validation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '503': { $ref: '#/components/responses/Unavailable' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Internal-only request-bound signed assertion from feature 003.
+  responses:
+    Validation:
+      description: Missing, non-string, blank, or overlong session identifier
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: No trusted authenticated owner
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: The requested session is absent or is not owned by the caller
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unavailable:
+      description: Required storage or identity dependency is unavailable
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    SessionRevocationResult:
+      type: object
+      required: [revoked]
+      properties:
+        revoked: { type: boolean, const: true }
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }

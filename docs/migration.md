@@ -61,6 +61,13 @@ the existing service retain authentication, cookies, issuance, refresh, expiry, 
 other identity/profile operation, schema ownership, frontend routing, deployment, CI/CD, and
 production traffic.
 
+The account-session revocation slice is documented in
+[`migration-slices/session-revocation.md`](migration-slices/session-revocation.md). Feature 012
+adds only owner-scoped DELETE on the same session path, using one atomic ID-and-owner deletion and a
+non-disclosing not-found response. Better Auth and the existing service retain every other session
+and identity operation, schema ownership, frontend routing, deployment, CI/CD, and production
+traffic.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -99,6 +106,8 @@ administrator role; the database command independently revalidates the actor's c
 Feature 011 adds only GET on `/api/profile/sessions`, requires the verified owner subject, and uses
 bounded server-to-server current-session metadata only to derive the response marker after owner
 and active-expiry filtering.
+Feature 012 additionally protects only DELETE on `/api/profile/sessions`; its separately bound
+assertion supplies the owner for one opaque, owner-scoped session deletion.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
