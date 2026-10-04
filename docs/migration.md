@@ -117,6 +117,11 @@ verify a username or verified recovery email and issue one shared-format session
 browser cookie. The old service remains the production route owner; Java protected APIs still
 require signed bridge assertions.
 
+The compatible current-session logout slice is documented in
+[`migration-slices/logout.md`](migration-slices/logout.md). Feature 021 adds only anonymous POST to
+verify a signed browser session cookie, delete that one session best-effort, and expire the
+established cookies. Other Java APIs do not accept the browser cookie as authorization.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -180,6 +185,9 @@ registration code and creating one account. Other identity routes retain their b
 Feature 020 additionally permits only POST on `/api/auth/login` without an owner assertion. It
 applies the same-origin check, login source limit and optional challenge before issuing a shared
 session cookie. The cookie never authorizes other Java APIs by itself.
+Feature 021 additionally permits only POST on `/api/auth/logout` without an owner assertion. It
+requires same-origin and a valid session-cookie signature before deleting one session; missing or
+invalid cookies receive an idempotent 204 with cookie expiry.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

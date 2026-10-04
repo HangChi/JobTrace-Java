@@ -19,7 +19,8 @@ public class AccountEmailUnbindingNoStoreFilter extends OncePerRequestFilter {
                 && !AccountEmailCodeController.PATH.equals(request.getRequestURI())
                 && !RegistrationEmailCodeController.PATH.equals(request.getRequestURI())
                 && !RegistrationController.PATH.equals(request.getRequestURI())
-                && !LoginController.PATH.equals(request.getRequestURI());
+                && !LoginController.PATH.equals(request.getRequestURI())
+                && !LogoutController.PATH.equals(request.getRequestURI());
     }
 
     @Override

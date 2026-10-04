@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Compatible current-session logout slice
+  version: '021'
+paths:
+  /api/auth/logout:
+    post:
+      summary: Sign out of the current browser session
+      security: []
+      parameters:
+        - in: header
+          name: Origin
+          schema: { type: string }
+        - in: header
+          name: Cookie
+          schema: { type: string }
+      responses:
+        '204':
+          description: Idempotent, empty logout response with expired authentication cookies
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+            Cache-Control:
+              schema: { type: string }
+        '403':
+          description: Explicit cross-site request rejected
+        '503':
+          description: Signing configuration unavailable
