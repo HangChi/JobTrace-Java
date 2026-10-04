@@ -60,10 +60,13 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                 && !(("GET".equals(request.getMethod())
                         || "DELETE".equals(request.getMethod()))
                     && AccountSessionReadController.PATH.equals(path))
-                && !("PATCH".equals(request.getMethod())
+                && !(("GET".equals(request.getMethod())
+                        || "PATCH".equals(request.getMethod()))
                     && AccountProfileController.PATH.equals(path))
                 && !("POST".equals(request.getMethod())
                     && AccountPasswordController.PATH.equals(path))
+                && !("POST".equals(request.getMethod())
+                    && AvatarController.PATH.equals(path))
                 && !("DELETE".equals(request.getMethod())
                     && AccountEmailUnbindingController.PATH.equals(path))
                 && !("PATCH".equals(request.getMethod())
@@ -97,6 +100,13 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
+        if (request.getHeader("Authorization") == null
+                && SecurityContextHolder.getContext().getAuthentication() != null
+                && SecurityContextHolder.getContext().getAuthentication().getDetails()
+                        instanceof com.jobtrace.identityaccess.domain.BrowserIdentity) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         Instant startedAt = Instant.now();
         try {
             String assertion = assertion(request.getHeader("Authorization"));

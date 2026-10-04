@@ -52,7 +52,8 @@ public class AccountEmailUnbindingController {
         try {
             String password = AccountEmailUnbindingRequest.from(body).currentPasswordValue();
             var result = unbindEmail.execute(
-                    BridgePrincipalOwner.require(principal), currentSessionId, password);
+                    BridgePrincipalOwner.require(principal),
+                    BridgePrincipalOwner.currentSessionId(principal, currentSessionId), password);
             metrics.record("success", elapsed(started));
             return ResponseEntity.ok()
                     .header(HttpHeaders.CACHE_CONTROL, "private, no-store")

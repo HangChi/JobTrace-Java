@@ -56,7 +56,8 @@ public class AccountEmailCodeController {
                 throw new AccountEmailCodeValidationException("email");
             }
             requestCode.execute(BridgePrincipalOwner.require(principal),
-                    currentSessionId, email.textValue());
+                    BridgePrincipalOwner.currentSessionId(principal, currentSessionId),
+                    email.textValue());
             metrics.record("success", elapsed(started));
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .header(HttpHeaders.CACHE_CONTROL, "private, no-store")

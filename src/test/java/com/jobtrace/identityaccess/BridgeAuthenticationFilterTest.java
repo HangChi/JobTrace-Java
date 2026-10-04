@@ -7,6 +7,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.jobtrace.identityaccess.application.ClaimAssertionUseCase;
 import com.jobtrace.identityaccess.domain.BridgeIdentity;
+import com.jobtrace.identityaccess.domain.BrowserIdentity;
 import com.jobtrace.identityaccess.domain.ReplayGuard;
 import com.jobtrace.identityaccess.web.BridgeAuthenticationFilter;
 import com.jobtrace.identityaccess.web.BridgeAuthenticationMetrics;
@@ -18,6 +19,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -76,6 +80,27 @@ class BridgeAuthenticationFilterTest {
                 .contains(BridgeTokenFixtures.REQUEST_ID)
                 .doesNotContain("owner-a");
         assertThat(chain.getRequest()).isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    void verifiedBrowserIdentityMayContinueButExplicitBadBridgeStillFails() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        var authentication = new UsernamePasswordAuthenticationToken("owner-a", null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        authentication.setDetails(new BrowserIdentity("owner-a", "session-a",
+                BrowserIdentity.Role.USER));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        MockHttpServletRequest browserRequest = request();
+        MockFilterChain accepted = new MockFilterChain();
+        filter.doFilter(browserRequest, new MockHttpServletResponse(), accepted);
+        assertThat(accepted.getRequest()).isSameAs(browserRequest);
+
+        MockHttpServletRequest badBridge = request();
+        badBridge.addHeader("Authorization", "JobTraceBridge invalid");
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+        filter.doFilter(badBridge, rejected, new MockFilterChain());
+        assertThat(rejected.getStatus()).isEqualTo(401);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 

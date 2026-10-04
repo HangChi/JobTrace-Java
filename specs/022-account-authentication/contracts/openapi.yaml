@@ -1,0 +1,74 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Account Authentication Completion
+  version: 0.22.0
+paths:
+  /api/auth/session:
+    get:
+      summary: Read the current browser session and account
+      responses:
+        "200": { description: Current session and safe account projection }
+        "401": { description: No valid browser session }
+        "503": { description: Session store unavailable }
+  /api/auth/request-password-reset:
+    post:
+      summary: Request a password reset without disclosing address existence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200": { description: Generic accepted response }
+        "400": { description: Invalid address or origin }
+        "429": { description: Request rate limit }
+  /api/auth/reset-password/{token}:
+    get:
+      summary: Validate a legacy reset link and redirect to the reset form
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        "302": { description: Redirect with token or invalid-link result }
+  /api/auth/reset-password:
+    post:
+      summary: Consume a reset token and replace the password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, newPassword]
+              properties:
+                token: { type: string }
+                newPassword: { type: string }
+      responses:
+        "200": { description: Password changed and sessions revoked }
+        "400": { description: Invalid password or reset token }
+  /api/profile:
+    get:
+      summary: Read the current owner's safe profile
+      responses:
+        "200": { description: Current profile }
+        "401": { description: No valid identity }
+  /api/profile/avatar:
+    post:
+      summary: Validate and upload a current-owner avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        "200": { description: Public avatar URL }
+        "400": { description: Invalid image }
+        "401": { description: No valid identity }
+        "502": { description: Storage upload failed }

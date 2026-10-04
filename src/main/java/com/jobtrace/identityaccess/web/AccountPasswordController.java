@@ -53,7 +53,7 @@ public class AccountPasswordController {
             AccountPasswordChangeRequest request = AccountPasswordChangeRequest.from(body);
             AccountPasswordChangeResult result = changePassword.execute(
                     BridgePrincipalOwner.require(principal),
-                    currentSessionId,
+                    BridgePrincipalOwner.currentSessionId(principal, currentSessionId),
                     request.currentPasswordValue(),
                     request.newPasswordValue());
             metrics.record("success", elapsed(started));
