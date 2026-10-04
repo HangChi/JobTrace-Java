@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Verified account registration slice
+  version: 019
+paths:
+  /api/auth/register:
+    post:
+      summary: Create an account using a registration email code
+      security: []
+      parameters:
+        - in: header
+          name: Origin
+          schema: { type: string }
+        - in: header
+          name: x-auth-challenge
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, email, verificationCode, password]
+              properties:
+                username: { type: string, minLength: 3, maxLength: 30 }
+                email: { type: string, format: email, maxLength: 254 }
+                verificationCode: { type: string, pattern: '^[0-9]{6}$' }
+                password: { type: string, minLength: 8, maxLength: 16 }
+                displayName: { type: string, maxLength: 100 }
+      responses:
+        '202':
+          description: Account created; sign in separately
+        '400':
+          description: Validation, challenge required, or invalid email code
+        '403':
+          description: Origin or challenge rejected
+        '409':
+          description: Username or recovery email conflict
+        '429':
+          description: Source limit reached
+        '503':
+          description: Required configuration or challenge dependency unavailable

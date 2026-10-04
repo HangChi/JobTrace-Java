@@ -105,6 +105,12 @@ Feature 018 adds only anonymous POST to request a short-lived registration code 
 same-origin and rate-limit checks. Account creation, code redemption, frontend routing, schema
 ownership, deployment, CI/CD, and production traffic remain unchanged.
 
+The verified registration slice is documented in
+[`migration-slices/registration.md`](migration-slices/registration.md). Feature 019 adds only
+anonymous POST to redeem a registration-purpose email code and create a compatible user and
+credential without signing in. Login, session issuance, frontend routing, schema ownership,
+deployment, CI/CD, and production traffic remain with the existing service.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -162,6 +168,9 @@ address ownership checks.
 Feature 018 permits only POST on `/api/auth/email-code` without an owner assertion. The endpoint
 checks browser origin and applies source and address limits before issuing a registration-purpose
 code; all other identity routes retain their existing authentication boundary.
+Feature 019 additionally permits only POST on `/api/auth/register` without an owner assertion.
+It applies the same-origin check, source limit, and optional human challenge before redeeming a
+registration code and creating one account. Other identity routes retain their boundary.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

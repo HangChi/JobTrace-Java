@@ -1,6 +1,7 @@
 package com.jobtrace.identityaccess.infrastructure;
 
 import com.jobtrace.identityaccess.domain.AccountEmailCodeRateLimitedException;
+import com.jobtrace.identityaccess.application.RegistrationAttemptLimiter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Repository;
 
 /** Shares the legacy source, address, and cooldown rules across code purposes. */
 @Repository
-public class PostgresEmailCodeRateLimiter {
+public class PostgresEmailCodeRateLimiter implements RegistrationAttemptLimiter {
 
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -26,6 +27,11 @@ public class PostgresEmailCodeRateLimiter {
     public void consumeAddress(String email) {
         consume(email, "email-code-address", 5, 3600);
         consume(email, "email-code-cooldown", 1, 60);
+    }
+
+    @Override
+    public void consumeRegistrationAttempt() {
+        consume("local-register", "register", 5, 60);
     }
 
     private void consume(String key, String action, int limit, int windowSeconds) {

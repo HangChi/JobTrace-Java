@@ -46,6 +46,9 @@ jobtrace:
     delivery-secret: ${AUTH_EMAIL_DELIVERY_SECRET:}
   registration-code:
     allowed-origin: ${BETTER_AUTH_URL:}
+  registration:
+    challenge-url: ${AUTH_CHALLENGE_VERIFY_URL:}
+    challenge-secret: ${AUTH_CHALLENGE_SECRET:}
 
 management:
   endpoint:
