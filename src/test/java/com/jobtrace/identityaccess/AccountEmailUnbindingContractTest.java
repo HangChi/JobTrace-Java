@@ -83,11 +83,11 @@ class AccountEmailUnbindingContractTest extends AccountEmailUnbindingFixture {
     }
 
     @Test
-    void onlyDeleteIsExposed() throws Exception {
+    void bindingPatchCannotUnbindAnEmail() throws Exception {
         mockMvc.perform(patch(AccountEmailUnbindingController.PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}").with(asOwner(OWNER)).with(csrf()))
-                .andExpect(status().isMethodNotAllowed());
+                .andExpect(status().isBadRequest());
         assertThat(recoveryEmail(OWNER)).isEqualTo(OWNER_EMAIL);
     }
 

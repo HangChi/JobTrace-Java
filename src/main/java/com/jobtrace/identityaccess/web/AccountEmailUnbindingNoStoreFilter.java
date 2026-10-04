@@ -9,7 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Makes successful and failed responses non-cacheable. */
+/** Makes email binding and unbinding responses non-cacheable. */
 @Component
 public class AccountEmailUnbindingNoStoreFilter extends OncePerRequestFilter {
 

@@ -87,6 +87,12 @@ owner-scoped DELETE of an existing recovery email after current-password verific
 owner verification codes are consumed in the same transaction. Email binding and code delivery,
 schema ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
 
+The account-email binding slice is documented in
+[`migration-slices/email-binding.md`](migration-slices/email-binding.md). Feature 016 adds only
+owner-scoped PATCH of a recovery email after current-password and existing verification-code
+checks. Code issuance and delivery, schema ownership, frontend routing, deployment, CI/CD, and
+production traffic remain with the existing service.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -135,6 +141,9 @@ proves current-session ownership before mutation.
 Feature 015 additionally protects only DELETE on `/api/profile/email`; the verified subject and
 bounded current-session metadata select one owner email transition after compatible password
 verification.
+Feature 016 additionally protects only PATCH on `/api/profile/email`; the verified subject and
+bounded current-session metadata select one owner email transition after compatible password and
+purpose-bound verification-code checks.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

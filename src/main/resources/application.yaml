@@ -40,6 +40,8 @@ jobtrace:
         secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_0_SECRET:}
       - id: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_ID:}
         secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_SECRET:}
+  email-binding:
+    verification-secret: ${JOBTRACE_EMAIL_BINDING_VERIFICATION_SECRET:}
 
 management:
   endpoint:
