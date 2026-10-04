@@ -122,6 +122,13 @@ The compatible current-session logout slice is documented in
 verify a signed browser session cookie, delete that one session best-effort, and expire the
 established cookies. Other Java APIs do not accept the browser cookie as authorization.
 
+The account-authentication completion slice is documented in
+[`migration-slices/account-authentication.md`](migration-slices/account-authentication.md).
+Feature 022 adds verified browser-cookie access, current profile/session reads, password recovery,
+and validated avatar upload while preserving the signed bridge and the old service as production
+route owner. The existing database, mail webhook and COS bucket remain shared; no deployment or
+production traffic change is included.
+
 ## Slice checklist
 
 Every migration slice must:

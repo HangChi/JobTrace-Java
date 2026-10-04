@@ -55,7 +55,8 @@ public class AccountEmailBindingController {
         try {
             var request = AccountEmailBindingRequest.from(body);
             var result = bindEmail.execute(BridgePrincipalOwner.require(principal),
-                    currentSessionId, request.passwordValue(), request.emailValue(),
+                    BridgePrincipalOwner.currentSessionId(principal, currentSessionId),
+                    request.passwordValue(), request.emailValue(),
                     request.codeValue());
             metrics.record("success", elapsed(started));
             return ResponseEntity.ok()

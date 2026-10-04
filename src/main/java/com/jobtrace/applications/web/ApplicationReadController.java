@@ -5,7 +5,7 @@ import com.jobtrace.applications.application.ListApplications;
 import com.jobtrace.applications.domain.ApplicationDetail;
 import com.jobtrace.applications.domain.ApplicationNotFoundException;
 import com.jobtrace.applications.domain.ApplicationPage;
-import com.jobtrace.identityaccess.domain.BridgeIdentity;
+import com.jobtrace.identityaccess.web.BridgePrincipalOwner;
 import com.jobtrace.shared.web.Problem;
 import java.security.Principal;
 import java.time.Duration;
@@ -14,7 +14,6 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -90,11 +89,6 @@ public class ApplicationReadController {
     }
 
     private static String owner(Principal principal) {
-        if (principal instanceof Authentication authentication
-                && authentication.getDetails() instanceof BridgeIdentity identity
-                && identity.subject().equals(authentication.getName())) {
-            return identity.subject();
-        }
-        throw new Problem("unauthorized", "Authentication is required.", HttpStatus.UNAUTHORIZED);
+        return BridgePrincipalOwner.require(principal);
     }
 }

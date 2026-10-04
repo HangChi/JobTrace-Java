@@ -81,12 +81,15 @@ class AccountProfileContractTest extends AccountProfileDatabaseTest {
     }
 
     @Test
-    void surfaceExposesOnlyPatchAndUnsupportedMethodsDoNotMutate() throws Exception {
+    void surfaceExposesReadAndPatchWhileUnsupportedMethodsDoNotMutate() throws Exception {
         assertThat(Arrays.stream(AccountProfileController.class.getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(PatchMapping.class))).hasSize(1);
+        mockMvc.perform(get(AccountProfileController.PATH).with(asOwner(OWNER)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(OWNER))
+                .andExpect(jsonPath("$.displayName").value("Old Name"));
         for (var request : java.util.List.of(
-                get(AccountProfileController.PATH), post(AccountProfileController.PATH),
-                delete(AccountProfileController.PATH))) {
+                post(AccountProfileController.PATH), delete(AccountProfileController.PATH))) {
             mockMvc.perform(request.with(asOwner(OWNER)).with(csrf()))
                     .andExpect(status().isMethodNotAllowed());
         }

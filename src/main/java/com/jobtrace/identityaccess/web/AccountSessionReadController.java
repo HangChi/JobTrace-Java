@@ -36,7 +36,8 @@ public class AccountSessionReadController {
         long started = System.nanoTime();
         try {
             var result = listSessions.execute(
-                    BridgePrincipalOwner.require(principal), currentSessionId);
+                    BridgePrincipalOwner.require(principal),
+                    BridgePrincipalOwner.currentSessionId(principal, currentSessionId));
             metrics.record("success", elapsed(started));
             return ResponseEntity.ok()
                     .header(HttpHeaders.CACHE_CONTROL, "private, no-store")
