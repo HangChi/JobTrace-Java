@@ -99,6 +99,12 @@ adds only owner-scoped POST to request a short-lived binding code and deliver it
 existing mail contract. Registration codes, other mail templates, frontend routing, schema
 ownership, deployment, CI/CD, and production traffic remain unchanged.
 
+The registration-email code slice is documented in
+[`migration-slices/registration-email-code.md`](migration-slices/registration-email-code.md).
+Feature 018 adds only anonymous POST to request a short-lived registration code with exact
+same-origin and rate-limit checks. Account creation, code redemption, frontend routing, schema
+ownership, deployment, CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -153,6 +159,9 @@ purpose-bound verification-code checks.
 Feature 017 additionally protects only POST on `/api/profile/email/code`; the verified subject
 and bounded current-session metadata select one owner-bound code issuance after rate limits and
 address ownership checks.
+Feature 018 permits only POST on `/api/auth/email-code` without an owner assertion. The endpoint
+checks browser origin and applies source and address limits before issuing a registration-purpose
+code; all other identity routes retain their existing authentication boundary.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

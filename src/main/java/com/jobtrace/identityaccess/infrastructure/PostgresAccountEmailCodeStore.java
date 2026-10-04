@@ -1,13 +1,8 @@
 package com.jobtrace.identityaccess.infrastructure;
 
 import com.jobtrace.identityaccess.application.AccountEmailCodeStore;
-import com.jobtrace.identityaccess.domain.AccountEmailCodeRateLimitedException;
 import com.jobtrace.identityaccess.domain.AccountEmailCodeStateException;
 import com.jobtrace.identityaccess.domain.AccountEmailConflictException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -21,16 +16,19 @@ public class PostgresAccountEmailCodeStore implements AccountEmailCodeStore {
 
     private final NamedParameterJdbcTemplate jdbc;
     private final TransactionTemplate transactions;
+    private final PostgresEmailCodeRateLimiter limits;
 
     public PostgresAccountEmailCodeStore(NamedParameterJdbcTemplate jdbc,
-            PlatformTransactionManager transactionManager) {
+            PlatformTransactionManager transactionManager,
+            PostgresEmailCodeRateLimiter limits) {
         this.jdbc = jdbc;
         this.transactions = new TransactionTemplate(transactionManager);
+        this.limits = limits;
     }
 
     @Override
     public void consumeSourceAttempt() {
-        consume("binding-email-code", "email-code-ip", 100, 3600);
+        limits.consumeSource("binding-email-code");
     }
 
     @Override
@@ -42,8 +40,7 @@ public class PostgresAccountEmailCodeStore implements AccountEmailCodeStore {
                 .addValue("codeHash", codeHash)
                 .addValue("codeId", UUID.randomUUID());
         checkOwnerAndConflict(parameters, false);
-        consume(email, "email-code-address", 5, 3600);
-        consume(email, "email-code-cooldown", 1, 60);
+        limits.consumeAddress(email);
         transactions.executeWithoutResult(status -> {
             checkOwnerAndConflict(parameters, true);
             jdbc.update("""
@@ -78,27 +75,4 @@ public class PostgresAccountEmailCodeStore implements AccountEmailCodeStore {
         }
     }
 
-    private void consume(String key, String action, int limit, int windowSeconds) {
-        var parameters = new MapSqlParameterSource()
-                .addValue("keyHash", sha256(key))
-                .addValue("action", action)
-                .addValue("requestLimit", limit)
-                .addValue("windowSeconds", windowSeconds);
-        Boolean allowed = jdbc.queryForObject("""
-                select consume_auth_rate_limit(:keyHash,:action,:requestLimit,:windowSeconds)
-                """, parameters, Boolean.class);
-        if (!Boolean.TRUE.equals(allowed)) {
-            throw new AccountEmailCodeRateLimitedException();
-        }
-    }
-
-    private static String sha256(String value) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 unavailable", exception);
-        }
-    }
 }

@@ -44,6 +44,8 @@ jobtrace:
     verification-secret: ${JOBTRACE_EMAIL_BINDING_VERIFICATION_SECRET:}
     delivery-url: ${AUTH_EMAIL_DELIVERY_URL:}
     delivery-secret: ${AUTH_EMAIL_DELIVERY_SECRET:}
+  registration-code:
+    allowed-origin: ${BETTER_AUTH_URL:}
 
 management:
   endpoint:
