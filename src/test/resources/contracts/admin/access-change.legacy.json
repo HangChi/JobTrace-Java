@@ -1,0 +1,21 @@
+{
+  "request": {
+    "requestId": "0199a55c-9b00-7000-8000-000000000010",
+    "expectedVersion": 2,
+    "action": "disable_user",
+    "reason": "Confirmed account security incident",
+    "confirmSelf": false
+  },
+  "success": {
+    "auditEventId": "opaque-audit-id",
+    "replayed": false,
+    "user": { "id": "user-a", "role": "user", "disabled": true, "accessVersion": 3 }
+  },
+  "conflicts": [
+    "access_version_conflict",
+    "last_admin",
+    "self_confirmation_required",
+    "idempotency_conflict",
+    "action_state_conflict"
+  ]
+}

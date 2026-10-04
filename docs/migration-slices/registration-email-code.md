@@ -1,0 +1,9 @@
+# Registration Email Code Request (Feature 018)
+
+This slice adds anonymous `POST /api/auth/email-code`. It is intentionally not protected by a signed owner assertion because no account exists yet. Only this POST is allowed anonymously and exempted from the framework CSRF token; the command rejects an explicit cross-site `Sec-Fetch-Site` value and any Origin different from the configured `BETTER_AUTH_URL` origin. An absent Origin remains accepted, matching the existing service. No client-supplied forwarding address is trusted.
+
+The command normalizes the email address, rejects one already bound to an account, and applies the existing source (100/hour), address (five/hour), and cooldown (one/minute) limits. These address limits are shared with binding-code requests. A cryptographically random six-digit code is stored only as the legacy-compatible `registration` HMAC with null user ID and ten-minute expiry. Earlier active registration codes for that address are consumed in the same transaction; binding-purpose codes are untouched. The existing HTTP delivery adapter sends the code, while the 202 response contains only the confirmation message.
+
+Validation, origin, conflict, rate-limit, invalid-recipient and delivery errors are non-cacheable and safe. Metrics use only fixed outcome labels and durations; they never contain addresses or codes. As with the old service, a delivery failure after durable insertion leaves a code that expires or can be replaced later.
+
+The old service retains production routing, code redemption and account creation. Java activation requires `BETTER_AUTH_URL`, the shared HMAC secret, and the existing mail-delivery endpoint. Frontend routing, schema ownership, deployment, CI/CD, and production traffic remain outside this slice. Rollback later directs only this POST path to the old service; no data migration is needed.

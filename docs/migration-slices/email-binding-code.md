@@ -1,0 +1,9 @@
+# Account Email Binding Code (Feature 017)
+
+This slice adds the authenticated `POST /api/profile/email/code` command. A signed bridge assertion must match the exact method, path, and request ID; a trusted current-session ID must identify an active session owned by the verified subject. Java does not trust client-provided account IDs or forwarding headers.
+
+The command normalizes the target address, rejects an address bound to another owner, and applies the existing source (100/hour), address (five/hour), and cooldown (one/minute) limits. It generates a cryptographically random six-digit code, stores only the legacy-compatible purpose- and owner-bound HMAC, expires it after ten minutes, and consumes earlier active codes for that same owner/address/purpose in the same transaction. The delivery adapter sends the code with the existing `email_verification_code` JSON contract and optional bearer secret. HTTP success returns only the legacy confirmation message with status 202.
+
+Validation, authorization, conflict, rate-limit, invalid-recipient, and delivery failures return safe non-cacheable responses. Logs and metrics contain no address, code, hash, session, or assertion. If delivery fails after persistence, the new code remains until replacement or expiry, matching the existing service's order of operations; this avoids mailing a code that cannot be redeemed but does not guarantee delivery.
+
+The old service remains the production route owner. Java activation requires the same HMAC secret as stage 016 and a working `AUTH_EMAIL_DELIVERY_URL`; `AUTH_EMAIL_DELIVERY_SECRET` is optional. Registration codes, other mail templates, frontend routing, schema ownership, deployment, CI/CD, and production traffic remain outside this slice. Rollback later directs only this POST path to the old service; no data migration is needed.

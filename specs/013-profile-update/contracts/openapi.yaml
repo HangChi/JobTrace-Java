@@ -1,0 +1,66 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Account Profile Update API
+  version: 0.1.0
+paths:
+  /api/profile:
+    patch:
+      operationId: updateAccountProfile
+      security:
+        - signedIdentityBridge: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [displayName]
+              properties:
+                displayName: { type: string, minLength: 1, maxLength: 100 }
+                image:
+                  oneOf:
+                    - { type: string, format: uri }
+                    - { type: string, const: '' }
+                    - { type: 'null' }
+      responses:
+        '200':
+          description: Owner profile updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProfileUpdateResult' }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+        '503': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    signedIdentityBridge:
+      type: apiKey
+      in: header
+      name: Authorization
+  responses:
+    Problem:
+      description: Safe problem response
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    ProfileUpdateResult:
+      type: object
+      required: [id, displayName, image, recoveryEmail, emailVerified]
+      properties:
+        id: { type: string }
+        displayName: { type: string }
+        image: { type: [string, 'null'] }
+        recoveryEmail: { type: [string, 'null'] }
+        emailVerified: { type: boolean }
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }

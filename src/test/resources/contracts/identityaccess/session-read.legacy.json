@@ -1,0 +1,23 @@
+[
+  {
+    "id": "session-current",
+    "createdAt": "2026-10-02T09:30:00.000Z",
+    "expiresAt": "2099-10-02T09:30:00.000Z",
+    "userAgent": "Mozilla/5.0 (Macintosh)",
+    "current": true
+  },
+  {
+    "id": "session-older",
+    "createdAt": "2026-10-01T08:00:00.000Z",
+    "expiresAt": "2099-10-01T09:00:00.000Z",
+    "userAgent": "Mozilla/5.0 (Linux)",
+    "current": false
+  },
+  {
+    "id": "session-null-agent",
+    "createdAt": "2026-10-01T08:00:00.000Z",
+    "expiresAt": "2099-10-01T08:00:00.000Z",
+    "userAgent": null,
+    "current": false
+  }
+]

@@ -1,0 +1,58 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Account Password Change Slice
+  version: 0.1.0
+paths:
+  /api/profile/password:
+    post:
+      operationId: changeAccountPassword
+      security:
+        - jobTraceBridge: []
+      parameters:
+        - in: header
+          name: X-JobTrace-Session-Id
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+                newPassword:
+                  type: string
+                  minLength: 8
+                  maxLength: 16
+              additionalProperties: true
+      responses:
+        '200':
+          description: Password changed and other owner sessions revoked
+          headers:
+            Cache-Control:
+              schema: { type: string, const: 'private, no-store' }
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message: { type: string, const: '密码已更新，其他设备已退出登录。' }
+        '400':
+          description: Validation, invalid current password, or invalid credential/session state
+        '401': { description: Missing or invalid signed identity }
+        '503': { description: Credential storage unavailable }
+components:
+  securitySchemes:
+    jobTraceBridge:
+      type: http
+      scheme: bearer
+      bearerFormat: JobTraceBridge

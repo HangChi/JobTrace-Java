@@ -1,0 +1,187 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Administration Read Model
+  version: 0.1.0
+paths:
+  /api/admin/summary:
+    get:
+      operationId: getAdminSummary
+      security: [{ signedBridge: [] }]
+      responses:
+        '200':
+          description: Administrator operational summary
+          headers:
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/AdminSummary' } }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+  /api/admin/users:
+    get:
+      operationId: listAdminUsers
+      security: [{ signedBridge: [] }]
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: role, in: query, schema: { type: string, enum: [all, user, admin], default: all } }
+        - { name: status, in: query, schema: { type: string, enum: [all, active, disabled], default: all } }
+        - { name: registeredFrom, in: query, schema: { type: string, format: date } }
+        - { name: registeredTo, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        '200':
+          description: Managed user page
+          headers:
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/UserPage' } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+  /api/admin/users/{id}:
+    get:
+      operationId: getAdminUserDetail
+      security: [{ signedBridge: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, minLength: 1, maxLength: 128 } }
+        - { name: applicationsPage, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: interviewsPage, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+      responses:
+        '200':
+          description: Managed user detail
+          headers:
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/UserDetail' } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+        '404': { $ref: '#/components/responses/Problem' }
+  /api/admin/audit-events:
+    get:
+      operationId: listAdminAuditEvents
+      security: [{ signedBridge: [] }]
+      parameters:
+        - { name: actor, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: target, in: query, schema: { type: string, maxLength: 100 } }
+        - { name: eventType, in: query, schema: { type: string, enum: [all, promote_admin, demote_admin, disable_user, enable_user], default: all } }
+        - { name: outcome, in: query, schema: { type: string, enum: [all, succeeded, denied, conflict, failed], default: all } }
+        - { name: occurredFrom, in: query, schema: { type: string, format: date } }
+        - { name: occurredTo, in: query, schema: { type: string, format: date } }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 50 } }
+      responses:
+        '200':
+          description: Audit event page
+          headers:
+            Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+          content:
+            application/json: { schema: { $ref: '#/components/schemas/AuditPage' } }
+        '400': { $ref: '#/components/responses/Problem' }
+        '401': { $ref: '#/components/responses/Problem' }
+        '403': { $ref: '#/components/responses/Problem' }
+components:
+  securitySchemes:
+    signedBridge:
+      type: http
+      scheme: bearer
+      bearerFormat: JobTraceBridge
+  responses:
+    Problem:
+      description: Safe problem response
+      headers:
+        Cache-Control: { schema: { type: string, const: 'private, no-store' } }
+      content:
+        application/problem+json: { schema: { $ref: '#/components/schemas/Problem' } }
+  schemas:
+    Problem:
+      type: object
+      required: [type, title, status, detail, code, requestId]
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        code: { type: string }
+        requestId: { type: string }
+    PageMetadata:
+      type: object
+      required: [total, page, limit, totalPages]
+      properties:
+        total: { type: integer, minimum: 0 }
+        page: { type: integer, minimum: 1 }
+        limit: { type: integer, minimum: 1 }
+        totalPages: { type: integer, minimum: 0 }
+    User:
+      type: object
+      required: [id, username, email, internalEmail, role, disabled, accessVersion, createdAt, applicationCount, interviewCount]
+      properties:
+        id: { type: string }
+        username: { type: string }
+        email: { type: string }
+        internalEmail: { type: string }
+        role: { type: string, enum: [user, admin] }
+        disabled: { type: boolean }
+        accessVersion: { type: integer, minimum: 1 }
+        createdAt: { type: string, format: date-time }
+        lastSignInAt: { type: [string, 'null'], format: date-time }
+        applicationCount: { type: integer, minimum: 0 }
+        interviewCount: { type: integer, minimum: 0 }
+    UserPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageMetadata' }
+        - type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: '#/components/schemas/User' } }
+    UserDetail:
+      allOf:
+        - { $ref: '#/components/schemas/User' }
+        - type: object
+          required: [recentAuditEvents, applications, interviews]
+          properties:
+            recentAuditEvents: { type: array, items: { $ref: '#/components/schemas/AuditEvent' } }
+            applications: { type: object, additionalProperties: true }
+            interviews: { type: object, additionalProperties: true }
+    AccessState:
+      type: object
+      required: [role, disabled, accessVersion]
+      properties:
+        role: { type: string, enum: [user, admin] }
+        disabled: { type: boolean }
+        accessVersion: { type: integer }
+    AuditEvent:
+      type: object
+      required: [id, requestId, actorIdentifier, actorDeleted, targetIdentifier, targetDeleted, eventType, outcome, reason, before, createdAt]
+      properties:
+        id: { type: string }
+        requestId: { type: string }
+        actorId: { type: [string, 'null'] }
+        actorIdentifier: { type: string }
+        actorDeleted: { type: boolean }
+        targetUserId: { type: [string, 'null'] }
+        targetIdentifier: { type: string }
+        targetDeleted: { type: boolean }
+        eventType: { type: string, enum: [promote_admin, demote_admin, disable_user, enable_user] }
+        outcome: { type: string, enum: [succeeded, denied, conflict, failed] }
+        reason: { type: string }
+        before: { $ref: '#/components/schemas/AccessState' }
+        after: { oneOf: [{ $ref: '#/components/schemas/AccessState' }, { type: 'null' }] }
+        failureCode: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+    AuditPage:
+      allOf:
+        - { $ref: '#/components/schemas/PageMetadata' }
+        - type: object
+          required: [items]
+          properties:
+            items: { type: array, items: { $ref: '#/components/schemas/AuditEvent' } }
+    AdminSummary:
+      type: object
+      required: [generatedAt, timeZone, activityDefinition, counts, activity]
+      properties:
+        generatedAt: { type: string, format: date-time }
+        timeZone: { type: string, const: Asia/Shanghai }
+        activityDefinition: { type: string }
+        counts: { type: object, additionalProperties: true }
+        activity: { type: object, additionalProperties: true }

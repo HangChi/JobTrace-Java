@@ -40,6 +40,15 @@ jobtrace:
         secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_0_SECRET:}
       - id: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_ID:}
         secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_SECRET:}
+  email-binding:
+    verification-secret: ${JOBTRACE_EMAIL_BINDING_VERIFICATION_SECRET:}
+    delivery-url: ${AUTH_EMAIL_DELIVERY_URL:}
+    delivery-secret: ${AUTH_EMAIL_DELIVERY_SECRET:}
+  registration-code:
+    allowed-origin: ${BETTER_AUTH_URL:}
+  registration:
+    challenge-url: ${AUTH_CHALLENGE_VERIFY_URL:}
+    challenge-secret: ${AUTH_CHALLENGE_SECRET:}
 
 management:
   endpoint:
