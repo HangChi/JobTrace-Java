@@ -42,7 +42,8 @@ abstract class AccountPasswordDatabaseTest extends PostgresIntegrationTest {
 
     @BeforeEach
     void seedPasswordState() {
-        jdbc.execute("drop table if exists sessions, accounts, users cascade");
+        jdbc.execute("drop table if exists email_verification_codes, auth_rate_limits,"
+                + " sessions, accounts, users cascade");
         new ResourceDatabasePopulator(new ClassPathResource(
                 "postgres/account-password-change.sql")).execute(dataSource);
         insertOwner(OWNER);

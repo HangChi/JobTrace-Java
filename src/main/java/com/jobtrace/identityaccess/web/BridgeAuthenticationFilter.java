@@ -64,6 +64,8 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                     && AccountProfileController.PATH.equals(path))
                 && !("POST".equals(request.getMethod())
                     && AccountPasswordController.PATH.equals(path))
+                && !("DELETE".equals(request.getMethod())
+                    && AccountEmailUnbindingController.PATH.equals(path))
                 && !"/api/applications".equals(path)
                 && !APPLICATION_DETAIL.matcher(path).matches()
                 && !"/api/interviews".equals(path)

@@ -81,6 +81,12 @@ the verified current session and atomically revoking other owner sessions. Passw
 binding, login and registration, session issuance, schema ownership, frontend routing, deployment,
 CI/CD, and production traffic remain unchanged.
 
+The account-email unbinding slice is documented in
+[`migration-slices/email-unbinding.md`](migration-slices/email-unbinding.md). Feature 015 adds only
+owner-scoped DELETE of an existing recovery email after current-password verification. Pending
+owner verification codes are consumed in the same transaction. Email binding and code delivery,
+schema ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -126,6 +132,9 @@ single profile row and no request field can select another account.
 Feature 014 additionally protects only POST on `/api/profile/password`; the verified subject and
 bounded current-session metadata select one owner credential transition, and Java independently
 proves current-session ownership before mutation.
+Feature 015 additionally protects only DELETE on `/api/profile/email`; the verified subject and
+bounded current-session metadata select one owner email transition after compatible password
+verification.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
