@@ -42,6 +42,8 @@ jobtrace:
         secret: ${JOBTRACE_AUTH_BRIDGE_KEYS_1_SECRET:}
   email-binding:
     verification-secret: ${JOBTRACE_EMAIL_BINDING_VERIFICATION_SECRET:}
+    delivery-url: ${AUTH_EMAIL_DELIVERY_URL:}
+    delivery-secret: ${AUTH_EMAIL_DELIVERY_SECRET:}
 
 management:
   endpoint:

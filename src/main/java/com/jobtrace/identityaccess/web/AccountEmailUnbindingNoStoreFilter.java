@@ -9,13 +9,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-/** Makes email binding and unbinding responses non-cacheable. */
+/** Makes all account-email command responses non-cacheable. */
 @Component
 public class AccountEmailUnbindingNoStoreFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return !AccountEmailUnbindingController.PATH.equals(request.getRequestURI());
+        return !AccountEmailUnbindingController.PATH.equals(request.getRequestURI())
+                && !AccountEmailCodeController.PATH.equals(request.getRequestURI());
     }
 
     @Override

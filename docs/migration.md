@@ -93,6 +93,12 @@ owner-scoped PATCH of a recovery email after current-password and existing verif
 checks. Code issuance and delivery, schema ownership, frontend routing, deployment, CI/CD, and
 production traffic remain with the existing service.
 
+The account-email binding-code slice is documented in
+[`migration-slices/email-binding-code.md`](migration-slices/email-binding-code.md). Feature 017
+adds only owner-scoped POST to request a short-lived binding code and deliver it through the
+existing mail contract. Registration codes, other mail templates, frontend routing, schema
+ownership, deployment, CI/CD, and production traffic remain unchanged.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -144,6 +150,9 @@ verification.
 Feature 016 additionally protects only PATCH on `/api/profile/email`; the verified subject and
 bounded current-session metadata select one owner email transition after compatible password and
 purpose-bound verification-code checks.
+Feature 017 additionally protects only POST on `/api/profile/email/code`; the verified subject
+and bounded current-session metadata select one owner-bound code issuance after rate limits and
+address ownership checks.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes
