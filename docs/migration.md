@@ -111,6 +111,12 @@ anonymous POST to redeem a registration-purpose email code and create a compatib
 credential without signing in. Login, session issuance, frontend routing, schema ownership,
 deployment, CI/CD, and production traffic remain with the existing service.
 
+The compatible login slice is documented in
+[`migration-slices/login.md`](migration-slices/login.md). Feature 020 adds only anonymous POST to
+verify a username or verified recovery email and issue one shared-format session and signed
+browser cookie. The old service remains the production route owner; Java protected APIs still
+require signed bridge assertions.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -171,6 +177,9 @@ code; all other identity routes retain their existing authentication boundary.
 Feature 019 additionally permits only POST on `/api/auth/register` without an owner assertion.
 It applies the same-origin check, source limit, and optional human challenge before redeeming a
 registration code and creating one account. Other identity routes retain their boundary.
+Feature 020 additionally permits only POST on `/api/auth/login` without an owner assertion. It
+applies the same-origin check, login source limit and optional challenge before issuing a shared
+session cookie. The cookie never authorizes other Java APIs by itself.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

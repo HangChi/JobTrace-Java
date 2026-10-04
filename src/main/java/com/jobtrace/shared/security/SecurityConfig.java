@@ -32,12 +32,15 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(request ->
                         "POST".equals(request.getMethod())
                         && ("/api/auth/email-code".equals(request.getRequestURI())
-                        || "/api/auth/register".equals(request.getRequestURI()))))
+                        || "/api/auth/register".equals(request.getRequestURI())
+                        || "/api/auth/login".equals(request.getRequestURI()))))
                 .httpBasic(Customizer.withDefaults());
         for (SecurityChainCustomizer customizer : customizers) {
             customizer.customize(http);
