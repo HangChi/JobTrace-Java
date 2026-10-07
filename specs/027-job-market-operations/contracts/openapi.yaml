@@ -1,0 +1,94 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Job Market Operations
+  version: 0.27.0
+paths:
+  /api/job-market/campaigns/{campaignId}/favorite:
+    put:
+      summary: Favorite an existing campaign for the current owner
+      responses:
+        '200': {description: Campaign favorite state}
+        '401': {description: Authentication required}
+        '404': {description: Campaign not found}
+    delete:
+      summary: Remove the current owner's favorite for the campaign company
+      responses:
+        '200': {description: Campaign favorite state}
+        '401': {description: Authentication required}
+        '404': {description: Campaign not found}
+  /api/admin/job-market/catalog:
+    get:
+      summary: Read curated marketplace catalog
+      responses:
+        '200': {description: Catalog}
+        '403': {description: Administrator required}
+  /api/admin/job-market/sources:
+    get:
+      summary: List configured sources and health
+      responses:
+        '200': {description: Sources}
+    post:
+      summary: Add a validated source
+      responses:
+        '200': {description: Created source}
+  /api/admin/job-market/sources/{sourceId}:
+    patch:
+      summary: Update a configured source
+      responses:
+        '200': {description: Updated source}
+  /api/admin/job-market/sources/{sourceId}/sync:
+    post:
+      summary: Start a source sync
+      responses:
+        '200': {description: Sync result}
+  /api/admin/job-market/sync-runs:
+    get:
+      summary: Page through sync run history
+      responses:
+        '200': {description: Run page}
+  /api/admin/job-market/discovery:
+    get:
+      summary: List discovered source candidates
+      responses:
+        '200': {description: Candidate page}
+    post:
+      summary: Discover source candidates
+      responses:
+        '200': {description: Discovery result}
+  /api/admin/job-market/discovery/{candidateId}:
+    patch:
+      summary: Review a source candidate
+      responses:
+        '200': {description: Review result}
+  /api/admin/job-market/company-candidates:
+    get:
+      summary: List company candidates
+      responses:
+        '200': {description: Candidate page}
+    post:
+      summary: Collect company candidates
+      responses:
+        '200': {description: Collection result}
+  /api/admin/job-market/company-candidates/{candidateId}:
+    patch:
+      summary: Review a company candidate
+      responses:
+        '200': {description: Review result}
+  /api/admin/job-market/company-research:
+    get:
+      summary: Inspect company research
+      responses:
+        '200': {description: Research records}
+    post:
+      summary: Research official company websites
+      responses:
+        '200': {description: Research result}
+  /api/admin/job-market/ats-site-scan:
+    get:
+      summary: Inspect ATS site scan state
+      responses:
+        '200': {description: Scan state}
+    post:
+      summary: Scan ATS boards
+      responses:
+        '200': {description: Scan result}

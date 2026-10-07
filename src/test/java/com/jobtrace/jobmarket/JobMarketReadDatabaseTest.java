@@ -51,7 +51,8 @@ public class JobMarketReadDatabaseTest extends PostgresIntegrationTest {
     void seedJobMarket() {
         jdbc.execute("drop table if exists application_job_market_links, "
                 + "job_market_campaign_favorites, job_market_post_locations, "
-                + "job_market_locations, job_market_source_records, job_market_posts, "
+                + "job_market_locations, job_market_source_records, job_market_sync_runs, "
+                + "job_market_posts, "
                 + "job_market_company_read_models, job_market_sources, job_market_campaigns, "
                 + "job_market_companies, applications, users cascade");
         new ResourceDatabasePopulator(new ClassPathResource(

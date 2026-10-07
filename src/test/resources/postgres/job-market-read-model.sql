@@ -23,13 +23,43 @@ create table job_market_campaigns (
 );
 
 create table job_market_sources (
-  id uuid primary key,
+  id uuid primary key default gen_random_uuid(),
   company_id uuid not null references job_market_companies(id) on delete cascade,
   adapter text not null,
+  external_key text not null default '',
   base_url text,
+  allowed_hosts text[] not null default '{}',
+  country_codes text[] not null default '{}',
   is_official boolean not null default true,
+  access_basis text not null default 'public',
   status text not null default 'active',
-  last_success_at timestamptz
+  sync_interval_minutes integer not null default 360,
+  next_sync_at timestamptz not null default now(),
+  lease_until timestamptz,
+  leased_by text,
+  lease_run_id uuid,
+  consecutive_failures integer not null default 0,
+  last_attempt_at timestamptz,
+  last_success_at timestamptz,
+  updated_at timestamptz not null default now(),
+  unique(company_id, adapter, external_key)
+);
+
+create table job_market_sync_runs (
+  id uuid primary key default gen_random_uuid(),
+  source_id uuid not null references job_market_sources(id) on delete cascade,
+  trigger text not null,
+  status text not null default 'running',
+  started_at timestamptz not null default now(),
+  finished_at timestamptz,
+  discovered_count integer not null default 0,
+  created_count integer not null default 0,
+  updated_count integer not null default 0,
+  stale_count integer not null default 0,
+  closed_count integer not null default 0,
+  rejected_count integer not null default 0,
+  error_code text,
+  error_summary text
 );
 
 create table job_market_posts (
