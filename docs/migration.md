@@ -147,6 +147,13 @@ Feature 025 implements owner-scoped reminder commands and settings, email retry 
 secret-protected internal delivery route while leaving the old service as production
 route and scheduler owner. No schema, frontend, CI/CD or deployment change is included.
 
+The data import completion slice is documented in
+[`migration-slices/data-import.md`](migration-slices/data-import.md). Feature 026 adds
+private CSV/XLSX preview and once-only confirmation against the existing import tables
+and owner-aware PostgreSQL function, completing the workflow beside the Java exports.
+The old service remains production route owner; no schema, frontend, CI/CD, deployment
+or traffic cutover is included.
+
 ## Slice checklist
 
 Every migration slice must:

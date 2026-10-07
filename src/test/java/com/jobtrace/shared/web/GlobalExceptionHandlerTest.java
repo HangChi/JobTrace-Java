@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.dao.DataAccessResourceFailureException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 
 class GlobalExceptionHandlerTest {
 
@@ -50,6 +52,21 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody().getProperties())
                 .containsEntry("code", "storage_unavailable")
                 .containsEntry("requestId", "request-1");
+    }
+
+    @Test
+    void mapsMultipartLimitAndMediaTypeToSafeClientErrors() {
+        var request = requestWithId("request-2");
+        var oversized = handler.handleOversizedUpload(
+                new MaxUploadSizeExceededException(5 * 1024 * 1024), request);
+        assertThat(oversized.getStatusCode()).isEqualTo(HttpStatus.PAYLOAD_TOO_LARGE);
+        assertThat(oversized.getBody().getProperties())
+                .containsEntry("code", "payload_too_large");
+        var unsupported = handler.handleUnsupportedMediaType(
+                new HttpMediaTypeNotSupportedException("application/octet-stream"), request);
+        assertThat(unsupported.getStatusCode()).isEqualTo(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+        assertThat(unsupported.getBody().getProperties())
+                .containsEntry("code", "unsupported_format");
     }
 
     private MockHttpServletRequest requestWithId(String requestId) {
