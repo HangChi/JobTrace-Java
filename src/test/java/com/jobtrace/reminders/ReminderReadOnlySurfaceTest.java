@@ -30,7 +30,7 @@ class ReminderReadOnlySurfaceTest extends ReminderReadDatabaseTest {
     private RequestMappingHandlerMapping mappings;
 
     @Test
-    void onlyTwoGetHandlersAreMappedAndReadsLeaveRowsUnchanged() throws Exception {
+    void reminderReadControllerRemainsGetOnlyAndReadsLeaveRowsUnchanged() throws Exception {
         var methods = Arrays.stream(ReminderReadController.class.getDeclaredMethods())
                 .filter(method -> method.isAnnotationPresent(RequestMapping.class)
                         || method.isAnnotationPresent(GetMapping.class))
@@ -56,11 +56,15 @@ class ReminderReadOnlySurfaceTest extends ReminderReadDatabaseTest {
                 "select count(*) from reminder_notification_attempts", Integer.class))
                 .isEqualTo(attemptsBefore);
         mockMvc.perform(post("/api/reminders").with(asOwner(OWNER))
-                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
-                .andExpect(status().isMethodNotAllowed());
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
         mockMvc.perform(patch("/api/reminder-settings").with(asOwner(OWNER))
-                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
-                .andExpect(status().isMethodNotAllowed());
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest());
         assertThat(mappings.getHandlerMethods().keySet().stream()
                 .map(Object::toString).toList())
                 .noneMatch(mapping -> mapping.contains("/api/reminders/internal/")

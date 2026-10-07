@@ -141,6 +141,12 @@ Feature 024 implements private review commands, safe public browsing and engagem
 the existing owner-aware and public PostgreSQL functions. The old service remains production
 route owner; no schema, frontend, CI/CD or deployment change is included.
 
+The reminder operations and delivery slice is documented in
+[`migration-slices/reminder-operations.md`](migration-slices/reminder-operations.md).
+Feature 025 implements owner-scoped reminder commands and settings, email retry and a
+secret-protected internal delivery route while leaving the old service as production
+route and scheduler owner. No schema, frontend, CI/CD or deployment change is included.
+
 ## Slice checklist
 
 Every migration slice must:
