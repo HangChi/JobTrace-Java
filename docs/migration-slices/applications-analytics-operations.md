@@ -1,0 +1,7 @@
+# Application and Analytics Operations (Feature 023)
+
+Java now exposes the existing application command routes: create, detail edit, status change, single and bounded bulk deletion, plus stage add/edit/remove. It also serves `GET /api/analytics/report` and progress-reminder completion/resolution. The 022 verified browser session or signed bridge supplies the owner; public owner headers never select a row. Missing and foreign application/stage identifiers share not-found responses.
+
+Application and stage writes call the existing owner-aware PostgreSQL functions. Those functions remain responsible for atomic event history, stage chronology, terminal-state restrictions and optimistic versions. Linked public job posts are checked and snapshotted in the same transaction as application creation. Deletes always include the owner predicate. Report aggregation filters applications by owner and keeps the legacy period, comparison, funnel, review and dimension definitions. Progress resolution inserts or updates only an owned active stage.
+
+Local compatibility tests cover HTTP response shapes, validation, cross-owner isolation, conflicts, PostgreSQL behavior, empty cohorts and reminder idempotency. The old service remains the production route owner and the only active writer; Java endpoints are implemented but not traffic-activated. The existing database schema is shared and unchanged. Rollback routes affected traffic back to the old service or disables these Java routes, without a schema migration. No frontend, CI/CD or deployment change is included.

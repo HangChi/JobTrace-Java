@@ -129,6 +129,12 @@ and validated avatar upload while preserving the signed bridge and the old servi
 route owner. The existing database, mail webhook and COS bucket remain shared; no deployment or
 production traffic change is included.
 
+The application and analytics operations slice is documented in
+[`migration-slices/applications-analytics-operations.md`](migration-slices/applications-analytics-operations.md).
+Feature 023 implements owner-scoped application and stage commands, period reports and progress
+resolution while preserving legacy PostgreSQL functions, schema ownership and old-service production
+routing. No frontend, CI/CD, deployment or traffic cutover is included.
+
 ## Slice checklist
 
 Every migration slice must:
