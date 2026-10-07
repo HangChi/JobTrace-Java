@@ -135,6 +135,12 @@ Feature 023 implements owner-scoped application and stage commands, period repor
 resolution while preserving legacy PostgreSQL functions, schema ownership and old-service production
 routing. No frontend, CI/CD, deployment or traffic cutover is included.
 
+The interview review operations slice is documented in
+[`migration-slices/interview-review-operations.md`](migration-slices/interview-review-operations.md).
+Feature 024 implements private review commands, safe public browsing and engagement through
+the existing owner-aware and public PostgreSQL functions. The old service remains production
+route owner; no schema, frontend, CI/CD or deployment change is included.
+
 ## Slice checklist
 
 Every migration slice must:
