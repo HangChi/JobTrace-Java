@@ -1,84 +1,85 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
-function response(status: number, healthStatus: 'ok' | 'error') {
-  return new Response(JSON.stringify({ status: healthStatus }), {
-    status,
-    headers: { 'content-type': 'application/json' },
-  })
-}
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+const session = { session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '小李', image: null, role: 'USER' } }
+const emptyApplications = { items: [], nextCursor: null, total: 0, page: 1, limit: 50 }
 
-describe('App', () => {
-  afterEach(() => {
-    cleanup()
-    vi.unstubAllGlobals()
-  })
+describe('App authentication', () => {
+  afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.history.replaceState(null, '', '/') })
 
-  it('shows a loading state while health checks are pending', () => {
-    vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => undefined)))
-
+  it('keeps a safe protected deep link and signs in with the Java cookie', async () => {
+    window.history.replaceState(null, '', '/applications?status=APPLIED')
+    const fetcher = vi.fn().mockResolvedValueOnce(json({ code: 'unauthorized' }, 401)).mockResolvedValueOnce(json({ redirectTarget: '/applications?status=APPLIED' })).mockResolvedValueOnce(json(session))
+    vi.stubGlobal('fetch', fetcher)
     render(<App />)
-
-    expect(
-      screen.getByRole('heading', { name: '职迹正在迁往新的 Java 后端' }),
-    ).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('正在检查服务状态')
+    expect(await screen.findByRole('heading', { name: '欢迎回到职迹' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/login')
+    fireEvent.change(screen.getByLabelText('用户名或邮箱'), { target: { value: 'tester' } })
+    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: '登录' }))
+    await waitFor(() => expect(window.location.pathname).toBe('/applications'))
+    expect(fetcher).toHaveBeenCalledWith('/api/auth/login', expect.objectContaining({ credentials: 'same-origin', method: 'POST' }))
+    expect(screen.getByRole('heading', { name: '投递记录' })).toBeInTheDocument()
   })
 
-  it('shows when both the backend and database are ready', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => response(200, 'ok')))
-
+  it('preserves values and shows recovery after invalid credentials', async () => {
+    window.history.replaceState(null, '', '/login')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(json({ code: 'unauthorized' }, 401)).mockResolvedValueOnce(json({ code: 'invalid_credentials', detail: '账号或密码错误' }, 401)))
     render(<App />)
-
-    expect(await screen.findByRole('status')).toHaveTextContent('服务已就绪')
+    fireEvent.change(await screen.findByLabelText('用户名或邮箱'), { target: { value: 'tester' } })
+    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'wrong123' } })
+    fireEvent.click(screen.getByRole('button', { name: '登录' }))
+    expect(await screen.findByRole('alert')).toHaveTextContent('账号或密码错误')
+    expect(screen.getByLabelText('用户名或邮箱')).toHaveValue('tester')
+    expect(screen.getByRole('link', { name: '忘记密码？' })).toHaveAttribute('href', '/forgot-password')
   })
 
-  it('distinguishes database readiness from backend liveness', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(response(200, 'ok'))
-        .mockResolvedValueOnce(response(503, 'error')),
-    )
-
+  it('restores a session and signs out without protected content', async () => {
+    window.history.replaceState(null, '', '/applications')
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (path: string) => path === '/api/auth/session' ? json(session) : path === '/api/auth/logout' ? new Response(null, { status: 204 }) : json(emptyApplications)))
     render(<App />)
-
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      '后端在线，数据库尚未就绪',
-    )
+    expect(await screen.findByRole('button', { name: '退出登录' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: '退出登录' }))
+    expect(await screen.findByRole('heading', { name: '欢迎回到职迹' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '投递记录' })).not.toBeInTheDocument()
   })
 
-  it('shows a safe failure state when the backend cannot be reached', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new Error('offline'))))
-
+  it('never follows an external returnTo', async () => {
+    window.history.replaceState(null, '', '/login?returnTo=https%3A%2F%2Fevil.example')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(json({ code: 'unauthorized' }, 401)).mockResolvedValueOnce(json({ redirectTarget: 'https://evil.example' })).mockResolvedValueOnce(json(session)))
     render(<App />)
-
-    expect(await screen.findByRole('status')).toHaveTextContent('无法连接后端')
+    fireEvent.change(await screen.findByLabelText('用户名或邮箱'), { target: { value: 'tester' } })
+    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: '登录' }))
+    await waitFor(() => expect(window.location.pathname).toBe('/applications'))
+    expect(window.location.host).not.toBe('evil.example')
   })
 
-  it('treats a negative liveness response as backend unavailable', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => response(503, 'error')))
-
+  it('shows a retry state if the session service is unavailable', async () => {
+    window.history.replaceState(null, '', '/applications')
+    vi.stubGlobal('fetch', vi.fn(async () => json({ code: 'session_unavailable', detail: 'Session service is unavailable.' }, 503)))
     render(<App />)
-
-    expect(await screen.findByRole('status')).toHaveTextContent('无法连接后端')
+    expect(await screen.findByRole('alert')).toHaveTextContent('Session service is unavailable.')
+    expect(screen.getByRole('button', { name: '重试' })).toBeInTheDocument()
   })
 
-  it('treats a failed readiness request as database unavailable', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(response(200, 'ok'))
-        .mockRejectedValueOnce(new Error('database timeout')),
-    )
-
+  it('hides admin navigation from a regular user, including a direct URL', async () => {
+    window.history.replaceState(null, '', '/admin')
+    vi.stubGlobal('fetch', vi.fn(async () => json(session)))
     render(<App />)
+    expect(await screen.findByRole('heading', { name: '无权访问' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: '管理后台' })).not.toBeInTheDocument()
+  })
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      '后端在线，数据库尚未就绪',
-    )
+  it('allows admins to navigate, and reports unavailable marketplace work', async () => {
+    window.history.replaceState(null, '', '/applications')
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : json(emptyApplications)))
+    render(<App />)
+    const adminLink = await screen.findByRole('link', { name: '管理后台' })
+    fireEvent.click(adminLink)
+    expect(window.location.pathname).toBe('/admin')
+    expect(screen.getByRole('heading', { name: '管理后台正在迁移' })).toBeInTheDocument()
   })
 })
