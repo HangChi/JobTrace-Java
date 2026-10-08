@@ -1,0 +1,61 @@
+openapi: 3.1.0
+info:
+  title: Reminder operations compatibility surface
+  version: '025'
+paths:
+  /api/reminders:
+    post:
+      summary: Create owned reminder
+      responses:
+        '201': {description: Reminder detail}
+        '400': {description: Validation or email unavailable}
+        '404': {description: Application or stage unavailable}
+  /api/reminders/{id}:
+    patch:
+      summary: Edit active reminder at version
+      responses:
+        '200': {description: Updated detail}
+        '409': {description: Stale or invalid state}
+    delete:
+      summary: Cancel active reminder at version
+      responses:
+        '200': {description: Cancelled detail}
+        '409': {description: Stale or invalid state}
+  /api/reminders/{id}/complete:
+    post:
+      summary: Complete active reminder
+      responses:
+        '200': {description: Completed detail}
+        '409': {description: Stale or invalid state}
+  /api/reminders/{id}/snooze:
+    post:
+      summary: Defer active reminder
+      responses:
+        '200': {description: Pending detail}
+        '404': {description: Reminder not found}
+        '409': {description: Stale or invalid state}
+  /api/reminders/{id}/reopen:
+    post:
+      summary: Reopen terminal reminder
+      responses:
+        '200': {description: Pending detail}
+        '409': {description: Stale or invalid state}
+  /api/reminders/{id}/retry-email:
+    post:
+      summary: Queue current-schedule failed email retry
+      responses:
+        '202': {description: Retry accepted}
+        '404': {description: Reminder not found}
+        '409': {description: No failed attempt or stale version}
+  /api/reminder-settings:
+    patch:
+      summary: Replace owner preferences
+      responses:
+        '200': {description: Updated preferences}
+        '404': {description: Account not found}
+  /api/internal/reminders/deliver:
+    post:
+      summary: Secret-protected bounded due reminder delivery
+      responses:
+        '200': {description: Claimed, sent, failed and skipped counts}
+        '401': {description: Invalid delivery secret}

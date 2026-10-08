@@ -53,6 +53,12 @@ jobtrace:
   registration:
     challenge-url: ${AUTH_CHALLENGE_VERIFY_URL:}
     challenge-secret: ${AUTH_CHALLENGE_SECRET:}
+  reminders:
+    delivery-secret: ${REMINDER_DELIVERY_SECRET:}
+    batch-size: ${REMINDER_DELIVERY_BATCH_SIZE:50}
+    max-attempts: ${REMINDER_DELIVERY_MAX_ATTEMPTS:3}
+    lease-seconds: ${REMINDER_DELIVERY_LEASE_SECONDS:120}
+    base-url: ${BETTER_AUTH_URL:http://localhost:3000}
 
 management:
   endpoint:

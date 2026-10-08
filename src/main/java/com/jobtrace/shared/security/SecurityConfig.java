@@ -44,6 +44,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/reset-password")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/internal/reminders/deliver")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .csrf(csrf -> csrf.ignoringRequestMatchers(request ->
@@ -53,7 +55,8 @@ public class SecurityConfig {
                         || "/api/auth/login".equals(request.getRequestURI())
                         || "/api/auth/logout".equals(request.getRequestURI())
                         || "/api/auth/request-password-reset".equals(request.getRequestURI())
-                        || "/api/auth/reset-password".equals(request.getRequestURI()))))
+                        || "/api/auth/reset-password".equals(request.getRequestURI())
+                        || "/api/internal/reminders/deliver".equals(request.getRequestURI()))))
                 .httpBasic(Customizer.withDefaults());
         for (SecurityChainCustomizer customizer : customizers) {
             customizer.customize(http);

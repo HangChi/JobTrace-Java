@@ -1,0 +1,147 @@
+openapi: 3.1.0
+info:
+  title: JobTrace application import slice
+  version: 026
+paths:
+  /api/imports/preview:
+    post:
+      summary: Preview a CSV or XLSX application import
+      security:
+        - browserSession: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                mapping:
+                  type: string
+                  description: JSON object from source header to business field or empty string
+                replaceBatchId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Owner-private preview; applications unchanged
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: private, no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportPreview'
+        '400':
+          description: Invalid file, mapping or input
+        '413':
+          description: File, rows or cells exceed limits
+        '415':
+          description: Unsupported format
+  /api/imports/{id}/confirm:
+    post:
+      summary: Confirm selected rows of an owned preview once
+      security:
+        - browserSession: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decisions]
+              properties:
+                decisions:
+                  type: array
+                  maxItems: 10000
+                  items:
+                    type: object
+                    required: [rowNumber, action]
+                    properties:
+                      rowNumber:
+                        type: integer
+                        minimum: 1
+                      action:
+                        type: string
+                        enum: [import, skip]
+      responses:
+        '200':
+          description: Per-row import outcomes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        '404':
+          description: Batch does not exist for this owner
+        '409':
+          description: Batch expired or already processed
+components:
+  securitySchemes:
+    browserSession:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+  schemas:
+    ImportPreview:
+      type: object
+      required: [id, expiresAt, totalRows, validRows, invalidRows, duplicateRows, columns, rows]
+      properties:
+        id: {type: string, format: uuid}
+        expiresAt: {type: string, format: date-time}
+        totalRows: {type: integer}
+        validRows: {type: integer}
+        invalidRows: {type: integer}
+        duplicateRows: {type: integer}
+        columns:
+          type: object
+          additionalProperties: {type: string}
+        rows:
+          type: array
+          items:
+            type: object
+            required: [rowNumber, data, errors, duplicateApplicationIds]
+            properties:
+              rowNumber: {type: integer}
+              data:
+                type: [object, 'null']
+              errors:
+                type: array
+                items:
+                  type: object
+                  required: [field, code, message]
+                  properties:
+                    field: {type: string}
+                    code: {type: string}
+                    message: {type: string}
+              duplicateApplicationIds:
+                type: array
+                items: {type: string, format: uuid}
+    ImportResult:
+      type: object
+      required: [created, skipped, failed, rows]
+      properties:
+        created: {type: integer}
+        skipped: {type: integer}
+        failed: {type: integer}
+        rows:
+          type: array
+          items:
+            type: object
+            required: [rowNumber, result, applicationId, error]
+            properties:
+              rowNumber: {type: integer}
+              result: {type: string, enum: [created, skipped, failed]}
+              applicationId: {type: [string, 'null'], format: uuid}
+              error: {type: [object, 'null']}

@@ -46,12 +46,12 @@ create table public.interview_reviews (
   published_at timestamptz, version integer not null,
   created_at timestamptz not null, updated_at timestamptz not null);
 create table public.interview_questions (
-  id uuid primary key, interview_review_id uuid not null references public.interview_reviews(id),
+  id uuid primary key, interview_review_id uuid not null references public.interview_reviews(id) on delete cascade,
   sort_order integer not null, category public.question_category not null,
   question text not null, original_answer text, follow_up_notes text,
   improved_answer text, self_rating integer);
 create table public.interview_action_items (
-  id uuid primary key, interview_review_id uuid not null references public.interview_reviews(id),
+  id uuid primary key, interview_review_id uuid not null references public.interview_reviews(id) on delete cascade,
   sort_order integer not null, content text not null, completed boolean not null);
 
 create index interview_reviews_owner_date_idx

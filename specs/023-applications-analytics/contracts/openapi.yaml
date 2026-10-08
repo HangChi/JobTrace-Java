@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: JobTrace application and analytics operations
+  version: 0.23.0
+paths:
+  /api/applications:
+    post:
+      summary: Create an owned application
+      responses: { '201': { description: Created application detail } }
+    delete:
+      summary: Delete 1–100 selected owned applications
+      responses: { '200': { description: Deleted count } }
+  /api/applications/{id}:
+    patch:
+      summary: Update an owned application with expected version
+      responses: { '200': { description: Updated application detail }, '409': { description: Stale version } }
+    delete:
+      summary: Delete one owned application
+      responses: { '204': { description: Deleted }, '404': { description: Missing or foreign application } }
+  /api/applications/{id}/status:
+    patch:
+      summary: Change status with expected version
+      responses: { '200': { description: Status, latest date and version } }
+  /api/applications/{id}/stages:
+    post:
+      summary: Add an occurrence
+      responses: { '201': { description: Updated application detail } }
+  /api/applications/{id}/stages/{occurrenceId}:
+    patch:
+      summary: Edit a stage occurrence with expected version
+      responses: { '200': { description: Updated application detail } }
+    delete:
+      summary: Remove a stage occurrence
+      responses: { '200': { description: Updated application detail } }
+  /api/analytics/report:
+    get:
+      summary: Owner-scoped period report
+      responses: { '200': { description: Non-cacheable report }, '400': { description: Invalid custom range } }
+  /api/analytics/progress-reminders/{stageOccurrenceId}/complete:
+    post:
+      summary: Complete active progress reminder
+      responses: { '200': { description: Resolved result }, '404': { description: Missing or foreign stage } }
+  /api/analytics/progress-reminders/{stageOccurrenceId}/resolve:
+    post:
+      summary: Complete or dismiss active progress reminder
+      responses: { '200': { description: Resolved result }, '404': { description: Missing or foreign stage } }

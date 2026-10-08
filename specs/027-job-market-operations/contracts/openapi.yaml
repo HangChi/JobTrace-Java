@@ -1,0 +1,68 @@
+openapi: 3.1.0
+info:
+  title: JobTrace Job Market Operations
+  version: 0.27.0
+paths:
+  /api/job-market/campaigns/{campaignId}/favorite:
+    put:
+      summary: Favorite an existing campaign for the current owner
+      responses:
+        '200': {description: Campaign favorite state}
+        '401': {description: Authentication required}
+        '404': {description: Campaign not found}
+    delete:
+      summary: Remove the current owner's favorite for the campaign company
+      responses:
+        '200': {description: Campaign favorite state}
+        '401': {description: Authentication required}
+        '404': {description: Campaign not found}
+  /api/admin/job-market/catalog:
+    get:
+      summary: Read current company/source catalog from shared PostgreSQL
+      responses:
+        '200': {description: Catalog}
+        '403': {description: Administrator required}
+  /api/admin/job-market/sources:
+    get:
+      summary: List configured sources and health
+      responses:
+        '200': {description: Sources}
+    post:
+      summary: Add a validated source
+      responses:
+        '200': {description: Created source}
+  /api/admin/job-market/sources/{sourceId}:
+    patch:
+      summary: Update a configured source
+      responses:
+        '200': {description: Updated source}
+  /api/admin/job-market/sources/{sourceId}/sync:
+    post:
+      summary: Reject duplicate ingestion; the legacy service owns synchronization
+      responses:
+        '410': {description: Java does not run a marketplace crawler}
+  /api/admin/job-market/sync-runs:
+    get:
+      summary: Page through runs persisted by the legacy ingestion service
+      responses:
+        '200': {description: Run page}
+  /api/admin/job-market/discovery:
+    get:
+      summary: List discovered source candidates
+      responses:
+        '200': {description: Candidate page}
+  /api/admin/job-market/discovery/{candidateId}:
+    patch:
+      summary: Review a source candidate
+      responses:
+        '200': {description: Review result}
+  /api/admin/job-market/company-candidates:
+    get:
+      summary: List company candidates
+      responses:
+        '200': {description: Candidate page}
+  /api/admin/job-market/company-candidates/{candidateId}:
+    patch:
+      summary: Review a company candidate
+      responses:
+        '200': {description: Review result}

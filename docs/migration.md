@@ -41,6 +41,13 @@ Feature 008 leaves collection, synchronization, projection refresh, all writes, 
 schema ownership, frontend routing, deployment, and production traffic with the existing
 service.
 
+Feature 027 job-market operations are documented in
+[`migration-slices/job-market-operations.md`](migration-slices/job-market-operations.md).
+Java reads the shared remote marketplace data and supports explicit owner/admin curation;
+the existing service remains the only crawler, scheduler and sync-run writer. The Java
+catalog has no bundled default data, and no marketplace crawl or lease claim is initiated
+by a Java read. Production route cutover and schema ownership are still separate decisions.
+
 The administrator-only read slice is documented in
 [`migration-slices/admin-read-model.md`](migration-slices/admin-read-model.md). Feature 009 adds
 summary, managed-user, user-detail, and audit-history reads while leaving access changes, sessions,
@@ -128,6 +135,31 @@ Feature 022 adds verified browser-cookie access, current profile/session reads, 
 and validated avatar upload while preserving the signed bridge and the old service as production
 route owner. The existing database, mail webhook and COS bucket remain shared; no deployment or
 production traffic change is included.
+
+The application and analytics operations slice is documented in
+[`migration-slices/applications-analytics-operations.md`](migration-slices/applications-analytics-operations.md).
+Feature 023 implements owner-scoped application and stage commands, period reports and progress
+resolution while preserving legacy PostgreSQL functions, schema ownership and old-service production
+routing. No frontend, CI/CD, deployment or traffic cutover is included.
+
+The interview review operations slice is documented in
+[`migration-slices/interview-review-operations.md`](migration-slices/interview-review-operations.md).
+Feature 024 implements private review commands, safe public browsing and engagement through
+the existing owner-aware and public PostgreSQL functions. The old service remains production
+route owner; no schema, frontend, CI/CD or deployment change is included.
+
+The reminder operations and delivery slice is documented in
+[`migration-slices/reminder-operations.md`](migration-slices/reminder-operations.md).
+Feature 025 implements owner-scoped reminder commands and settings, email retry and a
+secret-protected internal delivery route while leaving the old service as production
+route and scheduler owner. No schema, frontend, CI/CD or deployment change is included.
+
+The data import completion slice is documented in
+[`migration-slices/data-import.md`](migration-slices/data-import.md). Feature 026 adds
+private CSV/XLSX preview and once-only confirmation against the existing import tables
+and owner-aware PostgreSQL function, completing the workflow beside the Java exports.
+The old service remains production route owner; no schema, frontend, CI/CD, deployment
+or traffic cutover is included.
 
 ## Slice checklist
 

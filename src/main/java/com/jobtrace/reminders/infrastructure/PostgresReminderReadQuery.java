@@ -14,6 +14,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -91,6 +93,28 @@ public class PostgresReminderReadQuery implements ReminderReadQuery {
                 rs.getInt("reminder_default_snooze_minutes"),
                 rs.getBoolean("reminder_email_default")));
         return rows.isEmpty() ? ReminderPreferences.defaults() : rows.getFirst();
+    }
+
+    @Override
+    public Optional<Reminder> findOwned(String ownerId, UUID id) {
+        var parameters = new MapSqlParameterSource().addValue("ownerId", ownerId)
+                .addValue("id", id);
+        List<Reminder> rows = jdbc.query("""
+                select r.id, r.application_id, r.source_stage_occurrence_id,
+                  a.company_name, a.position_name, r.title, r.event_at, r.notify_at,
+                  r.email_enabled, r.status, r.version, r.completed_at, r.cancelled_at,
+                  attempt.status as email_status
+                from scheduled_reminders r
+                join applications a on a.id = r.application_id and a.owner_id = :ownerId
+                left join lateral (
+                  select n.status from reminder_notification_attempts n
+                  where n.reminder_id = r.id and n.owner_id = :ownerId
+                    and n.channel = 'email' and n.scheduled_for = r.notify_at
+                  order by n.updated_at desc limit 1
+                ) attempt on true
+                where r.id = :id and r.owner_id = :ownerId
+                """, parameters, (rs, row) -> reminder(rs));
+        return rows.isEmpty() ? Optional.empty() : Optional.of(rows.getFirst());
     }
 
     private static Reminder reminder(ResultSet rs) throws SQLException {

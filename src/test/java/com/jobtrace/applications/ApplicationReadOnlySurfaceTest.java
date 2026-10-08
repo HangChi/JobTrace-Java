@@ -16,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.MediaType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -25,16 +26,20 @@ class ApplicationReadOnlySurfaceTest extends ApplicationReadDatabaseTest {
     private MockMvc mockMvc;
 
     @Test
-    void controllerDeclaresOnlyTwoGetHandlersAndNoMutationIsMapped() throws Exception {
+    void readControllerRemainsReadOnlyWhileCommandsHaveSeparateHandlers() throws Exception {
         assertThat(Arrays.stream(ApplicationReadController.class.getDeclaredMethods())
                         .filter(method -> method.isAnnotationPresent(GetMapping.class)))
                 .hasSize(2);
-        mockMvc.perform(post("/api/applications").with(asOwner(OWNER)).with(csrf()))
-                .andExpect(status().isMethodNotAllowed());
-        mockMvc.perform(patch("/api/applications/{id}", FIRST_ID).with(asOwner(OWNER)).with(csrf()))
-                .andExpect(status().isMethodNotAllowed());
-        mockMvc.perform(delete("/api/applications/{id}", FIRST_ID).with(asOwner(OWNER)).with(csrf()))
-                .andExpect(status().isMethodNotAllowed());
+        mockMvc.perform(post("/api/applications").with(asOwner(OWNER)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(patch("/api/applications/{id}", FIRST_ID)
+                        .with(asOwner(OWNER)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(delete("/api/applications/{id}", OTHER_ID)
+                        .with(asOwner(OWNER)).with(csrf()))
+                .andExpect(status().isNotFound());
         assertThat(jdbc.queryForObject(
                 "select to_regclass('public.flyway_schema_history')::text", String.class)).isNull();
     }

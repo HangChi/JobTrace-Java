@@ -8,28 +8,113 @@ create table applications (
 create table job_market_companies (
   id uuid primary key,
   canonical_name text not null,
+  normalized_name text not null default '',
+  identity_key text not null unique default gen_random_uuid()::text,
   company_type text,
   industry text,
   website_url text
 );
 
 create table job_market_campaigns (
-  id uuid primary key,
+  id uuid primary key default gen_random_uuid(),
   company_id uuid not null references job_market_companies(id) on delete cascade,
+  campaign_key text not null default gen_random_uuid()::text,
+  name text,
   listing_kind text not null default 'synced_jobs',
   recruitment_type text,
   status text not null default 'open',
+  official_apply_url text,
+  published_at timestamptz,
+  updated_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
 
 create table job_market_sources (
-  id uuid primary key,
+  id uuid primary key default gen_random_uuid(),
   company_id uuid not null references job_market_companies(id) on delete cascade,
   adapter text not null,
+  catalog_key text unique,
+  external_key text not null default '',
   base_url text,
+  allowed_hosts text[] not null default '{}',
+  country_codes text[] not null default '{}',
   is_official boolean not null default true,
+  access_basis text not null default 'public',
   status text not null default 'active',
-  last_success_at timestamptz
+  sync_interval_minutes integer not null default 360,
+  next_sync_at timestamptz not null default now(),
+  lease_until timestamptz,
+  leased_by text,
+  lease_run_id uuid,
+  consecutive_failures integer not null default 0,
+  last_attempt_at timestamptz,
+  last_success_at timestamptz,
+  updated_at timestamptz not null default now(),
+  unique(company_id, adapter, external_key)
+);
+
+create table job_market_sync_runs (
+  id uuid primary key default gen_random_uuid(),
+  source_id uuid not null references job_market_sources(id) on delete cascade,
+  trigger text not null,
+  worker_id text not null default '',
+  request_id text not null default '',
+  status text not null default 'running',
+  started_at timestamptz not null default now(),
+  finished_at timestamptz,
+  discovered_count integer not null default 0,
+  created_count integer not null default 0,
+  updated_count integer not null default 0,
+  stale_count integer not null default 0,
+  closed_count integer not null default 0,
+  rejected_count integer not null default 0,
+  error_code text,
+  error_summary text
+);
+
+create table job_market_source_candidates (
+  id uuid primary key default gen_random_uuid(),
+  company_id uuid not null references job_market_companies(id) on delete cascade,
+  entry_url text not null,
+  adapter text,
+  external_key text,
+  base_url text,
+  allowed_hosts text[] not null default '{}',
+  confidence text,
+  evidence_code text not null,
+  review_status text not null default 'unrecognized',
+  health_status text not null,
+  diagnostic_code text,
+  diagnostic_summary text,
+  http_status integer,
+  approved_source_id uuid references job_market_sources(id),
+  last_checked_at timestamptz not null default now(),
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique(company_id, entry_url)
+);
+
+create table job_market_company_candidates (
+  id uuid primary key default gen_random_uuid(),
+  company_name text not null,
+  normalized_name text not null unique,
+  article_url text not null,
+  article_title text not null,
+  snippet text,
+  published_at timestamptz,
+  source_engine text not null,
+  article_count integer not null default 1,
+  detected_adapter text,
+  detected_external_key text,
+  detected_base_url text,
+  detected_allowed_hosts text[] not null default '{}',
+  detected_confidence text,
+  review_status text not null default 'pending',
+  created_company_id uuid references job_market_companies(id),
+  reviewed_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table job_market_posts (

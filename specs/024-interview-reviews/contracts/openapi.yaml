@@ -1,0 +1,55 @@
+openapi: 3.1.0
+info:
+  title: JobTrace interview review operations
+  version: '024'
+paths:
+  /api/interviews:
+    post:
+      summary: Create owned interview review
+      responses:
+        '201': {description: Created detail}
+        '400': {description: Invalid stage or date}
+        '404': {description: Application or stage not found}
+        '409': {description: Duplicate review}
+  /api/interviews/{id}:
+    patch:
+      summary: Edit review with version and optional autosave revision
+      responses:
+        '200': {description: Updated detail}
+        '400': {description: Invalid review or publication}
+        '404': {description: Missing or foreign review}
+        '409': {description: Stale version}
+    delete:
+      summary: Delete owned review
+      responses:
+        '204': {description: Deleted}
+        '404': {description: Missing or foreign review}
+  /api/interviews/public:
+    get:
+      summary: List public reviews with filters, sort and cursor
+      responses:
+        '200': {description: Public feed and facets}
+  /api/interviews/public/{id}:
+    get:
+      summary: Read public detail and record a view
+      responses:
+        '200': {description: Public detail}
+        '404': {description: Unavailable review}
+  /api/interviews/public/{id}/like:
+    post:
+      summary: Toggle like
+      responses:
+        '200': {description: Engagement}
+        '404': {description: Unavailable review}
+  /api/interviews/public/{id}/comments:
+    get:
+      summary: List up to 50 newest comments
+      responses:
+        '200': {description: Comments}
+        '404': {description: Unavailable review}
+    post:
+      summary: Add trimmed comment of 1-1000 characters
+      responses:
+        '201': {description: Comment and engagement}
+        '400': {description: Invalid comment}
+        '404': {description: Unavailable review}

@@ -49,9 +49,11 @@ public class JobMarketReadDatabaseTest extends PostgresIntegrationTest {
 
     @BeforeEach
     void seedJobMarket() {
-        jdbc.execute("drop table if exists application_job_market_links, "
+        jdbc.execute("drop table if exists job_market_company_candidates, "
+                + "job_market_source_candidates, application_job_market_links, "
                 + "job_market_campaign_favorites, job_market_post_locations, "
-                + "job_market_locations, job_market_source_records, job_market_posts, "
+                + "job_market_locations, job_market_source_records, job_market_sync_runs, "
+                + "job_market_posts, "
                 + "job_market_company_read_models, job_market_sources, job_market_campaigns, "
                 + "job_market_companies, applications, users cascade");
         new ResourceDatabasePopulator(new ClassPathResource(
@@ -71,6 +73,11 @@ public class JobMarketReadDatabaseTest extends PostgresIntegrationTest {
                   (?::uuid,?::uuid,'recruitment_directory','招聘官网','open'),
                   (?::uuid,?::uuid,'synced_jobs',null,'closed')
                 """, CAMPAIGN, COMPANY, DIRECTORY, COMPANY, CLOSED_CAMPAIGN, CLOSED_COMPANY);
+        jdbc.update("""
+                update job_market_campaigns set campaign_key='directory:official_site',
+                  name='官方招聘网站',official_apply_url='https://jobs.example.test'
+                where id=?::uuid
+                """, DIRECTORY);
         jdbc.update("""
                 insert into job_market_sources(id,company_id,adapter,base_url,is_official,status,last_success_at)
                 values ('20000000-0000-4000-8000-000000000001',?::uuid,'greenhouse',

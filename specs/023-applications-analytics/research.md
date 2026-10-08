@@ -1,0 +1,7 @@
+# Legacy behavior and decisions
+
+- Application routes: `POST/DELETE /api/applications`, `PATCH/DELETE /api/applications/{id}`, `PATCH /api/applications/{id}/status`, and `POST /api/applications/{id}/stages`, `PATCH/DELETE /api/applications/{id}/stages/{occurrenceId}`. Single delete returns 204; bulk delete returns `deletedCount`; create and stage add return 201.
+- The existing service validates fields with `application.schema.ts`, bounds bulk selection to 1–100 IDs, and deduplicates them. Its owner-scoped PostgreSQL functions maintain audit events, stage rules, and optimistic versions. Reusing those functions is safer than reimplementing invariants in Java.
+- The report route accepts `30d`, `90d`, `180d`, `ytd`, `all`, and `custom` periods, optional type/city filters, and returns no-store data. Custom dates must be complete, ordered, and no later than business today. The report uses owner-scoped application and review aggregates, not client-supplied counts.
+- Progress completion and resolution both write `progress_reminder_completions` only through a join to an owned application with `submitted` status. Conflict updates the existing resolution and clears its linked scheduled reminder.
+- Java already has verified browser/bridge principal handling, application detail reads, analytics summary, and progress reminder reads. This stage extends those modules without changing database migrations or old-service production routing.
