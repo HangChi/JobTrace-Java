@@ -21,27 +21,27 @@
 
 **Independent test**: Application create/edit/stage/delete and reminder lifecycle against mocked Java responses, plus analytics and import preview/confirm.
 
-- [ ] T008 [US2] Add Java application and reminder contract/adaptor tests in `frontend/src/features/applications/` and `frontend/src/features/reminders/`.
-- [ ] T009 [US2] Implement application list, filters, detail, form, status/stage actions and deletion.
-- [ ] T010 [US2] Implement reminder list, create/edit, complete/reopen/postpone/retry and settings.
-- [ ] T011 [US2] Implement analytics/report/progress views and export in `frontend/src/features/analytics/`.
-- [ ] T012 [US2] Implement CSV import preview and selected-row confirmation in `frontend/src/features/import/`.
+- [x] T008 [US2] Add Java application and reminder contract/adaptor tests in `frontend/src/features/applications/` and `frontend/src/features/reminders/`.
+- [x] T009 [US2] Implement application list, filters, detail, form, status/stage actions and deletion.
+- [x] T010 [US2] Implement reminder list, create/edit, complete/reopen/postpone/retry and settings.
+- [x] T011 [US2] Implement analytics/report/progress views and export in `frontend/src/features/analytics/`.
+- [x] T012 [US2] Implement CSV/XLSX import preview and selected-row confirmation in `frontend/src/features/import/`.
 
 ## Phase 4: User Story 3 — Interviews and profile
 
 **Independent test**: Private interview mutation, public engagement and account update with mocked Java responses.
 
-- [ ] T013 [US3] Add interview and profile contract/adaptor tests.
-- [ ] T014 [US3] Implement private interview CRUD, public list/detail/comment/like and privacy states in `frontend/src/features/interviews/`.
-- [ ] T015 [US3] Implement profile and supported account/security settings in `frontend/src/features/profile/`.
+- [x] T013 [US3] Add interview and profile contract/adaptor tests.
+- [x] T014 [US3] Implement private interview CRUD, public list/detail/comment/like and privacy states in `frontend/src/features/interviews/`.
+- [x] T015 [US3] Implement profile and supported account/security settings in `frontend/src/features/profile/`.
 
 ## Phase 5: User Story 4 — Administration
 
 **Independent test**: Admin and non-admin direct navigation; summary, users and audit states, supported changes and unavailable marketplace operations.
 
-- [ ] T016 [US4] Add admin contract/role-gate tests in `frontend/src/features/admin/`.
-- [ ] T017 [US4] Implement Java-supported admin summary, users, audit and account actions.
-- [ ] T018 [US4] Render explicit unavailable state for incomplete 027 marketplace administration.
+- [x] T016 [US4] Add admin contract/role-gate tests in `frontend/src/features/admin/`.
+- [x] T017 [US4] Implement Java-supported admin summary, users, audit and account actions.
+- [x] T018 [US4] Render shared marketplace catalog, source, review and run data, with an explicit legacy-owned ingestion state and no Java crawl action.
 
 ## Phase 6: Validation
 

@@ -73,13 +73,24 @@ describe('App authentication', () => {
     expect(screen.queryByRole('link', { name: '管理后台' })).not.toBeInTheDocument()
   })
 
-  it('allows admins to navigate, and reports unavailable marketplace work', async () => {
+  it('allows admins to navigate to the live Java management view', async () => {
     window.history.replaceState(null, '', '/applications')
-    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : json(emptyApplications)))
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : path === '/api/admin/summary' ? json({ counts: { status: 'available', value: { users: 3, activeUsers: 2, applications: 8, interviews: 4 } }, activity: { status: 'unavailable', windows: null } }) : json(emptyApplications)))
     render(<App />)
     const adminLink = await screen.findByRole('link', { name: '管理后台' })
     fireEvent.click(adminLink)
     expect(window.location.pathname).toBe('/admin')
-    expect(screen.getByRole('heading', { name: '管理后台正在迁移' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '管理后台' })).toBeInTheDocument()
+    expect(await screen.findByText('活跃数据暂不可用。')).toBeInTheDocument()
+  })
+
+  it('opens the public interview deep link and shows an explicit not-found page', async () => {
+    window.history.replaceState(null, '', '/interviews/public')
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json(session) : path.startsWith('/api/interviews/public?') ? json({ items: [], nextCursor: null, total: 0, limit: 20, facets: { cities: [], positions: [] } }) : json({ items: [], nextCursor: null, total: 0, limit: 20 })))
+    render(<App />)
+    expect(await screen.findByRole('button', { name: '公开面经', pressed: true })).toBeInTheDocument()
+    window.history.pushState(null, '', '/no-such-page')
+    window.dispatchEvent(new PopStateEvent('popstate'))
+    expect(await screen.findByRole('heading', { name: '页面未找到', level: 1 })).toBeInTheDocument()
   })
 })

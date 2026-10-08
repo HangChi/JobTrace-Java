@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -21,9 +22,11 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,6 +37,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class BrowserAuthenticationIntegrationTest extends AccountEmailBindingFixture {
     @Autowired private MockMvc mockMvc;
     @Autowired private BetterAuthSessionCookie cookie;
+    @Autowired private ObjectMapper mapper;
     @MockitoBean private AvatarStore avatarStore;
 
     @BeforeEach
@@ -108,6 +112,30 @@ class BrowserAuthenticationIntegrationTest extends AccountEmailBindingFixture {
                 .andExpect(status().isForbidden());
         assertThat(jdbc.queryForObject("select display_name from users where id=?",
                 String.class, OWNER)).isEqualTo(OWNER);
+    }
+
+    @Test
+    void authenticatedBrowserObtainsCsrfTokenForWorkspaceWrites() throws Exception {
+        var response = mockMvc.perform(get("/api/security/csrf")
+                        .header(HttpHeaders.COOKIE, signed()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").isString())
+                .andReturn();
+        String token = mapper.readTree(response.getResponse().getContentAsString())
+                .get("token").asText();
+        var session = (MockHttpSession) response.getRequest().getSession(false);
+        assertThat(session).isNotNull();
+        mockMvc.perform(post("/api/reminders").session(session)
+                        .header(HttpHeaders.COOKIE, signed())
+                        .header(HttpHeaders.ORIGIN, "https://jobtrace.test")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(post("/api/reminders").session(session)
+                        .header(HttpHeaders.COOKIE, signed())
+                        .header(HttpHeaders.ORIGIN, "https://jobtrace.test")
+                        .header("X-CSRF-TOKEN", token)
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

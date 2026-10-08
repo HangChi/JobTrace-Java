@@ -1,6 +1,6 @@
 # Browser routes and Java API contracts
 
-All API calls use the current origin and the signed HttpOnly browser cookie. The client never sends an owner or role header. JSON errors use ProblemDetail with `code`, `detail`, and optionally `fieldErrors`.
+All API calls use the current origin and the signed HttpOnly browser cookie. The client never sends an owner or role header. Authenticated non-auth mutations first read `GET /api/security/csrf` and send its token in `X-CSRF-TOKEN`; Spring CSRF protection remains enabled. JSON errors use ProblemDetail with `code`, `detail`, and optionally `fieldErrors`.
 
 | Browser route | Java endpoint | Notes |
 | --- | --- | --- |
@@ -14,6 +14,6 @@ All API calls use the current origin and the signed HttpOnly browser cookie. The
 | `/import` | `/api/import/**`, `/api/export/**` | Preview then explicit confirmation. |
 | `/interviews`, `/interviews/public` | `/api/interviews/**` | Private and public records, comments and likes. |
 | `/profile` | `/api/profile/**` | Profile, credentials and account settings. |
-| `/admin` | `/api/admin/**` | Role `ADMIN` only; 027 marketplace endpoints are incomplete on this branch. |
+| `/admin` | `/api/admin/**` | Role `ADMIN` only; 027 marketplace curation and run-history endpoints are available, but crawling and sync execution remain owned by the legacy service. |
 
 Unknown browser routes show a not-found state. Direct protected deep links retain only a same-origin path in `returnTo`. Any unfinished route must say it is unavailable rather than display a fake success state.

@@ -6,7 +6,7 @@
 
 ## Route state
 
-Path selects page group. Search parameters hold shareable filters, pagination and safe return destination. Back/forward restores the URL and re-renders the matching view. Unsupported or unfinished 027 actions render an explanatory unavailable state.
+Path selects page group. Search parameters hold shareable filters, pagination and safe return destination. Back/forward restores the URL and re-renders the matching view. Unknown paths show not-found; marketplace ingestion is identified as legacy-owned, never as a Java action.
 
 ## Remote resources
 

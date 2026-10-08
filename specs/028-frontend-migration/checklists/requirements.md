@@ -15,7 +15,7 @@
 - [x] No unresolved clarification markers
 - [x] Requirements and acceptance scenarios are testable
 - [x] Accessibility, performance and responsive outcomes are measurable
-- [x] Dependency on unfinished 027 endpoints is explicit
+- [x] Shared 027 data and legacy-owned ingestion boundary are explicit
 - [x] Edge cases and scope boundaries are stated
 
 ## Feature Readiness

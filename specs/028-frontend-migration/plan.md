@@ -4,7 +4,7 @@
 
 ## Summary
 
-Replace the Vite health shell with the legacy JobTrace workflows backed by same-origin Java APIs. Build a small shared API client and route-aware React shell, then migrate auth, applications/reminders/analytics/import, interviews/profile, and Java-supported administration. Keep unfinished 027 marketplace operations visibly unavailable until those endpoints exist.
+Replace the Vite health shell with the legacy JobTrace workflows backed by same-origin Java APIs. Build a small shared API client and route-aware React shell, then migrate auth, applications/reminders/analytics/import, interviews/profile, and Java-supported administration. Read shared marketplace data through completed 027 APIs; crawling remains exclusively legacy-owned.
 
 ## Technical Context
 
@@ -63,4 +63,4 @@ frontend/src/
 3. Private/public interviews and profile/account settings.
 4. Java-supported admin pages, contract/a11y/performance validation.
 
-Unfinished 027 endpoints are not called or proxied. A later merge can enable those page actions when backend contracts and tests pass.
+Java reads shared 027 marketplace data and supports curation operations, but does not run ATS or WeChat crawling, invoke legacy ingestion, or proxy to the old frontend.

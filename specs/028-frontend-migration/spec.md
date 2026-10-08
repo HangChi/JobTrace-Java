@@ -49,7 +49,7 @@ A job seeker can manage private interviews, browse public interviews with engage
 
 ### User Story 4 - Administer the workspace (Priority: P4)
 
-An administrator can reach the current Java administration pages, inspect users and audit history, and make supported account changes. Incomplete marketplace administration is shown as unavailable rather than falsely active.
+An administrator can reach the current Java administration pages, inspect users and audit history, make supported account changes, and browse shared marketplace data. Ingestion remains owned by the legacy service.
 
 **Independent Test**: Enter as admin and ordinary user; verify role-gated navigation, summary/user/audit reads and account actions, including error and empty states.
 
@@ -57,7 +57,7 @@ An administrator can reach the current Java administration pages, inspect users 
 
 1. **Given** an administrator session, **when** admin pages open, **then** live Java data is shown with loading, empty and failure states.
 2. **Given** an ordinary user, **when** an admin URL is opened directly, **then** access is denied and no admin data is rendered.
-3. **Given** a marketplace action without a completed Java endpoint, **when** viewed, **then** it is clearly disabled with an explanation, not sent to the old service implicitly.
+3. **Given** the marketplace ingestion controls, **when** viewed in Java, **then** shared catalog and run data are readable while crawl execution is clearly identified as legacy-owned and is not invoked from Java.
 
 ### Edge Cases
 
@@ -77,7 +77,7 @@ An administrator can reach the current Java administration pages, inspect users 
 - **FR-003**: Provide application list/detail/create/edit/status/stage and reminder workflows equivalent to supported old-version behavior.
 - **FR-004**: Provide analytics summary/report, export and import preview/confirm workflows.
 - **FR-005**: Provide private/public interview workflows and profile/account settings supported by Java APIs.
-- **FR-006**: Provide role-gated administration for Java-supported summary, users and audit operations; clearly identify unavailable 027-dependent operations.
+- **FR-006**: Provide role-gated administration for Java-supported summary, users, audit and shared marketplace reads; identify legacy-owned crawling as outside the Java frontend.
 - **FR-007**: Preserve familiar JobTrace terminology and visual identity, with responsive, accessible loading/empty/success/validation/failure states.
 - **FR-008**: Add automated route, request-contract, form and accessibility tests; keep build artifacts embedded in the Spring Boot application.
 - **FR-009**: Do not change CI/CD, production routing or the old Next.js frontend in this stage.
@@ -103,6 +103,6 @@ An administrator can reach the current Java administration pages, inspect users 
 
 ## Assumptions
 
-- Java APIs through completed stage 026 are the source of truth for this branch. Unfinished 027 marketplace administration is a dependency and is not silently proxied to Next.js.
+- Java APIs through completed stage 027 are the source of truth for this branch. Marketplace data is read from the shared remote database; Java does not run a separate crawler or silently proxy requests to Next.js.
 - The old frontend is a reference for workflow, labels and visual identity, but this work edits only `JobTrace-Java/frontend/` and migration documentation.
 - No new router, component or chart dependency is required unless implementation evidence justifies it.

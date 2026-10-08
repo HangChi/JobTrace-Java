@@ -3,6 +3,12 @@ import type { MouseEvent } from 'react'
 import { currentPath, guestRoutes, navigation, safePath } from './app/routes'
 import AuthPage from './features/auth/AuthPage'
 import ApplicationList from './features/applications/ApplicationList'
+import ReminderPage from './features/reminders/ReminderPage'
+import AnalyticsPage from './features/analytics/AnalyticsPage'
+import ImportPage from './features/import/ImportPage'
+import ProfilePage from './features/profile/ProfilePage'
+import InterviewsPage from './features/interviews/InterviewsPage'
+import AdminPage from './features/admin/AdminPage'
 import { getSession, logout } from './features/auth/api'
 import type { CurrentSession } from './features/auth/api'
 import { ApiError } from './shared/api/client'
@@ -87,18 +93,18 @@ function App() {
 
 function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpired }: { path: string; search: string; session: CurrentSession; onLink: (event: MouseEvent<HTMLAnchorElement>, target: string) => void; onSignOut: () => Promise<void>; navigate: (path: string) => void; onExpired: () => void }) {
   const items = session.user.role === 'ADMIN' ? [...navigation, { path: '/admin', label: '管理后台' }] : navigation
-  const current = items.find(item => item.path === path)
+  const current = items.find(item => item.path === path || (item.path === '/interviews' && path === '/interviews/public'))
   const title = current?.label ?? '页面未找到'
   return <div className="workspace">
     <aside className="sidebar">
       <a className="brand" href="/applications" onClick={event => onLink(event, '/applications')}>职迹 <span>JobTrace</span></a>
       <p className="nav-caption">工作台</p>
-      <nav aria-label="主导航">{items.map(item => <a key={item.path} href={item.path} aria-current={path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}</nav>
+      <nav aria-label="主导航">{items.map(item => <a key={item.path} href={item.path} aria-current={current?.path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}</nav>
       <div className="sidebar-user"><span className="avatar" aria-hidden="true">{session.user.displayName.slice(0, 1)}</span><span>{session.user.displayName}</span><button className="text-button" onClick={() => void onSignOut()}>退出登录</button></div>
     </aside>
     <main className="workspace-main"><header className="workspace-header"><div><p className="eyebrow">JOBTRACE / WORKSPACE</p><h1>{title}</h1></div><span className="header-user">{session.user.displayName}</span></header>
-      {path === '/applications' ? <ApplicationList key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/admin' && session.user.role !== 'ADMIN' ? <section className="content-card"><h2>无权访问</h2><p>此页面仅供管理员使用。</p></section> :
-        <section className="content-card"><p className="eyebrow">即将接入</p><h2>{title}正在迁移</h2><p>此模块仍在连接 Java 服务，当前尚不能操作。请稍后再来，避免误以为数据已经保存。</p></section>}
+      {path === '/applications' ? <ApplicationList key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} /> : path === '/interviews' || path === '/interviews/public' ? <InterviewsPage key={path} initialTab={path === '/interviews/public' ? 'public' : 'private'} onExpired={onExpired} /> : path === '/admin' && session.user.role !== 'ADMIN' ? <section className="content-card"><h2>无权访问</h2><p>此页面仅供管理员使用。</p></section> : path === '/admin' ? <AdminPage currentUserId={session.user.id} onExpired={onExpired} /> :
+        <section className="content-card"><h2>页面未找到</h2><p>这个地址不存在，请从左侧导航选择要访问的页面。</p></section>}
     </main>
   </div>
 }
