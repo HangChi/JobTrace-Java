@@ -49,7 +49,8 @@ public class JobMarketReadDatabaseTest extends PostgresIntegrationTest {
 
     @BeforeEach
     void seedJobMarket() {
-        jdbc.execute("drop table if exists application_job_market_links, "
+        jdbc.execute("drop table if exists job_market_company_candidates, "
+                + "job_market_source_candidates, application_job_market_links, "
                 + "job_market_campaign_favorites, job_market_post_locations, "
                 + "job_market_locations, job_market_source_records, job_market_sync_runs, "
                 + "job_market_posts, "
