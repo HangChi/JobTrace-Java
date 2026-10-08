@@ -4,9 +4,9 @@
 
 **Created**: 2026-10-08
 
-**Status**: In progress
+**Status**: Complete for the revised shared-database, no-Java-crawler scope
 
-**Input**: Complete the Java job-market backend: favorites, administrator source and catalog management, discovery and review, company research, ATS and WeChat intake, and synchronization jobs and run history.
+**Input**: Complete the Java job-market experience using the existing remote PostgreSQL marketplace data. Java does not crawl, scan ATS/WeChat sites, bootstrap the remote catalog, or run a second synchronization worker.
 
 ## User Scenarios & Testing
 
@@ -26,7 +26,7 @@ A signed-in job seeker can mark a job-market campaign as a favorite and remove t
 
 ### User Story 2 - Curate sources and companies (Priority: P2)
 
-An administrator can inspect the source catalog, add and update sources, bootstrap defaults, discover candidate sources and companies, research official company sites, and approve or ignore candidates.
+An administrator can inspect the current remote source catalog and candidate records, add or update source metadata, and approve or ignore candidates already produced by the existing ingestion service.
 
 **Why this priority**: A reviewed catalog is the prerequisite for trusted ingestion.
 
@@ -36,30 +36,28 @@ An administrator can inspect the source catalog, add and update sources, bootstr
 
 1. **Given** a valid official source, **when** an administrator adds or edits it, **then** the catalog reflects the change and duplicate/invalid URLs are rejected.
 2. **Given** a pending candidate, **when** an administrator approves or ignores it, **then** its review state changes once and approved records become usable sources or companies.
-3. **Given** research or discovery results, **when** sites cannot be safely accessed, **then** the operation reports a bounded failure without accepting an untrusted URL.
+3. **Given** candidate and source records in the shared database, **when** an administrator views them, **then** the displayed status reflects the persisted data without a Java network request.
 
-### User Story 3 - Collect and synchronize safely (Priority: P3)
+### User Story 3 - Observe existing ingestion (Priority: P3)
 
-Authorized operators can scan ATS boards, collect WeChat articles, synchronize due or selected sources, and inspect run history and per-source outcomes.
+Authorized operators can inspect persisted source health and run history produced by the existing ingestion service. Java must not create a competing crawler or claim source leases.
 
 **Why this priority**: Current marketplace listings depend on observable, repeatable background work.
 
-**Independent Test**: Start a source sync against a deterministic fake adapter, verify its run record and resulting posts, then retry, fail, and inspect history.
+**Independent Test**: Seed source, candidate and run rows, then verify Java list/detail and admin history responses without changing synchronization state.
 
 **Acceptance Scenarios**:
 
-1. **Given** an active approved source, **when** sync starts, **then** one run obtains its lease, records results and releases the lease.
-2. **Given** an overlapping or stale run, **when** another worker tries to commit, **then** fencing prevents stale writes and history explains the outcome.
-3. **Given** an untrusted ATS or WeChat URL, **when** collection is requested, **then** private-network destinations, redirects or unsupported hosts are rejected before sensitive access.
-4. **Given** completed and failed jobs, **when** an administrator inspects run history, **then** pagination, status and error summaries are available without secrets.
+1. **Given** existing campaign and post rows, **when** a user browses the market, **then** Java returns the same persisted data without fetching remote websites.
+2. **Given** completed and failed sync jobs, **when** an administrator inspects run history, **then** pagination, status and safe error summaries are available.
+3. **Given** a browser request for a legacy crawl action, **when** Java handles it, **then** it does not start a second ingest job or claim a source lease.
 
 ### Edge Cases
 
 - Concurrent favorite writes are idempotent and never reveal another owner's state.
-- Source URLs and discovered links cannot reach loopback, private networks, metadata endpoints or unapproved redirect hosts.
-- Candidate approval and source synchronization are safe under retries and concurrent workers.
-- Administrator endpoints reject ordinary accounts; internal work endpoints require the existing trusted internal authentication mechanism.
-- External pages can be empty, malformed, excessively large or unexpectedly encoded; collection remains bounded and auditable.
+- Candidate approval is safe under retries and concurrent workers; source URLs remain validated metadata, not Java fetch targets.
+- Administrator endpoints reject ordinary accounts. Java exposes no internal ingestion endpoint.
+- Shared-database reads tolerate empty and stale ingestion results without triggering collection.
 - No background work runs merely because a list or detail page was read.
 
 ## Requirements
@@ -67,14 +65,12 @@ Authorized operators can scan ATS boards, collect WeChat articles, synchronize d
 ### Functional Requirements
 
 - **FR-001**: Preserve the existing favorite request and response behavior, including owner isolation and idempotence.
-- **FR-002**: Provide administrator catalog, source CRUD, default bootstrap and source health operations compatible with the current client.
-- **FR-003**: Provide source and company candidate discovery, list and review operations with explicit pending, approved and ignored states.
-- **FR-004**: Support bounded research of official company sites and safe discovery of ATS board sources.
-- **FR-005**: Support bounded WeChat article intake and reviewable company/source candidates.
-- **FR-006**: Synchronize selected or due sources with lease/fencing safety and per-run metrics, errors and audit history.
-- **FR-007**: Preserve existing administrator and internal authorization boundaries; never trust public identity headers or arbitrary remote URLs.
-- **FR-008**: Reuse the existing schema, source adapters and business contract where possible without frontend, deployment or CI/CD changes.
-- **FR-009**: Cover successful, invalid, cross-owner, non-admin, retry, concurrency, external-failure and SSRF cases with automated tests.
+- **FR-002**: Provide administrator catalog, source CRUD and health views from the shared remote database; do not maintain a second bundled default catalog.
+- **FR-003**: Provide source and company candidate list and review operations over persisted records with explicit pending, approved and ignored states.
+- **FR-004**: Show persisted ingestion outcomes and sync run history; do not fetch ATS, WeChat or company pages, bootstrap defaults, or claim leases in Java.
+- **FR-005**: Preserve administrator authorization and validate manually submitted source URLs as metadata; never trust public identity headers.
+- **FR-006**: Reuse the existing schema and Java read model without frontend, deployment or CI/CD changes in this stage.
+- **FR-007**: Cover successful, invalid, cross-owner, non-admin, retry, concurrency and empty/stale-data cases with automated tests.
 
 ### Key Entities
 
@@ -90,12 +86,13 @@ Authorized operators can scan ATS boards, collect WeChat articles, synchronize d
 
 - **SC-001**: All tested cross-owner and unauthorized attempts cause zero unauthorized writes or disclosures.
 - **SC-002**: Repeated favorite and review requests do not create duplicate state.
-- **SC-003**: Stale or overlapping source workers cannot commit a second result for the same lease.
-- **SC-004**: Representative user reads finish within 500 ms p95 and user-initiated writes within 1 s p95 under documented local sample load; external collection timings are reported separately.
+- **SC-003**: Java market reads and administrative inspection create zero ingestion runs or outbound collection requests.
+- **SC-004**: Representative user reads finish within 500 ms p95 and user-initiated writes within 1 s p95 under documented local sample load.
 - **SC-005**: Changed production code reaches at least 80% line and branch coverage.
 
 ## Assumptions
 
 - Existing Next.js routes and PostgreSQL schema define the compatibility contract until a separate routing cutover.
 - Existing Java identity and administrator role checks are reused; no new public authentication mechanism is introduced.
+- The legacy service remains the sole ingestion worker and shares the configured remote PostgreSQL schema with Java. Database connectivity and credentials are provided by deployment configuration, not committed files.
 - Frontend, production routing, scheduler deployment and CI/CD are outside this stage.

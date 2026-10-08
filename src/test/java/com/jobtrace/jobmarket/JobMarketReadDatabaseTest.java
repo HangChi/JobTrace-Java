@@ -74,6 +74,11 @@ public class JobMarketReadDatabaseTest extends PostgresIntegrationTest {
                   (?::uuid,?::uuid,'synced_jobs',null,'closed')
                 """, CAMPAIGN, COMPANY, DIRECTORY, COMPANY, CLOSED_CAMPAIGN, CLOSED_COMPANY);
         jdbc.update("""
+                update job_market_campaigns set campaign_key='directory:official_site',
+                  name='官方招聘网站',official_apply_url='https://jobs.example.test'
+                where id=?::uuid
+                """, DIRECTORY);
+        jdbc.update("""
                 insert into job_market_sources(id,company_id,adapter,base_url,is_official,status,last_success_at)
                 values ('20000000-0000-4000-8000-000000000001',?::uuid,'greenhouse',
                   'https://jobs.example.test',true,'active','2026-09-03T00:00:00Z'),

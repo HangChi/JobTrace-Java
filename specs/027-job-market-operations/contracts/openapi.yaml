@@ -18,7 +18,7 @@ paths:
         '404': {description: Campaign not found}
   /api/admin/job-market/catalog:
     get:
-      summary: Read curated marketplace catalog
+      summary: Read current company/source catalog from shared PostgreSQL
       responses:
         '200': {description: Catalog}
         '403': {description: Administrator required}
@@ -38,12 +38,12 @@ paths:
         '200': {description: Updated source}
   /api/admin/job-market/sources/{sourceId}/sync:
     post:
-      summary: Start a source sync
+      summary: Reject duplicate ingestion; the legacy service owns synchronization
       responses:
-        '200': {description: Sync result}
+        '410': {description: Java does not run a marketplace crawler}
   /api/admin/job-market/sync-runs:
     get:
-      summary: Page through sync run history
+      summary: Page through runs persisted by the legacy ingestion service
       responses:
         '200': {description: Run page}
   /api/admin/job-market/discovery:
@@ -51,10 +51,6 @@ paths:
       summary: List discovered source candidates
       responses:
         '200': {description: Candidate page}
-    post:
-      summary: Discover source candidates
-      responses:
-        '200': {description: Discovery result}
   /api/admin/job-market/discovery/{candidateId}:
     patch:
       summary: Review a source candidate
@@ -65,30 +61,8 @@ paths:
       summary: List company candidates
       responses:
         '200': {description: Candidate page}
-    post:
-      summary: Collect company candidates
-      responses:
-        '200': {description: Collection result}
   /api/admin/job-market/company-candidates/{candidateId}:
     patch:
       summary: Review a company candidate
       responses:
         '200': {description: Review result}
-  /api/admin/job-market/company-research:
-    get:
-      summary: Inspect company research
-      responses:
-        '200': {description: Research records}
-    post:
-      summary: Research official company websites
-      responses:
-        '200': {description: Research result}
-  /api/admin/job-market/ats-site-scan:
-    get:
-      summary: Inspect ATS site scan state
-      responses:
-        '200': {description: Scan state}
-    post:
-      summary: Scan ATS boards
-      responses:
-        '200': {description: Scan result}

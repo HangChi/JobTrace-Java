@@ -74,6 +74,13 @@ public class JobMarketSourceAdminController {
                 .body(source);
     }
 
+    @PostMapping("/{sourceId}/sync")
+    public void syncOwnedByLegacy(@PathVariable UUID sourceId, Principal principal) {
+        BridgePrincipalAdmin.require(principal);
+        throw new Problem("ingestion_owned_externally",
+                "岗位采集由现有服务负责，Java 不会单独执行同步。", HttpStatus.GONE);
+    }
+
     public record SourceList(List<SourceHealth> items) {
     }
 }

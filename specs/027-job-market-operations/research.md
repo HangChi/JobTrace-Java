@@ -10,24 +10,24 @@
 
 ## Persistence
 
-**Decision**: Reuse `job_market_campaign_favorites`, catalog, candidate and sync-run tables, and the existing lease/fencing behavior. Spring JDBC will keep SQL explicit.
+**Decision**: Reuse `job_market_campaign_favorites`, company/source/candidate and sync-run tables in the already configured remote PostgreSQL database. Spring JDBC will keep SQL explicit. The old service keeps ownership of ingestion and leases.
 
 **Rationale**: The legacy schema is already deployed and the Java read model uses it. A second write model or JPA mapping would increase drift.
 
-**Alternative considered**: New tables or ORM replacement; rejected as unnecessary migration risk.
+**Alternative considered**: Bundled JSON defaults, new tables or ORM replacement; rejected because current remote rows are the source of truth and duplicated catalogs drift.
 
 ## Trust boundaries
 
-**Decision**: Derive the owner and administrator from the trusted bridge principal. Internal jobs must use the existing internal authentication mechanism. Remote URLs require scheme, DNS, IP and redirect checks, size/time bounds, and host allowlists before fetching.
+**Decision**: Derive the owner and administrator from the trusted bridge principal. Java performs no external marketplace fetch. Manually submitted source URL metadata still requires approved HTTPS hosts.
 
-**Rationale**: Catalog and collector operations can otherwise expose private networks or bypass review.
+**Rationale**: Java cannot expose private networks through collection when it does not perform collection; administrator metadata must still be constrained before persistence.
 
 **Alternative considered**: Trust request headers or user-supplied URLs; rejected for privilege and SSRF risk.
 
 ## Execution
 
-**Decision**: Keep external collection behind ports and deterministic fake clients in tests. Source sync must acquire and fence a lease before persisting results and must emit sanitized run history.
+**Decision**: The existing service remains the single marketplace ingestion writer. Java only reads persisted source/candidate/run data and performs explicit user/admin curation mutations.
 
-**Rationale**: This isolates parser/network errors, supports retries and prevents stale workers overwriting newer results.
+**Rationale**: Shared remote data avoids a second crawler, duplicate leases and conflicting writers while keeping Java browsing current.
 
-**Alternative considered**: Fetch during marketplace reads or rely on process-local locking; rejected because it blocks interactive paths and fails across workers.
+**Alternative considered**: Fetch during marketplace reads or port the legacy worker; rejected because both duplicate existing ingestion and increase operational risk.

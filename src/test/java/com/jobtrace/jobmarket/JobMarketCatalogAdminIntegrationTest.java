@@ -4,8 +4,11 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jobtrace.identityaccess.domain.BridgeIdentity;
+import com.jobtrace.jobmarket.application.JobMarketCatalogQuery;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,20 +24,61 @@ class JobMarketCatalogAdminIntegrationTest extends JobMarketReadDatabaseTest {
     @Autowired
     private MockMvc mvc;
 
+    @Autowired
+    private JobMarketCatalogQuery catalog;
+
     @Test
-    void listsExistingDirectoryWithPaginationAndSearch() throws Exception {
+    void listsPersistedCompaniesWithPaginationAndSearch() throws Exception {
         mvc.perform(get("/api/admin/job-market/catalog").with(asAdmin()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.total").value(1279))
-                .andExpect(jsonPath("$.items.length()").value(50))
-                .andExpect(jsonPath("$.items[0].companyName").value("腾讯"));
-        mvc.perform(get("/api/admin/job-market/catalog?page=26&limit=50")
+                .andExpect(jsonPath("$.total").value(2))
+                .andExpect(jsonPath("$.items.length()").value(2));
+        mvc.perform(get("/api/admin/job-market/catalog?page=1&limit=1")
                         .with(asAdmin()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items.length()").value(29));
-        mvc.perform(get("/api/admin/job-market/catalog?q=腾讯").with(asAdmin()))
+                .andExpect(jsonPath("$.items.length()").value(1));
+        mvc.perform(get("/api/admin/job-market/catalog?q=Example").with(asAdmin()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.items[0].companyName").value("腾讯"));
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].companyName").value("Example Labs"))
+                .andExpect(jsonPath("$.items[0].channel").value("official_site"));
+        assertThat(jdbc.queryForObject("select count(*) from job_market_sync_runs",
+                Integer.class)).isZero();
+    }
+
+    @Test
+    void reflectsRemoteCatalogChangesWithoutRebuildingStaticAssets() throws Exception {
+        jdbc.update("update job_market_companies set canonical_name='Updated Lab' "
+                + "where id=?::uuid", COMPANY);
+        mvc.perform(get("/api/admin/job-market/catalog?q=Updated").with(asAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].companyName").value("Updated Lab"));
+        mvc.perform(get("/api/admin/job-market/catalog?q=Example").with(asAdmin()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(0));
+    }
+
+    @Test
+    void handlesBlankSearchEmptyPagesAndInvalidBounds() {
+        assertThat(catalog.list("  ", 1, 1).total()).isEqualTo(2);
+        assertThat(catalog.list(null, 3, 1).items()).isEmpty();
+        assertThat(catalog.list("Closed", 1, 20).items().getFirst().channel())
+                .isEqualTo("existing");
+        jdbc.update("""
+                insert into job_market_sources(company_id,adapter,external_key,base_url,status)
+                values (?::uuid,'greenhouse','closed','https://closed.example.test','active')
+                """, CLOSED_COMPANY);
+        assertThat(catalog.list("Closed", 1, 20).items().getFirst().channel())
+                .isEqualTo("automatic");
+        assertThatThrownBy(() -> catalog.list("x".repeat(101), 1, 20))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> catalog.list(null, 0, 20))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> catalog.list(null, 1, 0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> catalog.list(null, 1, 101))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

@@ -14,8 +14,8 @@ Source and company candidates preserve normalized identity, provenance, confiden
 
 ## Sync run and listing
 
-Sync run belongs to a source and records trigger, worker, request ID, start/finish, status, counts and safe error summary. A run lease/fence token controls writes. Normalized posts, source records and event history are updated only by the current lease holder.
+Sync run belongs to a source and records trigger, worker, request ID, start/finish, status, counts and safe error summary. The legacy worker owns its lease/fence token and updates normalized posts, source records and event history. Java reads these rows without claiming or completing a run.
 
 ## Validation
 
-User identity comes from the bridge principal; admin/internal roles are checked before work. URLs require HTTPS where the legacy adapter requires it, public DNS/IP resolution, redirect revalidation and bounded response size. User-facing errors do not expose fetched page bodies, credentials or infrastructure details.
+User identity comes from the bridge principal; administrator role is checked before curation. Manually submitted source URLs require approved HTTPS hosts. Java does not resolve or fetch marketplace URLs. User-facing errors do not expose credentials or infrastructure details.

@@ -41,6 +41,13 @@ Feature 008 leaves collection, synchronization, projection refresh, all writes, 
 schema ownership, frontend routing, deployment, and production traffic with the existing
 service.
 
+Feature 027 job-market operations are documented in
+[`migration-slices/job-market-operations.md`](migration-slices/job-market-operations.md).
+Java reads the shared remote marketplace data and supports explicit owner/admin curation;
+the existing service remains the only crawler, scheduler and sync-run writer. The Java
+catalog has no bundled default data, and no marketplace crawl or lease claim is initiated
+by a Java read. Production route cutover and schema ownership are still separate decisions.
+
 The administrator-only read slice is documented in
 [`migration-slices/admin-read-model.md`](migration-slices/admin-read-model.md). Feature 009 adds
 summary, managed-user, user-detail, and audit-history reads while leaving access changes, sessions,
