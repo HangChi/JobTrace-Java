@@ -408,6 +408,22 @@ paths:
                 $ref: "#/components/schemas/AnalyticsSummary"
         "401":
           description: No trusted authenticated owner is available
+  /api/health:
+    get:
+      operationId: getLegacyHealth
+      summary: Preserve the legacy database health route
+      security: []
+      responses:
+        "200":
+          description: Database responded
+          headers:
+            Cache-Control: { schema: { type: string, const: no-store } }
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: Database unavailable
   /api/health/live:
     get:
       operationId: getLiveness

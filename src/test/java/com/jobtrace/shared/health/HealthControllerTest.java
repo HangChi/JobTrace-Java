@@ -15,7 +15,8 @@ class HealthControllerTest {
     void liveReportsOkWithoutAccessingTheDatabase() {
         HealthController controller = new HealthController(mock(JdbcTemplate.class));
 
-        assertThat(controller.live()).containsEntry("status", "ok");
+        assertThat(controller.live().getBody()).containsEntry("status", "ok");
+        assertThat(controller.live().getHeaders().getCacheControl()).isEqualTo("no-store");
     }
 
     @Test
@@ -27,6 +28,18 @@ class HealthControllerTest {
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).containsEntry("status", "ok");
+    }
+
+    @Test
+    void legacyHealthPathKeepsDatabaseCheckAndNoStoreResponse() {
+        JdbcTemplate jdbcTemplate = mock(JdbcTemplate.class);
+        when(jdbcTemplate.queryForObject("select 1", Integer.class)).thenReturn(1);
+
+        var response = new HealthController(jdbcTemplate).health();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).containsEntry("status", "ok");
+        assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-store");
     }
 
     @Test

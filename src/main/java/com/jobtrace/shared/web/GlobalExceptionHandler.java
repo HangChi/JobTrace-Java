@@ -7,6 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -17,6 +18,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -82,12 +85,27 @@ public class GlobalExceptionHandler {
                 "The request content type is not supported.", request);
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ProblemDetail> handleMalformedBody(
+            HttpMessageNotReadableException exception, HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "validation",
+                "The request body is invalid.", request);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ProblemDetail> handleMissingParameter(
+            MissingServletRequestParameterException exception, HttpServletRequest request) {
+        return response(HttpStatus.BAD_REQUEST, "validation",
+                "The request is missing a required parameter.", request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnexpected(
             Exception exception,
             HttpServletRequest request) {
         String requestId = requestId(request);
-        LOGGER.error("Unhandled request failure requestId={}", requestId, exception);
+        LOGGER.error("Unhandled request failure requestId={} type={}",
+                requestId, exception.getClass().getSimpleName());
         return response(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 "internal_error",
@@ -105,7 +123,8 @@ public class GlobalExceptionHandler {
         body.setType(URI.create("urn:jobtrace:problem:" + code));
         body.setProperty("code", code);
         body.setProperty("requestId", requestId(request));
-        return ResponseEntity.status(status).body(body);
+        return ResponseEntity.status(status)
+                .header(HttpHeaders.CACHE_CONTROL, "private, no-store").body(body);
     }
 
     private String requestId(HttpServletRequest request) {

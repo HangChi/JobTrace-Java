@@ -65,12 +65,16 @@ class PackagedApplicationTest {
     void executableJarServesFrontendAndHealthRoutesWithBuildMetadata() throws Exception {
         HttpResponse<String> shell = get("/");
         HttpResponse<String> liveness = get("/api/health/live");
+        HttpResponse<String> legacyHealth = get("/api/health");
         HttpResponse<String> readiness = get("/api/health/ready");
 
         assertThat(shell.statusCode()).isEqualTo(200);
         assertThat(shell.body()).contains("<div id=\"root\"></div>");
         assertThat(liveness.statusCode()).isEqualTo(200);
         assertThat(liveness.body()).isEqualTo("{\"status\":\"ok\"}");
+        assertThat(legacyHealth.statusCode()).isEqualTo(503);
+        assertThat(legacyHealth.body()).isEqualTo("{\"status\":\"error\"}");
+        assertThat(legacyHealth.headers().firstValue("cache-control")).contains("no-store");
         assertThat(readiness.statusCode()).isEqualTo(503);
         assertThat(readiness.body()).isEqualTo("{\"status\":\"error\"}");
 

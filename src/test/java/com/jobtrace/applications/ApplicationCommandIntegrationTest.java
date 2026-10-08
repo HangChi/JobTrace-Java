@@ -4,6 +4,7 @@ import static com.jobtrace.applications.ApplicationReadDatabaseTest.asOwner;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +19,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import org.springframework.dao.DataAccessException;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -101,6 +106,29 @@ class ApplicationCommandIntegrationTest extends ApplicationReadDatabaseTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("offer"))
                 .andExpect(jsonPath("$.version").value(3));
+    }
+
+    @Test
+    void createdApplicationFlowsIntoOwnerReadModelButNotAnotherOwnersView() throws Exception {
+        String created = mvc.perform(post("/api/applications").with(asOwner(OWNER)).with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"companyName":"Journey Company","positionName":"Engineer",
+                                 "appliedDate":"2026-09-20"}
+                                """))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String id = new tools.jackson.databind.ObjectMapper().readTree(created).get("id").textValue();
+
+        mvc.perform(get("/api/applications/{id}", id).with(asOwner(OWNER)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.companyName").value("Journey Company"));
+        mvc.perform(get("/api/applications").param("q", "Journey Company")
+                        .with(asOwner(OWNER)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id").value(id));
+        mvc.perform(get("/api/applications/{id}", id).with(asOwner(OTHER_OWNER)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -213,6 +241,39 @@ class ApplicationCommandIntegrationTest extends ApplicationReadDatabaseTest {
                                  "appliedDate":"2026-09-01","version":3,"changeDate":"2026-09-20"}
                                 """))
                 .andExpect(status().isServiceUnavailable());
+    }
+
+    @Test
+    void concurrentUpdatesWithOneVersionCommitOnlyOnce() throws Exception {
+        int eventsBefore = jdbc.queryForObject("select count(*) from application_events "
+                + "where application_id=?::uuid", Integer.class, FIRST_ID);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(() -> updateAtSameVersion(start));
+            var second = executor.submit(() -> updateAtSameVersion(start));
+            start.countDown();
+            assertThat(java.util.List.of(first.get(10, TimeUnit.SECONDS),
+                    second.get(10, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder("updated", "conflict");
+        }
+        assertThat(jdbc.queryForObject("select version from applications where id=?::uuid",
+                Integer.class, FIRST_ID)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("select count(*) from application_events "
+                + "where application_id=?::uuid", Integer.class, FIRST_ID))
+                .isEqualTo(eventsBefore + 1);
+    }
+
+    private String updateAtSameVersion(CountDownLatch start) throws InterruptedException {
+        start.await();
+        try {
+            jdbc.queryForObject("""
+                    select (update_application_for_owner(?, ?::uuid, ?, ?::date, ?::jsonb)).version
+                    """, Integer.class, OWNER, FIRST_ID, 3, "2026-09-21",
+                    "{\"companyName\":\"Concurrent\"}");
+            return "updated";
+        } catch (DataAccessException exception) {
+            return "conflict";
+        }
     }
 
     @Test

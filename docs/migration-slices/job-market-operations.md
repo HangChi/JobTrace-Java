@@ -9,3 +9,7 @@ Java provides owner-scoped campaign favorites and administrator-only source meta
 Database credentials are provided through existing runtime configuration; no credentials, data dumps or new production migrations are included here. The old service remains the production route owner until an explicit routing decision. Rolling back this slice removes Java handling while retaining all marketplace rows and the legacy ingestion worker.
 
 See [the feature contract](../../specs/027-job-market-operations/contracts/openapi.yaml) and [validation guide](../../specs/027-job-market-operations/quickstart.md).
+
+Stage 029 confirmed this split against the legacy API inventory: Java exposes shared catalog,
+candidate, source metadata and run-history APIs but no ATS/WeChat collector or internal sync
+writer. See the [route matrix](../../specs/029-code-hardening/contracts/route-matrix.md).

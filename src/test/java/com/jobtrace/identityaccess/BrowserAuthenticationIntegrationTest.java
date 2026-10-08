@@ -61,6 +61,13 @@ class BrowserAuthenticationIntegrationTest extends AccountEmailBindingFixture {
     }
 
     @Test
+    void ordinaryBrowserSessionCannotReachAdministratorData() throws Exception {
+        mockMvc.perform(get("/api/admin/summary")
+                        .header(HttpHeaders.COOKIE, signed()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void revocationAndDisablementTakeEffectOnNextRequest() throws Exception {
         mockMvc.perform(get("/api/profile/sessions").header(HttpHeaders.COOKIE, signed()))
                 .andExpect(status().isOk());

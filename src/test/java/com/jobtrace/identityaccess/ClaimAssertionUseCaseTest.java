@@ -10,6 +10,10 @@ import com.jobtrace.identityaccess.domain.BridgeAuthenticationFailure;
 import com.jobtrace.identityaccess.domain.BridgeIdentity;
 import com.jobtrace.identityaccess.domain.ReplayGuard;
 import java.time.Instant;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 
 class ClaimAssertionUseCaseTest {
@@ -42,6 +46,44 @@ class ClaimAssertionUseCaseTest {
             }
         };
         assertFailure(throwing, BridgeAuthenticationFailure.REPLAY_STORE_UNAVAILABLE);
+    }
+
+    @Test
+    void concurrentClaimsExposeTheSameAssertionAtMostOnce() throws Exception {
+        AtomicBoolean claimed = new AtomicBoolean();
+        ReplayGuard atomicGuard = new ReplayGuard() {
+            @Override
+            public boolean claim(String issuer, String tokenId, Instant retainUntil) {
+                return claimed.compareAndSet(false, true);
+            }
+
+            @Override
+            public boolean isAvailable() {
+                return true;
+            }
+        };
+        var useCase = new ClaimAssertionUseCase(VERIFIER, atomicGuard,
+                BridgeTokenFixtures.jobTraceProperties().authBridge());
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var first = executor.submit(() -> claimAfter(start, useCase));
+            var second = executor.submit(() -> claimAfter(start, useCase));
+            start.countDown();
+            assertThat(java.util.List.of(first.get(5, TimeUnit.SECONDS),
+                    second.get(5, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder("accepted", "REPLAYED");
+        }
+    }
+
+    private static String claimAfter(CountDownLatch start, ClaimAssertionUseCase useCase)
+            throws InterruptedException {
+        start.await();
+        try {
+            useCase.execute("token", "GET", "/path", "request");
+            return "accepted";
+        } catch (BridgeAuthenticationException exception) {
+            return exception.failure().name();
+        }
     }
 
     private static void assertFailure(
