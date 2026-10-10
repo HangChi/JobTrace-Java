@@ -42,13 +42,30 @@ it('reads sanitized public content and toggles a like with CSRF', async () => {
   vi.stubGlobal('fetch', fetcher)
   render(<InterviewsPage onExpired={vi.fn()} />)
   fireEvent.click(screen.getByRole('button', { name: '公开面经' }))
-  fireEvent.click(await screen.findByRole('button', { name: '阅读全文' }))
+  fireEvent.click(await screen.findByRole('button', { name: '查看完整面经' }))
   expect(await screen.findByText('如何准备？')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '点赞 · 0' }))
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public/p1/like', expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'X-CSRF-TOKEN': 'csrf' }) })))
   fireEvent.change(screen.getByLabelText('发表评论'), { target: { value: '很有帮助' } })
   fireEvent.submit(screen.getByRole('button', { name: '提交评论' }).closest('form')!)
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public/p1/comments', expect.objectContaining({ method: 'POST', body: JSON.stringify({ content: '很有帮助' }) })))
+})
+
+it('keeps the public square and detail visible when a post has no author', async () => {
+  const anonymous = { ...publicItem, author: null }
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => {
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path.startsWith('/api/interviews/public?')) return json({ items: [anonymous], nextCursor: null, total: 1, limit: 20, facets: { cities: [], positions: [] } })
+    if (path === '/api/interviews/public/p1') return json(anonymous)
+    if (path === '/api/interviews/public/p1/comments') return json([])
+    return json({ items: [], nextCursor: null, total: 0, limit: 20 })
+  }))
+  render(<InterviewsPage initialTab="public" onExpired={vi.fn()} />)
+  expect(await screen.findByRole('heading', { name: '公开公司 · 工程师' })).toBeInTheDocument()
+  expect(screen.getByText('匿名用户')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '查看完整面经' }))
+  expect(await screen.findByText('如何准备？')).toBeInTheDocument()
+  expect(screen.getByText('匿名 · 2026-10-08')).toBeInTheDocument()
 })
 
 it('prevents publishing a draft until it has completed review content', async () => {
@@ -89,4 +106,18 @@ it('loads subsequent public interview pages without losing the first page', asyn
   expect(await screen.findByRole('heading', { name: '第二家公司 · 工程师' })).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: '公开公司 · 工程师' })).toBeInTheDocument()
   expect(fetcher).toHaveBeenCalledWith('/api/interviews/public?sort=latest&limit=20&cursor=next', expect.anything())
+})
+
+it('applies city and position filters in the public square', async () => {
+  const fetcher = vi.fn(async (path: string) => {
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path.startsWith('/api/interviews/public?')) return json({ items: [publicItem], nextCursor: null, total: 1, limit: 20, facets: { cities: ['上海'], positions: ['工程师'] } })
+    return json({ items: [], nextCursor: null, total: 0, limit: 20 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage initialTab="public" onExpired={vi.fn()} />)
+  await screen.findByRole('heading', { name: '公开公司 · 工程师' })
+  fireEvent.change(screen.getByLabelText('城市'), { target: { value: '上海' } })
+  fireEvent.change(screen.getByLabelText('岗位'), { target: { value: '工程师' } })
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public?sort=latest&limit=20&city=%E4%B8%8A%E6%B5%B7&position=%E5%B7%A5%E7%A8%8B%E5%B8%88', expect.anything()))
 })

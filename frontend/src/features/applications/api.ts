@@ -5,7 +5,9 @@ export type ApplicationSummary = {
   companyName: string
   positionName: string
   city: string | null
+  jobUrl: string | null
   appliedDate: string
+  latestDate: string
   status: 'submitted' | 'offer' | 'refused'
   type: string
   stages: string[]
@@ -59,7 +61,7 @@ export const getApplication = (id: string) => apiRequest<ApplicationDetail>(path
 export const createApplication = (draft: ApplicationDraft) => apiRequest<ApplicationDetail>('/api/applications', { method: 'POST', body: draft })
 export const updateApplication = (item: ApplicationDetail, draft: ApplicationDraft, changeDate: string) =>
   apiRequest<ApplicationDetail>(path(item.id), { method: 'PATCH', body: { ...draft, version: item.version, changeDate } })
-export const updateApplicationStatus = (item: ApplicationDetail, status: ApplicationSummary['status']) =>
+export const updateApplicationStatus = (item: Pick<ApplicationSummary, 'id' | 'version'>, status: ApplicationSummary['status']) =>
   apiRequest<{ id: string; status: ApplicationSummary['status']; latestDate: string; version: number }>(`${path(item.id)}/status`, { method: 'PATCH', body: { status, version: item.version } })
 export const deleteApplication = (id: string) => apiRequest<void>(path(id), { method: 'DELETE' })
 export const addApplicationStage = (item: ApplicationDetail, stage: string, occurredOn: string) =>

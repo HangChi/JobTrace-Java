@@ -6,6 +6,7 @@ import { ApiError } from '../../shared/api/client'
 import { addPublicComment, createPrivateInterview, deletePrivateInterview, getPrivateInterview, getPublicInterview, listPrivateInterviews, listPublicComments, listPublicInterviews, togglePublicLike, updatePrivateInterview } from './api'
 import type { Comment, InterviewDetail, InterviewPage, InterviewQuestion, PublicInterview, PublicInterviewPage } from './api'
 import InterviewQuestionsEditor from './InterviewQuestionsEditor'
+import PublicInterviewCard from './PublicInterviewCard'
 
 const stages = [['assessment', '测评'], ['interview_1', '一面'], ['interview_2', '二面'], ['interview_3', '三面'], ['hr_interview', 'HR 面'], ['final_interview', '终面']]
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' })
@@ -22,6 +23,8 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
   const [comments, setComments] = useState<Comment[]>([])
   const [comment, setComment] = useState('')
   const [search, setSearch] = useState('')
+  const [city, setCity] = useState('')
+  const [position, setPosition] = useState('')
   const [sort, setSort] = useState('latest')
   const [newApplication, setNewApplication] = useState('')
   const [newStage, setNewStage] = useState('interview_1')
@@ -51,10 +54,12 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     let active = true
     const params = new URLSearchParams({ sort, limit: '20' })
     if (search.trim()) params.set('q', search.trim())
+    if (city) params.set('city', city)
+    if (position) params.set('position', position)
     listPublicInterviews(params).then(value => { if (active) setPublicPage(value) })
       .catch(caught => { if (active) { if (caught instanceof ApiError && caught.status === 401) onExpired(); else setError(message(caught)) } })
     return () => { active = false }
-  }, [tab, sort, search, reload, onExpired])
+  }, [tab, sort, search, city, position, reload, onExpired])
 
   async function execute(work: () => Promise<void>) {
     if (busy) return
@@ -125,6 +130,8 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     void execute(async () => {
       const params = new URLSearchParams({ sort, limit: '20', cursor: publicPage.nextCursor! })
       if (search.trim()) params.set('q', search.trim())
+      if (city) params.set('city', city)
+      if (position) params.set('position', position)
       const next = await listPublicInterviews(params)
       setPublicPage({ ...next, items: [...publicPage.items, ...next.items] })
     })
@@ -147,11 +154,11 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
         <div className="form-actions"><button type="submit" disabled={busy}>保存面经</button><button type="button" className="danger-button" disabled={busy} onClick={() => { if (window.confirm('确定删除这篇面经？')) void execute(async () => { await deletePrivateInterview(detail.id); setDetail(null); setReload(index => index + 1); setNotice('面经已删除。') }) }}>删除面经</button></div>
       </form>}
     </> : <>
-      <div className="public-feed-toolbar"><div className="filter-bar"><label>搜索公开面经<input value={search} onChange={event => setSearch(event.target.value)} placeholder="公司或岗位" /></label><label>排序<select value={sort} onChange={event => setSort(event.target.value)}><option value="latest">最新</option><option value="hot">热门</option></select></label></div>{navigate && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}</div>
+      {!initialPublicId && <div className="public-feed-toolbar"><div className="public-company-search"><label className="public-company-search-field"><span className="sr-only">搜索公司</span><svg aria-hidden="true" viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m12.5 12.5 4 4" /></svg><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="搜索公司名称" /></label><label className="public-filter-select"><span className="sr-only">城市</span><select value={city} onChange={event => setCity(event.target.value)}><option value="">城市</option>{(publicPage?.facets?.cities ?? []).map(value => <option key={value} value={value}>{value}</option>)}</select></label><label className="public-filter-select"><span className="sr-only">岗位</span><select value={position} onChange={event => setPosition(event.target.value)}><option value="">岗位</option>{(publicPage?.facets?.positions ?? []).map(value => <option key={value} value={value}>{value}</option>)}</select></label><div className="public-sort-control" role="group" aria-label="排序方式"><button type="button" aria-pressed={sort === 'latest'} onClick={() => setSort('latest')}>最新发布</button><button type="button" aria-pressed={sort === 'hot'} onClick={() => setSort('hot')}>按热度</button></div></div>{navigate && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}</div>}
       <div className="public-square-layout"><div className="public-main">{!initialPublicId && <header className="public-feed-heading"><p className="eyebrow">公开动态</p><h1>最新面经</h1><p>看看大家的真实复盘，找到下一次面试的准备方向。</p></header>}
-      {!initialPublicId && (!publicPage ? <p role="status">正在加载公开面经…</p> : <div className="interview-list">{publicPage.items.length === 0 ? <p className="muted-note">暂无公开面经。</p> : publicPage.items.map(item => <article className="content-card" key={item.id}><h2>{item.companyName} · {item.positionName}</h2><p>{item.author.username} · {item.interviewedOn} · {item.questionCount} 个问题</p><p>{item.highlights}</p><button className="quiet-button" onClick={() => navigate ? navigate(`/interviews/shared/${encodeURIComponent(item.id)}`) : openPublic(item.id)}>阅读全文</button></article>)}{publicPage.nextCursor && <button className="quiet-button" disabled={busy} onClick={morePublic}>加载更多公开面经</button>}</div>)}
+      {!initialPublicId && (!publicPage ? <p role="status">正在加载公开面经…</p> : <section className="public-feed" aria-label="公开面经列表"><div className="public-feed-count">共 {publicPage.total} 篇</div>{publicPage.items.length === 0 ? <div className="content-card interview-empty-state"><h2>暂时没有公开面经</h2><p>换个筛选条件，或者先完成并分享你的第一篇面经。</p>{navigate && <button className="quiet-button" onClick={() => navigate('/interviews/mine')}>查看个人面经</button>}</div> : <ol className="public-feed-list">{publicPage.items.map(item => <li key={item.id}><PublicInterviewCard item={item} onOpen={() => navigate ? navigate(`/interviews/shared/${encodeURIComponent(item.id)}`) : openPublic(item.id)} /></li>)}</ol>}{publicPage.nextCursor && <button className="quiet-button public-feed-more" disabled={busy} onClick={morePublic}>加载更多公开面经</button>}</section>)}
       {initialPublicId && !publicDetail && !error && <p role="status">正在加载面经详情…</p>}
-      {publicDetail && <article className="content-card public-interview"><div className="editor-heading"><h2>{publicDetail.companyName} · {publicDetail.positionName}</h2><button className="quiet-button" onClick={() => navigate ? navigate('/interviews') : setPublicDetail(null)}>关闭</button></div><p>{publicDetail.author.username} · {publicDetail.interviewedOn}</p>{publicDetail.highlights && <p>亮点：{publicDetail.highlights}</p>}{publicDetail.gaps && <p>待改进：{publicDetail.gaps}</p>}{publicDetail.questions.map((item, index) => <div key={index} className="public-question"><h3>{item.question}</h3>{item.originalAnswer && <p>{item.originalAnswer}</p>}{item.improvedAnswer && <p>改进回答：{item.improvedAnswer}</p>}</div>)}<button className="quiet-button" disabled={busy} onClick={() => void execute(async () => { const engagement = await togglePublicLike(publicDetail.id); setPublicDetail({ ...publicDetail, engagement }) })}>{publicDetail.engagement.likedByViewer ? '取消点赞' : '点赞'} · {publicDetail.engagement.likeCount}</button><h3>评论</h3><ul className="insight-list">{comments.map(item => <li key={item.id}><strong>{item.author.username}</strong><span>{item.content}</span></li>)}</ul><form className="comment-form" onSubmit={event => { event.preventDefault(); if (!comment.trim()) return; void execute(async () => { const value = await addPublicComment(publicDetail.id, comment.trim()); setComments([...comments, value.comment]); setPublicDetail({ ...publicDetail, engagement: value.engagement }); setComment('') }) }}><label>发表评论<textarea value={comment} maxLength={2000} onChange={event => setComment(event.target.value)} required /></label><button disabled={busy} type="submit">提交评论</button></form></article>}
+      {publicDetail && <article className="content-card public-interview"><div className="editor-heading"><h2>{publicDetail.companyName} · {publicDetail.positionName}</h2><button className="quiet-button" onClick={() => navigate ? navigate('/interviews') : setPublicDetail(null)}>关闭</button></div><p>{publicDetail.author?.username ?? '匿名'} · {publicDetail.interviewedOn}</p>{publicDetail.highlights && <p>亮点：{publicDetail.highlights}</p>}{publicDetail.gaps && <p>待改进：{publicDetail.gaps}</p>}{publicDetail.questions.map((item, index) => <div key={index} className="public-question"><h3>{item.question}</h3>{item.originalAnswer && <p>{item.originalAnswer}</p>}{item.improvedAnswer && <p>改进回答：{item.improvedAnswer}</p>}</div>)}<button className="quiet-button" disabled={busy} onClick={() => void execute(async () => { const engagement = await togglePublicLike(publicDetail.id); setPublicDetail({ ...publicDetail, engagement }) })}>{publicDetail.engagement.likedByViewer ? '取消点赞' : '点赞'} · {publicDetail.engagement.likeCount}</button><h3>评论</h3><ul className="insight-list">{comments.map(item => <li key={item.id}><strong>{item.author.username}</strong><span>{item.content}</span></li>)}</ul><form className="comment-form" onSubmit={event => { event.preventDefault(); if (!comment.trim()) return; void execute(async () => { const value = await addPublicComment(publicDetail.id, comment.trim()); setComments([...comments, value.comment]); setPublicDetail({ ...publicDetail, engagement: value.engagement }); setComment('') }) }}><label>发表评论<textarea value={comment} maxLength={2000} onChange={event => setComment(event.target.value)} required /></label><button disabled={busy} type="submit">提交评论</button></form></article>}
       </div><aside className="public-feed-sidebar" aria-label="面经广场辅助信息"><section className="content-card"><span>公开动态</span><p><strong>{publicPage?.total ?? '—'}</strong> 篇面经</p></section><section className="content-card"><h2>分享说明</h2><ul><li>完成复盘后才可公开</li><li>公开时默认匿名分享</li><li>可随时切回私有状态</li></ul></section></aside></div>
     </>}
   </section>
