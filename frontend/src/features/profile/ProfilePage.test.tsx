@@ -4,6 +4,7 @@ import ProfilePage from './ProfilePage'
 
 const json = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } })
 const profile = { id: 'u1', displayName: '小李', image: null, recoveryEmail: null, emailVerified: false }
+const preferences = { homeEnabled: true, homeView: 'scheduled', defaultLead: '1h', defaultSnoozeMinutes: 30, emailDefault: false }
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
@@ -11,6 +12,7 @@ it('updates the current owner profile and changes password with CSRF', async () 
   const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
     if (path === '/api/security/csrf') return json({ token: 'csrf' })
     if (path === '/api/profile/sessions') return json([])
+    if (path === '/api/reminder-settings') return json(preferences)
     if (path === '/api/profile/password') return json({ message: '密码已更新，其他设备已退出登录。' })
     if (path === '/api/profile' && init?.method === 'PATCH') return json({ ...profile, displayName: '新名字' })
     return json(profile)
@@ -24,4 +26,20 @@ it('updates the current owner profile and changes password with CSRF', async () 
   fireEvent.change(screen.getByLabelText('新密码'), { target: { value: 'new-password-123' } })
   fireEvent.submit(screen.getByRole('button', { name: '更新密码' }).closest('form')!)
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/profile/password', expect.objectContaining({ method: 'POST', headers: expect.objectContaining({ 'X-CSRF-TOKEN': 'csrf' }) })))
+})
+
+it('shows the admin role and saves reminder settings inline', async () => {
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path === '/api/profile/sessions') return json([])
+    if (path === '/api/reminder-settings' && init?.method === 'PATCH') return json({ ...preferences, homeEnabled: false })
+    if (path === '/api/reminder-settings') return json(preferences)
+    return json(profile)
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<ProfilePage role="ADMIN" onExpired={vi.fn()} />)
+  expect(await screen.findByText('管理员账号 · 正常')).toBeInTheDocument()
+  fireEvent.click(screen.getByLabelText('在首页显示提醒'))
+  fireEvent.click(screen.getByRole('button', { name: '保存提醒设置' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/reminder-settings', expect.objectContaining({ method: 'PATCH', body: expect.stringContaining('"homeEnabled":false') })))
 })

@@ -1,108 +1,80 @@
 # JobTrace Java
 
-JobTrace 的渐进式 Java 迁移仓库。目标架构是 Spring Boot 模块化单体后端加 React、TypeScript、Vite 前端；Node.js 只用于开发和 CI 构建，生产环境运行单个包含静态前端资源的 Java JAR。
+![JobTrace 标识](frontend/public/jobtrace-icon.svg)
 
-## 当前状态
+JobTrace 是求职投递与面试过程管理工具。本仓库将原版 Next.js 服务逐步迁移为 Spring Boot 模块化单体与 React 前端，沿用原有 PostgreSQL 数据和业务约束。前端与后端在开发时分别运行；打包后，前端静态资源也可由同一个 Java JAR 提供。
 
-仓库目前提供迁移基础设施，不代表现有 JobTrace 功能已经迁移完成：
+> [!IMPORTANT]
+> 本仓库仍处于迁移与界面对齐阶段。Java 已实现主要业务接口，但上线流量切换、旧数据库迁移基线和全部页面的人工视觉验收不是本仓库当前已完成的事实。不要把本地启动等同于生产切换。
 
-- Java 21 与 Spring Boot 4.1.1 工程骨架
-- Spring MVC、Security、JDBC、jOOQ、Flyway、Actuator
-- React 19、TypeScript 6、Vite 8 前端骨架
-- 独立的存活与数据库就绪检查
-- Maven Wrapper 与前后端测试基础
-- CI 工作流
-- speckit 迁移规格、设计与任务清单
+## 能做什么
 
-已有功能、数据库约束和安全行为仍以原 `JobTrace` 仓库为准。
+| 领域 | 当前 Java 端能力 |
+| --- | --- |
+| 账号与认证 | 注册、验证码、登录/退出、找回密码、会话、资料、安全邮箱、密码与管理员权限 |
+| 投递与分析 | 投递及阶段管理、统计报告、进度提醒 |
+| 面经 | 私有记录、公开分享、评论、点赞与导出 |
+| 提醒与数据 | 提醒和偏好、CSV/XLSX 导入预检、确认导入、导出 |
+| 岗位市场 | 读取共享目录、收藏、管理员目录/来源/候选审核与运行记录 |
 
-## 架构
+岗位市场的 ATS/微信采集、调度和同步运行仍由原服务负责；Java 不单独爬取。详细边界见[架构](docs/architecture.md)与[接口约定](docs/api.md)。前端按旧版页面与视觉语言持续对齐，进度以 [`specs/028-frontend-migration/tasks.md`](specs/028-frontend-migration/tasks.md) 为准。
 
-```text
-Browser
-  └── React + TypeScript static assets
-          └── Spring Boot REST API
-                  └── PostgreSQL 17
-```
+## 技术与目录
 
-开发时 Vite 运行在独立端口并把 `/api` 代理到 Spring Boot。生产构建把 `frontend/dist` 嵌入可执行 JAR，因此服务器不需要 Node.js。
+- Java 21、Spring Boot 4.1.1、Spring JDBC/jOOQ、PostgreSQL 17；共享重放防护使用 Valkey/Redis。
+- React 19、TypeScript 6、Vite 8；浏览器通过同源 `/api` 调用 Java。
+- `src/main/java/com/jobtrace/`：按 `applications`、`interviews`、`analytics`、`reminders`、`datatransfer`、`jobmarket`、`identityaccess` 和 `shared` 分模块。
+- `frontend/`：浏览器页面、API 客户端和前端测试。
+- `docs/`：当前架构、配置、开发、运维与故障排查；`specs/`：各迁移阶段的需求、方案和任务。
 
-## 前置要求
+## 本地开始
 
-- Java 21
-- Node.js 24 或更新版本
-- PostgreSQL 17（运行就绪检查和后续集成测试时需要）
+需要 Java 21、Node.js 24+、可访问的 PostgreSQL 17，以及 Maven Wrapper。首次安装前端依赖使用 `npm ci`。数据库必须具有与原版兼容的既有 schema；仓库中的 `compose.yaml` 只启动空数据库和 Valkey，**不会自动创建业务表**。
 
-Maven 无需全局安装，使用仓库内 Wrapper。
+1. 按[配置说明](docs/configuration.md)提供 `JOBTRACE_DATABASE_URL`、`JOBTRACE_DATABASE_USERNAME`、`JOBTRACE_DATABASE_PASSWORD` 和 `BETTER_AUTH_SECRET`。不要提交本地环境文件或真实凭据；保持 `JOBTRACE_FLYWAY_ENABLED=false`。
+2. 在仓库根目录启动后端：
 
-## 快速验证
+   ```bash
+   ./mvnw spring-boot:run
+   ```
 
-后端：
+3. 在另一终端启动前端：
+
+   ```bash
+   cd frontend
+   npm ci
+   npm run dev
+   ```
+
+4. 打开 [http://localhost:5173](http://localhost:5173)。Vite 把 `/api` 代理到 `http://localhost:8080`。`GET /api/health/ready` 返回 `{"status":"ok"}` 才表示数据库连接可用；未登录的 `/api/auth/session` 返回 401 是正常现象。
+
+`http://localhost:8080` 也可显示最近一次 Maven 构建嵌入的页面，但不会像 Vite 一样热更新。两种运行方式和独立生产打包见[开发指南](docs/development.md)。
+
+## 验证
 
 ```bash
-./mvnw test
-```
-
-前端：
-
-```bash
+./mvnw verify
 cd frontend
-npm ci
 npm run lint
 npm test
 npm run build
 ```
 
-完整生产构建：
+后端集成测试可能需要 Docker/Testcontainers；运行命令、测试数据边界和手工验收见[开发指南](docs/development.md)。
 
-```bash
-./mvnw package
-```
+## 文档导航
 
-详细说明见 [迁移基础 Quickstart](specs/001-java-migration/quickstart.md)。
+| 文档 | 用途 |
+| --- | --- |
+| [开发指南](docs/development.md) | 环境、启动、测试、前后端运行模式 |
+| [使用指南](docs/user-guide.md) | 登录、主要页面和管理员操作 |
+| [配置说明](docs/configuration.md) | 环境变量、外部服务、密钥与数据库安全 |
+| [架构](docs/architecture.md) | 模块边界、认证、数据与采集归属 |
+| [接口约定](docs/api.md) | 路由分组、会话、CSRF、错误与兼容清单 |
+| [运维](docs/operations.md) | 打包、健康检查、部署和回滚原则 |
+| [故障排查](docs/troubleshooting.md) | 连接、登录、数据库、端口和页面问题 |
+| [数据库基线](docs/database-baseline.md) | Flyway 启用前的审批门槛 |
+| [迁移记录](docs/migration.md) | 各阶段的历史范围和决策 |
+| [参与开发](CONTRIBUTING.md) | 分支、代码边界与提交前验证 |
 
-## 本地配置
-
-复制 `.env.example` 中的变量到本地环境。Spring 使用 JDBC 形式的数据库地址：
-
-```dotenv
-JOBTRACE_DATABASE_URL=jdbc:postgresql://127.0.0.1:5432/jobtrace
-JOBTRACE_DATABASE_USERNAME=jobtrace
-JOBTRACE_DATABASE_PASSWORD=change-me
-JOBTRACE_FLYWAY_ENABLED=false
-```
-
-在旧数据库迁移基线获得批准前，必须保持 `JOBTRACE_FLYWAY_ENABLED=false`。
-
-## 模块规划
-
-Java 包沿用原项目的领域词汇：
-
-```text
-com.jobtrace
-├── shared
-├── applications
-├── interviews
-├── analytics
-├── reminders
-├── datatransfer
-├── jobmarket
-└── identityaccess
-```
-
-迁移顺序、约束和回滚原则见 [迁移指南](docs/migration.md)。
-
-## 文档
-
-- [架构说明](docs/architecture.md)
-- [迁移指南](docs/migration.md)
-- [远程仓库与分支保护](docs/repository-setup.md)
-- [功能规格](specs/001-java-migration/spec.md)
-- [实现计划](specs/001-java-migration/plan.md)
-- [迁移任务](specs/001-java-migration/tasks.md)
-
-## 尚待仓库所有者决定
-
-- Git 远程仓库地址尚未设置。
-- 分支保护需要在远程仓库创建后启用。
-- License 尚未选择；在明确开源或授权策略前不添加许可证。
+需求与任务按 `specs/<NNN>-<slug>/` 管理；原版 `JobTrace` 仓库仍是行为对照来源。不要直接修改或重放原版迁移链。

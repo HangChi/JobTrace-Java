@@ -1,5 +1,7 @@
 # Migration Guide
 
+> **历史阶段记录**：本页按 001–029 阶段叙述当时新增的范围，诸如“尚未迁移登录”或“只读”的句子只适用于对应阶段，不能当作当前运行能力。当前架构、认证与运行方式以 [README](../README.md)、[架构](architecture.md)、[接口约定](api.md) 为准；生产路由/写入归属仍须单独决策。
+
 ## Strategy
 
 Use incremental replacement. The existing JobTrace application remains available while bounded capabilities move to this repository.

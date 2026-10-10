@@ -12,9 +12,9 @@ const blank = (): ApplicationDraft => ({ companyName: '', positionName: '', city
 const toDraft = (item: ApplicationDetail): ApplicationDraft => ({ companyName: item.companyName, positionName: item.positionName, city: item.city ?? '', jobUrl: item.jobUrl ?? '', appliedDate: item.appliedDate, type: item.type, status: item.status, notes: item.notes ?? '', stages: item.stageOccurrences.map(({ stage, occurredOn }) => ({ stage, occurredOn })) })
 const errorText = (caught: unknown) => caught instanceof ApiError ? caught.message : '操作未完成，请稍后重试。'
 
-export default function ApplicationEditor({ id, onClose, onChanged, onExpired }: { id: string | null; onClose: () => void; onChanged: () => void; onExpired: () => void }) {
+export default function ApplicationEditor({ id, onClose, onChanged, onExpired, initialDraft }: { id: string | null; onClose: () => void; onChanged: () => void; onExpired: () => void; initialDraft?: Partial<ApplicationDraft> }) {
   const [detail, setDetail] = useState<ApplicationDetail | null>(null)
-  const [draft, setDraft] = useState<ApplicationDraft>(blank)
+  const [draft, setDraft] = useState<ApplicationDraft>(() => ({ ...blank(), ...initialDraft }))
   const [stage, setStage] = useState('screening')
   const [stageDate, setStageDate] = useState(today)
   const [error, setError] = useState('')
