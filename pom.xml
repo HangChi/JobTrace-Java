@@ -315,6 +315,18 @@
                 <version>3.2.0</version>
                 <executions>
                     <execution>
+                        <id>remove-stale-frontend-assets</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <delete dir="${project.build.outputDirectory}/static"/>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>build-manifest</id>
                         <phase>prepare-package</phase>
                         <goals>
@@ -332,7 +344,8 @@
                                 <condition property="build.revision" value="${git.revision}" else="unknown">
                                     <isset property="git.revision"/>
                                 </condition>
-                                <checksum algorithm="SHA-256" totalproperty="frontend.asset.sha256">
+                                <checksum algorithm="SHA-256" totalproperty="frontend.asset.sha256"
+                                          todir="${project.build.directory}/frontend-checksums">
                                     <fileset dir="${project.basedir}/frontend/dist">
                                         <include name="**/*"/>
                                     </fileset>

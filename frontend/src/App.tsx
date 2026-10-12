@@ -1,16 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { currentPath, guestRoutes, navigation, safePath } from './app/routes'
-import AuthPage from './features/auth/AuthPage'
-import ApplicationList from './features/applications/ApplicationList'
-import ReminderPage from './features/reminders/ReminderPage'
-import AnalyticsPage from './features/analytics/AnalyticsPage'
-import ImportPage from './features/import/ImportPage'
-import ProfilePage from './features/profile/ProfilePage'
-import InterviewsPage from './features/interviews/InterviewsPage'
-import AdminPage from './features/admin/AdminPage'
-import AdminUserDetailPage from './features/admin/AdminUserDetailPage'
-import JobMarketPage from './features/job-market/JobMarketPage'
 import { getSession, logout } from './features/auth/api'
 import type { CurrentSession } from './features/auth/api'
 import { ApiError } from './shared/api/client'
@@ -18,6 +8,17 @@ import './App.css'
 import './AppShell.css'
 import './Polish.css'
 import './ReferenceLayout.css'
+
+const AuthPage = lazy(() => import('./features/auth/AuthPage'))
+const ApplicationList = lazy(() => import('./features/applications/ApplicationList'))
+const ReminderPage = lazy(() => import('./features/reminders/ReminderPage'))
+const AnalyticsPage = lazy(() => import('./features/analytics/AnalyticsPage'))
+const ImportPage = lazy(() => import('./features/import/ImportPage'))
+const ProfilePage = lazy(() => import('./features/profile/ProfilePage'))
+const InterviewsPage = lazy(() => import('./features/interviews/InterviewsPage'))
+const AdminPage = lazy(() => import('./features/admin/AdminPage'))
+const AdminUserDetailPage = lazy(() => import('./features/admin/AdminUserDetailPage'))
+const JobMarketPage = lazy(() => import('./features/job-market/JobMarketPage'))
 
 type AuthState = { kind: 'checking' } | { kind: 'guest' } | { kind: 'ready'; session: CurrentSession } | { kind: 'error'; message: string }
 
@@ -98,7 +99,7 @@ function App() {
 
   const pathname = new URL(path, window.location.origin).pathname
   if (auth.kind === 'guest') {
-    return <AuthPage key={pathname} path={pathname} query={new URL(path, window.location.origin).searchParams} navigate={navigate} onLogin={session => setAuth({ kind: 'ready', session })} onLink={handleLink} />
+    return <Suspense fallback={<main className="center-state" role="status">正在加载页面…</main>}><AuthPage key={pathname} path={pathname} query={new URL(path, window.location.origin).searchParams} navigate={navigate} onLogin={session => setAuth({ kind: 'ready', session })} onLink={handleLink} /></Suspense>
   }
   return <Workspace path={pathname} search={new URL(path, window.location.origin).search} session={auth.session} onLink={handleLink} onSignOut={signOut} navigate={navigate} onExpired={expire} />
 }
@@ -147,8 +148,9 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
     </header>
     <main id="main-content" className="workspace-main">
       {pageHeader[path] && <header className={`workspace-header ${path === '/analytics' ? 'tone-analytics' : path === '/interviews/mine' ? 'tone-interviews' : ''}`}><div><p className="eyebrow">{pageHeader[path].kicker}</p><h1>{pageHeader[path].title}</h1><p className="workspace-description">{pageHeader[path].description}</p></div>{path === '/applications' && <div className="workspace-header-actions"><button type="button" onClick={() => navigate('/applications/new')}>＋ 新增投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}{path === '/analytics' && analyticsOverview && <div className="analytics-hero-pills"><span>{analyticsOverview.period}</span><span>{analyticsOverview.applications} 次投递</span><span>{analyticsOverview.interviews} 次进入面试</span></div>}{path === '/interviews/mine' && <button className="workspace-header-cta interview-hero-create" type="button" onClick={() => navigate('/interviews/new')}>＋ 新增复盘</button>}</header>}
-      {path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} onOverview={receiveAnalyticsOverview} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
+      <Suspense fallback={<p role="status">正在加载页面…</p>}>{path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} onOverview={receiveAnalyticsOverview} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
         <section className="content-card"><h1>页面未找到</h1><p>这个地址不存在，请从顶部导航选择要访问的页面。</p></section>}
+      </Suspense>
     </main>
   </div>
 }

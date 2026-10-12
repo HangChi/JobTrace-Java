@@ -12,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -83,6 +85,19 @@ class PackagedApplicationTest {
             assertThat(attributes.getValue("Build-Revision")).isNotBlank();
             assertThat(attributes.getValue("Frontend-Asset-SHA256"))
                     .matches("[0-9a-f]{64}");
+            Path dist = Path.of(System.getProperty("jobtrace.packaged.jar"))
+                    .toAbsolutePath().getParent().getParent().resolve("frontend/dist");
+            Set<String> packagedAssets = jar.stream()
+                    .map(entry -> entry.getName())
+                    .filter(name -> name.startsWith("BOOT-INF/classes/static/") && !name.endsWith("/"))
+                    .map(name -> name.substring("BOOT-INF/classes/static/".length()))
+                    .collect(java.util.stream.Collectors.toSet());
+            try (Stream<Path> files = Files.walk(dist)) {
+                Set<String> builtAssets = files.filter(Files::isRegularFile)
+                        .map(path -> dist.relativize(path).toString().replace('\\', '/'))
+                        .collect(java.util.stream.Collectors.toSet());
+                assertThat(packagedAssets).containsExactlyInAnyOrderElementsOf(builtAssets);
+            }
         }
     }
 

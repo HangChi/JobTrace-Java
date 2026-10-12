@@ -52,3 +52,52 @@ it('updates a status from the table using the current version', async () => {
   fireEvent.change(await screen.findByLabelText('更新 星河科技 前端工程师 的状态'), { target: { value: 'offer' } })
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/applications/a1/status', expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ status: 'offer', version: 3 }) })))
 })
+
+it('keeps a row after a rejected status change and displays the conflict', async () => {
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 3 }
+  const fetcher = vi.fn(async (path: string) => {
+    if (path === '/api/security/csrf') return new Response(JSON.stringify({ token: 'csrf' }))
+    if (path === '/api/analytics/summary') return new Response(JSON.stringify({ total: 1, submitted: 1, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [] }))
+    if (path === '/api/applications/a1/status') return new Response(JSON.stringify({ code: 'version_conflict', detail: '记录已被修改，请刷新后重试。' }), { status: 409 })
+    return new Response(JSON.stringify({ items: [item], nextCursor: null, total: 1, page: 1, limit: 10 }))
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<ApplicationList search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('更新 星河科技 前端工程师 的状态'), { target: { value: 'offer' } })
+  expect(await screen.findByRole('alert')).toHaveTextContent('记录已被修改')
+  expect(screen.getByLabelText('更新 星河科技 前端工程师 的状态')).toHaveValue('submitted')
+})
+
+it('deletes a row only after confirmation and reloads the list', async () => {
+  const confirm = vi.spyOn(window, 'confirm').mockReturnValueOnce(false).mockReturnValueOnce(true)
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 3 }
+  let deleted = false
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return new Response(JSON.stringify({ token: 'csrf' }))
+    if (path === '/api/analytics/summary') return new Response(JSON.stringify({ total: deleted ? 0 : 1, submitted: deleted ? 0 : 1, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [] }))
+    if (path === '/api/applications/a1' && init?.method === 'DELETE') { deleted = true; return new Response(null, { status: 204 }) }
+    return new Response(JSON.stringify({ items: deleted ? [] : [item], nextCursor: null, total: deleted ? 0 : 1, page: 1, limit: 10 }))
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<ApplicationList search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '删除' }))
+  expect(confirm).toHaveBeenCalledTimes(1)
+  expect(fetcher).not.toHaveBeenCalledWith('/api/applications/a1', expect.objectContaining({ method: 'DELETE' }))
+  fireEvent.click(screen.getByRole('button', { name: '删除' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/applications/a1', expect.objectContaining({ method: 'DELETE' })))
+  expect(await screen.findByText('还没有投递记录')).toBeInTheDocument()
+})
+
+it('moves between numbered pages while keeping sort and page size', async () => {
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 3 }
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/analytics/summary'
+    ? { total: 25, submitted: 25, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [] }
+    : { items: [item], nextCursor: null, total: 25, page: 2, limit: 10 }))))
+  const navigate = vi.fn()
+  render(<ApplicationList search="page=2&sort=company" navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByText('第 2 / 3 页')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '下一页' }))
+  expect(navigate).toHaveBeenCalledWith('/applications?page=3&sort=company')
+  fireEvent.change(screen.getByLabelText('每页显示'), { target: { value: '20' } })
+  expect(navigate).toHaveBeenCalledWith('/applications?sort=company&limit=20')
+})

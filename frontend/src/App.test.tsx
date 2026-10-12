@@ -93,7 +93,7 @@ describe('App authentication', () => {
     const adminLink = await screen.findByRole('link', { name: '管理后台' })
     fireEvent.click(adminLink)
     expect(window.location.pathname).toBe('/admin')
-    expect(screen.getByRole('heading', { name: '运营概览' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '运营概览' })).toBeInTheDocument()
     expect(await screen.findByText('活跃数据暂不可用。')).toBeInTheDocument()
   })
 

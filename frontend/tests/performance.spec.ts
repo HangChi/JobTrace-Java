@@ -8,11 +8,20 @@ type BrowserMetrics = {
   lcp: number
   inp: number
   cls: number
+  shifts: { value: number; sources: string[] }[]
 }
+
+test.beforeEach(async ({ page }) => {
+  await page.route('**/api/analytics/summary', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ total: 0, submitted: 0, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [], progressReminders: [] }),
+  }))
+})
 
 test('authenticated workspace stays within Core Web Vitals budgets', async ({ page }) => {
   await page.addInitScript(() => {
-    const metrics: BrowserMetrics = { lcp: 0, inp: 0, cls: 0 }
+    const metrics: BrowserMetrics = { lcp: 0, inp: 0, cls: 0, shifts: [] }
     const metricWindow = window as Window & { __jobtraceMetrics: BrowserMetrics }
     metricWindow.__jobtraceMetrics = metrics
 
@@ -34,8 +43,12 @@ test('authenticated workspace stays within Core Web Vitals budgets', async ({ pa
         const layoutShift = entry as PerformanceEntry & {
           hadRecentInput: boolean
           value: number
+          sources?: { node?: Element }[]
         }
-        if (!layoutShift.hadRecentInput) metrics.cls += layoutShift.value
+        if (!layoutShift.hadRecentInput) {
+          metrics.cls += layoutShift.value
+          metrics.shifts.push({ value: layoutShift.value, sources: layoutShift.sources?.map(source => source.node?.className || source.node?.tagName || '') ?? [] })
+        }
       }
     }).observe({ type: 'layout-shift', buffered: true })
 
@@ -102,9 +115,11 @@ test('workspace primary navigation is reachable by keyboard', async ({ page }) =
   await page.goto('/applications')
   await expect(page.getByRole('heading', { name: '还没有投递记录' })).toBeVisible()
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: '职迹 JobTrace' })).toBeFocused()
+  await expect(page.getByRole('link', { name: '跳到主要内容' })).toBeFocused()
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: '投递记录' })).toBeFocused()
+  await expect(page.getByRole('link', { name: 'JobTrace 首页' })).toBeFocused()
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: '提醒' })).toBeFocused()
+  await expect(page.getByRole('link', { name: '招聘广场' })).toBeFocused()
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('link', { name: '我的投递' })).toBeFocused()
 })
