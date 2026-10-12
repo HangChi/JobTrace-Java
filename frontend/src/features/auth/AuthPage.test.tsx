@@ -14,6 +14,15 @@ function page(path: string, search = '') {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); navigate.mockClear(); onLogin.mockClear(); onLink.mockClear() })
 
 describe('auth forms', () => {
+  it('lets the user reveal and hide the login password', () => {
+    page('/login')
+    const password = screen.getByLabelText('密码') as HTMLInputElement
+    expect(password.type).toBe('password')
+    fireEvent.click(screen.getByRole('button', { name: '显示密码' }))
+    expect(password.type).toBe('text')
+    fireEvent.click(screen.getByRole('button', { name: '隐藏密码' }))
+    expect(password.type).toBe('password')
+  })
   it('requests an email code and creates an account', async () => {
     const fetcher = vi.fn().mockResolvedValueOnce(json({ message: '验证码已发送' }, 202)).mockResolvedValueOnce(json({ message: '账号已创建' }, 202))
     vi.stubGlobal('fetch', fetcher)

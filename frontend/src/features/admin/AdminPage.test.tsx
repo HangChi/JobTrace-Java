@@ -18,6 +18,7 @@ it('updates a managed user with reason, expected version and CSRF', async () => 
   vi.stubGlobal('fetch', fetcher)
   render(<AdminPage currentUserId="u1" onExpired={vi.fn()} />)
   fireEvent.click(screen.getByRole('button', { name: '用户管理' }))
+  expect(await screen.findByRole('columnheader', { name: '投递 / 面经' })).toBeInTheDocument()
   fireEvent.click(await screen.findByRole('button', { name: '管理访问' }))
   fireEvent.change(screen.getByLabelText('原因（至少 10 字）'), { target: { value: '账户访问需要暂停处理' } })
   fireEvent.submit(screen.getByRole('button', { name: '确认变更' }).closest('form')!)

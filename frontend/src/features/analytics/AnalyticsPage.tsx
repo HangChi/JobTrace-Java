@@ -11,7 +11,7 @@ const periods: Record<string, string> = { '30d': '近 30 天', '90d': '近 90 �
 const types: Record<string, string> = { summer_internship: '暑期实习', daily_internship: '日常实习', spring_recruitment: '春招', early_campus_recruitment: '秋招提前批', campus_recruitment: '秋招', social_recruitment: '社招' }
 const stages: Record<string, string> = { screening: '筛选', assessment: '测评', written_test: '笔试', interview_1: '一面', interview_2: '二面', interview_3: '三面', hr_interview: 'HR 面', final_interview: '终面' }
 
-export default function AnalyticsPage({ onExpired }: { onExpired: () => void }) {
+export default function AnalyticsPage({ onExpired, onOverview }: { onExpired: () => void; onOverview?: (value: { period: string; applications: number; interviews: number }) => void }) {
   const [period, setPeriod] = useState('90d')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
@@ -27,14 +27,14 @@ export default function AnalyticsPage({ onExpired }: { onExpired: () => void }) 
   useEffect(() => {
     let active = true
     Promise.all([getAnalyticsSummary(), getAnalyticsReport(new URLSearchParams(filters))]).then(([overview, analysis]) => {
-      if (active) { setSummary(overview); setReport(analysis); setError('') }
+      if (active) { setSummary(overview); setReport(analysis); setError(''); const appliedPeriod = analysis.query?.period ?? new URLSearchParams(filters).get('period') ?? '90d'; onOverview?.({ period: periods[appliedPeriod] ?? periods['90d'], applications: analysis.metrics.applications?.value ?? 0, interviews: analysis.interviews?.total ?? 0 }) }
     }).catch(caught => {
       if (!active) return
       if (caught instanceof ApiError && caught.status === 401) onExpired()
       else setError(errorText(caught))
     })
     return () => { active = false }
-  }, [filters, reload, onExpired])
+  }, [filters, reload, onExpired, onOverview])
 
   function applyFilters(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -81,8 +81,7 @@ export default function AnalyticsPage({ onExpired }: { onExpired: () => void }) 
     </form>
     {error && <p className="error" role="alert">{error} <button className="quiet-button" onClick={() => setReload(value => value + 1)}>重试</button></p>}
     {!summary || !report ? !error && <p role="status">正在加载分析…</p> : <>
-      <div className="analytics-report-meta"><span>{periods[report.query?.period ?? period] ?? periods[period]}</span><span>{report.metrics.applications?.value ?? 0} 次投递</span><span>{report.interviews?.total ?? 0} 次进入面试</span></div>
-      <div className="metric-grid"><article><span>总投递</span><strong>{summary.total}</strong></article><article><span>仍在流程中</span><strong>{summary.submitted}</strong></article><article><span>Offer</span><strong>{summary.offers}</strong></article><article><span>本周新增</span><strong>{summary.addedThisWeek}</strong></article></div>
+      <div className="metric-grid analytics-summary-strip">{Object.entries(metricLabels).map(([key, label]) => <article key={key}><span>{label}</span><strong>{report.metrics[key]?.value == null ? '—' : `${report.metrics[key].value}${pct.has(key) ? '%' : ''}`}</strong></article>)}</div>
       <div className="analytics-grid"><section className="content-card"><h2>趋势</h2>{report.trend.length === 0 ? <p className="muted-note">所选周期暂无投递。</p> : <div className="trend-list">{report.trend.map(point => <div key={point.periodStart} className="trend-row"><span>{point.label}</span><div className="trend-track"><span style={{ width: `${point.applications / maxTrend * 100}%` }} /></div><strong>{point.applications}</strong></div>)}</div>}</section><section className="content-card"><h2>关键指标</h2><dl className="report-metrics">{Object.entries(report.metrics).map(([key, value]) => <div key={key}><dt>{metricLabels[key] ?? key}</dt><dd>{value.value === null ? '—' : `${value.value}${pct.has(key) ? '%' : ''}`}</dd></div>)}</dl></section></div>
       <div className="analytics-grid"><section className="content-card"><h2>里程碑转化</h2>{report.biggestDrop?.count ? <p className="muted-note">最大流失 {report.biggestDrop.count} 个机会</p> : null}<div className="milestone-list">{report.milestones.map(item => <article key={item.key}><strong>{item.count}</strong><span>{item.label}</span>{item.conversionFromPrevious !== null && <small>上一步转化 {item.conversionFromPrevious}%</small>}</article>)}</div></section><section className="content-card"><h2>阶段到达率</h2>{report.stageReach?.length ? <ul className="stage-reach-list">{report.stageReach.map(item => <li key={item.stage}><span>{stages[item.stage] ?? item.stage}</span><strong>{item.count} 条 · {item.rate}%</strong><span className="stage-reach-track"><span style={{ width: `${item.rate}%` }} /></span></li>)}</ul> : <p className="muted-note">尚无阶段数据。</p>}</section></div>
       <div className="analytics-grid"><section className="content-card"><h2>招聘类型</h2><ul className="breakdown-list">{report.typeBreakdown.map(item => <li key={item.key}><span>{item.label}</span><strong>{item.applications}</strong><small>面试 {item.interviewRate}% · Offer {item.offerRate}%</small></li>)}</ul></section><section className="content-card"><h2>城市</h2><ul className="breakdown-list">{report.cityBreakdown.map(item => <li key={item.key}><span>{item.label}</span><strong>{item.applications}</strong><small>面试 {item.interviewRate}% · Offer {item.offerRate}%</small></li>)}</ul></section></div>

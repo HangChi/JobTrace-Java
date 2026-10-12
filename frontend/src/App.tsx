@@ -16,6 +16,8 @@ import type { CurrentSession } from './features/auth/api'
 import { ApiError } from './shared/api/client'
 import './App.css'
 import './AppShell.css'
+import './Polish.css'
+import './ReferenceLayout.css'
 
 type AuthState = { kind: 'checking' } | { kind: 'guest' } | { kind: 'ready'; session: CurrentSession } | { kind: 'error'; message: string }
 
@@ -102,6 +104,8 @@ function App() {
 }
 
 function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpired }: { path: string; search: string; session: CurrentSession; onLink: (event: MouseEvent<HTMLAnchorElement>, target: string) => void; onSignOut: () => Promise<void>; navigate: (path: string) => void; onExpired: () => void }) {
+  const [analyticsOverview, setAnalyticsOverview] = useState<{ period: string; applications: number; interviews: number } | null>(null)
+  const receiveAnalyticsOverview = useCallback((value: { period: string; applications: number; interviews: number }) => setAnalyticsOverview(value), [])
   const current = navigation.find(item => item.path === path || (item.path === '/applications' && path.startsWith('/applications/')) || (item.path === '/interviews' && path.startsWith('/interviews/shared/')) || (item.path === '/analytics' && path.startsWith('/analytics/')))
   const pageHeader: Record<string, { kicker: string; title: string; description: string }> = {
     '/applications': { kicker: '岗位进展', title: '投递记录', description: '查看岗位进展并处理待跟进事项。' },
@@ -115,6 +119,8 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
   const publicInterviewId = routeId(path, '/interviews/shared/')
   const privateInterviewId = !['/interviews/mine', '/interviews/new', '/interviews/public'].includes(path) && !publicInterviewId ? routeId(path, '/interviews/') : undefined
   const adminUserId = routeId(path, '/admin/users/')
+  const exportQuery = new URLSearchParams(search)
+  exportQuery.delete('cursor'); exportQuery.delete('page'); exportQuery.delete('limit'); exportQuery.set('scope', 'filtered')
   const accountLink = (event: MouseEvent<HTMLAnchorElement>, target: string) => {
     event.currentTarget.closest('details')?.removeAttribute('open')
     onLink(event, target)
@@ -140,8 +146,8 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
       </details>
     </header>
     <main id="main-content" className="workspace-main">
-      {pageHeader[path] && <header className={`workspace-header ${path === '/analytics' ? 'tone-analytics' : path === '/interviews/mine' ? 'tone-interviews' : ''}`}><div><p className="eyebrow">{pageHeader[path].kicker}</p><h1>{pageHeader[path].title}</h1><p className="workspace-description">{pageHeader[path].description}</p></div></header>}
-      {path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
+      {pageHeader[path] && <header className={`workspace-header ${path === '/analytics' ? 'tone-analytics' : path === '/interviews/mine' ? 'tone-interviews' : ''}`}><div><p className="eyebrow">{pageHeader[path].kicker}</p><h1>{pageHeader[path].title}</h1><p className="workspace-description">{pageHeader[path].description}</p></div>{path === '/applications' && <div className="workspace-header-actions"><button type="button" onClick={() => navigate('/applications/new')}>＋ 新增投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}{path === '/analytics' && analyticsOverview && <div className="analytics-hero-pills"><span>{analyticsOverview.period}</span><span>{analyticsOverview.applications} 次投递</span><span>{analyticsOverview.interviews} 次进入面试</span></div>}{path === '/interviews/mine' && <button className="workspace-header-cta interview-hero-create" type="button" onClick={() => navigate('/interviews/new')}>＋ 新增复盘</button>}</header>}
+      {path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} onOverview={receiveAnalyticsOverview} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
         <section className="content-card"><h1>页面未找到</h1><p>这个地址不存在，请从顶部导航选择要访问的页面。</p></section>}
     </main>
   </div>

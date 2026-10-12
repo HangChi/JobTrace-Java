@@ -9,6 +9,7 @@ const report = { query: { period: '90d' }, availableCities: ['上海'], metrics:
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
 it('shows Java analytics and resolves a progress reminder with CSRF', async () => {
+  const onOverview = vi.fn()
   const fetcher = vi.fn(async (path: string) => {
     if (path === '/api/security/csrf') return json({ token: 'safe-token' })
     if (path === '/api/analytics/summary') return json(summary)
@@ -16,9 +17,10 @@ it('shows Java analytics and resolves a progress reminder with CSRF', async () =
     return json({ resolved: true, resolution: 'completed' })
   })
   vi.stubGlobal('fetch', fetcher)
-  render(<AnalyticsPage onExpired={vi.fn()} />)
+  render(<AnalyticsPage onExpired={vi.fn()} onOverview={onOverview} />)
   expect(await screen.findByText('本周期投递量上升。')).toBeInTheDocument()
-  expect(screen.getByText('Offer')).toBeInTheDocument()
+  expect(onOverview).toHaveBeenCalledWith({ period: '近 90 天', applications: 8, interviews: 2 })
+  expect(screen.getByText('Offer 率')).toBeInTheDocument()
   expect(screen.getByText('阶段到达率')).toBeInTheDocument()
   expect(screen.getByText('面试复盘')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: '完成' }))

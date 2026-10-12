@@ -9,6 +9,19 @@ const publicItem = { id: 'p1', companyName: '公开公司', positionName: '工�
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('filters private review rows and restores them', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path.startsWith('/api/applications')
+    ? json({ items: [], total: 0 })
+    : json({ items: [privateItem], total: 1, nextCursor: null, limit: 20 })))
+  render(<InterviewsPage initialTab="private" navigate={vi.fn()} onExpired={vi.fn()} />)
+  expect(await screen.findByRole('button', { name: '查看与编辑' })).toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('搜索公司'), { target: { value: '其他公司' } })
+  expect(screen.queryByRole('button', { name: '查看与编辑' })).not.toBeInTheDocument()
+  expect(screen.getByText('没有符合条件的复盘记录。')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '清除' }))
+  expect(screen.getByRole('button', { name: '查看与编辑' })).toBeInTheDocument()
+})
+
 it('creates a private interview draft and saves an answer', async () => {
   const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
     if (path === '/api/security/csrf') return json({ token: 'csrf' })

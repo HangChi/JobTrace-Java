@@ -1,0 +1,161 @@
+/* Shared visual language for every JobTrace route. */
+:root {
+  --ink: #173b38;
+  --muted: #506d68;
+  --paper: #f4faf8;
+  --surface: #fff;
+  --line: #d6e8e3;
+  --line-strong: #b6d5cd;
+  --brand: #357f78;
+  --brand-dark: #246b64;
+  --brand-soft: #e4f4ef;
+  --shadow: 0 12px 34px rgb(24 78 69 / 7%);
+  --radius: 16px;
+}
+
+html { scroll-behavior: smooth; }
+body { color: var(--ink); background: radial-gradient(circle at 0 0, #e7f7f4 0, transparent 34rem), var(--paper); }
+button, input, select, textarea { font: inherit; }
+button, a, summary { -webkit-tap-highlight-color: transparent; }
+button { transition: background-color .16s ease, border-color .16s ease, color .16s ease, box-shadow .16s ease; }
+button:not(:disabled):hover { filter: brightness(.96); }
+button:not(:disabled):active { filter: brightness(.91); }
+button:disabled { opacity: .55; }
+a { color: var(--brand-dark); text-underline-offset: 3px; }
+input, select, textarea { color: var(--ink); }
+input::placeholder, textarea::placeholder { color: #78918b; }
+input:focus-visible, select:focus-visible, textarea:focus-visible { border-color: var(--brand) !important; outline: 3px solid rgb(53 127 120 / 19%); outline-offset: 1px; }
+:focus-visible { outline-color: #c47422; }
+
+/* A calm, persistent frame makes long record and analysis pages easier to scan. */
+.app-header { position: sticky; top: 0; backdrop-filter: blur(16px); background: rgb(255 255 255 / 94%); }
+.app-primary-nav a { font-weight: 680; }
+.app-primary-nav a[aria-current=page] { box-shadow: inset 0 -2px var(--brand); }
+.account-menu summary:focus-visible { outline: 3px solid #c47422; outline-offset: 2px; }
+.workspace-main { padding-bottom: max(80px, env(safe-area-inset-bottom)); }
+.workspace-header, .market-hero, .public-feed-heading, .admin-page-header {
+  border-radius: var(--radius);
+  box-shadow: 0 8px 28px rgb(34 105 94 / 4%);
+}
+.workspace-header h1, .market-hero h1, .public-feed-heading h1,
+.auth-heading h1 { letter-spacing: -.045em; line-height: 1.14; }
+.workspace-description, .market-hero p:last-child { max-width:62ch; }
+.content-card, .application-overview-panel, .application-summary-card,
+.reminder-card, .metric-grid article, .campaign-table-shell,
+.application-list-panel, .public-feed-card, .market-filters {
+  border-color: var(--line);
+  box-shadow: var(--shadow);
+}
+.content-card h2, .application-section-heading h2, .reminder-group h2 { letter-spacing: -.02em; }
+.content-card p, .muted-note { line-height: 1.65; }
+
+/* One control system covers authentication, filters, editors and settings. */
+:where(.workspace-main, .auth-card) :is(input:not([type=checkbox]):not([type=radio]), select, textarea) {
+  min-height: 44px;
+  border-color: var(--line-strong);
+  border-radius: 10px;
+  background-color: #fff;
+}
+:where(.workspace-main, .auth-card) textarea { min-height: 112px; resize: vertical; }
+:where(.workspace-main, .auth-card) :is(button, .quiet-button, .secondary-action, .profile-action-link) {
+  min-height: 44px;
+  border-radius: 10px;
+}
+:where(.workspace-main, .auth-card) :is(label, .filter-bar label) { line-height: 1.4; }
+.quiet-button, .market-favorite-filter, .application-export-menu summary {
+  border-color: var(--line-strong);
+  color: var(--brand-dark);
+}
+.quiet-button:hover, .market-favorite-filter:hover,
+.segmented-tabs button:hover, .account-popover :is(a, button):hover { background: var(--brand-soft); }
+.segmented-tabs { gap: 4px; padding: 4px; box-shadow: 0 4px 16px rgb(24 78 69 / 4%); }
+.segmented-tabs button[aria-pressed=true] { background: var(--brand); color: #fff; }
+.notice, .error { border: 1px solid transparent; }
+.notice { border-color: #b9dfcd; }
+.error { border-color: #f1c7cc; }
+
+/* Data has a consistent hierarchy across hiring, applications and admin. */
+.application-summary-card strong, .metric-grid strong { font-variant-numeric: tabular-nums; }
+.application-summary-card, .metric-grid article { transition: border-color .16s ease, box-shadow .16s ease; }
+.application-summary-card:hover, .metric-grid article:hover { border-color: var(--line-strong); box-shadow: 0 15px 36px rgb(24 78 69 / 9%); }
+.application-table tbody tr, .campaign-table tbody tr, .import-table-wrap tbody tr { transition: background-color .16s ease; }
+.application-table tbody tr:hover, .campaign-table tbody tr:hover, .import-table-wrap tbody tr:hover { background: #f3faf7; }
+.application-table th, .campaign-table thead th, .import-table-wrap th { color: #315b55; }
+.application-table td, .campaign-table td, .campaign-table th, .import-table-wrap td { line-height: 1.5; }
+.market-row-actions, .application-row-actions, .reminder-actions { align-items: center; }
+.market-row-actions :is(button, a), .application-row-actions :is(button, a) { min-height: 40px; }
+.market-company strong, .application-name-button strong { color: var(--ink); }
+.application-filters, .market-filters, .analytics-filters { box-shadow: var(--shadow); }
+.application-filter-actions, .market-filter-actions, .form-actions { align-items: center; }
+.reminder-card { align-items: flex-start; }
+.reminder-card h3 { line-height: 1.35; }
+.reminder-card time, .report-metrics dd { font-variant-numeric: tabular-nums; }
+.analytics-grid .content-card, .admin-content .content-card,
+.profile-content .content-card, .interviews-content .content-card,
+.import-content .content-card { min-width: 0; }
+.trend-track, .stage-reach-track, .application-distribution-track { background: #e7f2ed; }
+.profile-index, .admin-side { align-self: start; }
+.session-list li:last-child, .breakdown-list li:last-child, .insight-list li:last-child { border-bottom: 0; }
+.import-table-wrap { scrollbar-color: var(--line-strong) transparent; }
+
+/* Match the public site's compact sign-in card on all guest routes. */
+.auth-layout { width: min(480px, calc(100% - 32px)); }
+.auth-intro, .auth-panel { background: #fff; }
+.auth-intro { border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; }
+.auth-panel { border: 1px solid var(--line); border-top: 0; border-radius: 0 0 var(--radius) var(--radius); box-shadow: var(--shadow); }
+.auth-card label { color: var(--ink); }
+.auth-heading h1 { font-family: Georgia, 'Songti SC', 'Noto Serif CJK SC', serif; font-weight: 600; }
+.auth-heading p { color: var(--muted); }
+.auth-card form>button[type=submit] { background: var(--brand); }
+.auth-switch { border-top: 1px solid var(--line); padding-top: 19px; }
+.auth-layout-register { width: min(860px, calc(100% - 32px)); }
+
+@media (max-width: 900px) {
+  .app-primary-nav { scrollbar-width: none; }
+  .app-primary-nav::-webkit-scrollbar { display: none; }
+  .application-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .app-header { padding: 10px 16px 0; gap: 4px 8px; }
+  .app-primary-nav { justify-content: flex-start; gap: 4px; overflow-x: auto; scroll-snap-type: x proximity; padding-bottom: 8px; }
+  .app-primary-nav a { flex: 0 0 auto; min-height: 42px; padding: 0 13px; font-size: .86rem; scroll-snap-align: start; }
+  .workspace-main { width: calc(100% - 32px); padding-top: 18px; }
+  .workspace-header, .market-hero, .public-feed-heading { padding: 20px; }
+  .workspace-header h1, .market-hero h1, .public-feed-heading h1 { font-size: 1.75rem; }
+  .content-card { padding: 20px; }
+  .application-summary-card { min-height: 104px; padding: 16px; }
+  .application-summary-card:last-child { grid-column: auto; }
+  .feature-toolbar { align-items: stretch; }
+  .feature-toolbar>p { flex-basis: 100%; }
+  .analytics-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .reminder-card { padding: 17px; }
+  .admin-user-list .content-card { align-items: flex-start; flex-direction: column; }
+  .auth-layout { padding: 16px 0; }
+}
+
+@media (max-width: 480px) {
+  .workspace-main { width: calc(100% - 24px); }
+  .app-header { padding-inline: 12px; }
+  .app-primary-nav a { padding-inline: 12px; }
+  .application-summary-grid, .metric-grid, .milestone-list,
+  .analytics-filter-grid, .public-feed-sidebar { grid-template-columns: 1fr 1fr; }
+  .application-overview-grid, .analytics-grid, .public-feed-sidebar { grid-template-columns: 1fr; }
+  .application-summary-card { gap: 10px; }
+  .application-summary-card strong { font-size: 1.65rem; }
+  .market-filter-actions, .application-filter-actions { flex-wrap: wrap; }
+  .market-filter-actions>* , .application-filter-actions>* { flex: 1 1 auto; }
+  .campaign-table tbody tr { padding: 18px; }
+  .campaign-table td { grid-template-columns: 72px minmax(0, 1fr); }
+  .reminder-actions { justify-content: flex-start; }
+  .profile-hero-identity { min-width: 0; }
+  .profile-hero-identity strong { overflow-wrap: anywhere; }
+  .session-list li { align-items: flex-start; flex-direction: column; }
+  .auth-layout, .auth-layout-register { width: calc(100% - 24px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; }
+}

@@ -129,7 +129,7 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
   exportQuery.set('scope', 'filtered')
 
   return <section className="applications-content application-dashboard">
-    <div className="application-dashboard-actions"><button type="button" onClick={() => routeMode ? navigate('/applications/new') : setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>
+    {!routeMode && <div className="application-dashboard-actions"><button type="button" onClick={() => setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}
     {editingId !== undefined && <ApplicationEditor key={editingId ?? 'new'} id={editingId} onClose={() => setEditingId(undefined)} onChanged={() => setReload(value => value + 1)} onExpired={onExpired} />}
     <ApplicationOverview summary={summary} onOpen={id => routeMode ? navigate(`/applications/${encodeURIComponent(id)}`) : setEditingId(id)} />
     <form className="application-filters" aria-label="筛选投递记录" onSubmit={filter}>
