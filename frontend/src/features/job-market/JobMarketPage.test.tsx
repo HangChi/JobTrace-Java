@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, expect, it, vi } from 'vitest'
 import JobMarketPage from './JobMarketPage'
 
-const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { 'content-type': 'application/json' } })
+const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 const campaign = { id: 'c1', listingKind: 'synced_jobs', company: { name: '示例公司', type: '企业', industry: '软件' }, recruitmentType: null, positions: ['Java 工程师'], positionCount: 1, locations: [{ name: '上海' }], status: 'open', primaryApplyUrl: 'https://example.com/jobs', source: { name: '招聘官网', url: 'https://example.com/jobs' }, publishedAt: '2026-10-01', lastConfirmedAt: null, isFavorite: false }
 const page = { items: [campaign], page: 1, limit: 20, total: 1 }
 
@@ -32,4 +32,69 @@ it('does not render a non-HTTPS destination as an application link', async () =>
   expect(await screen.findByText('示例公司')).toBeInTheDocument()
   expect(screen.queryByRole('link', { name: /立即投递/ })).not.toBeInTheDocument()
   expect(screen.getByText('暂无入口')).toBeInTheDocument()
+})
+
+it('keeps filters while paging and toggling the favorites view', async () => {
+  const navigate = vi.fn()
+  vi.stubGlobal('fetch', vi.fn(async () => json({ ...page, page: 2, total: 45, limit: 20 })))
+  render(<JobMarketPage search="?q=Java&page=2&status=open" navigate={navigate} onExpired={vi.fn()} />)
+  await screen.findByText('示例公司')
+  fireEvent.click(screen.getByRole('button', { name: '上一页' }))
+  expect(navigate).toHaveBeenCalledWith('/?q=Java&status=open')
+  fireEvent.click(screen.getByRole('button', { name: '下一页' }))
+  expect(navigate).toHaveBeenCalledWith('/?q=Java&page=3&status=open')
+  fireEvent.click(screen.getByRole('button', { name: '仅看收藏' }))
+  expect(navigate).toHaveBeenCalledWith('/?q=Java&status=open&favorite=true')
+  fireEvent.click(screen.getByRole('button', { name: '清除筛选' }))
+  expect(navigate).toHaveBeenCalledWith('/')
+})
+
+it('reloads the favorites view after removing a saved recruitment directory entry', async () => {
+  const navigate = vi.fn()
+  const directory = { ...campaign, listingKind: 'recruitment_directory', recruitmentType: '校园招聘', positions: [], locations: [], isFavorite: true, primaryApplyUrl: null, source: { name: '', url: 'https://example.com/recruit' }, publishedAt: null, lastConfirmedAt: '2026-10-02' }
+  const fetcher = vi.fn(async (path: string) => path === '/api/security/csrf' ? json({ token: 'csrf' }) : path.endsWith('/favorite') ? json({ isFavorite: false }) : json({ ...page, items: [directory] }))
+  vi.stubGlobal('fetch', fetcher)
+  render(<JobMarketPage search="?favorite=true" navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByText('校园招聘')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /查看招聘原文/ })).toHaveAttribute('href', 'https://example.com/recruit')
+  expect(screen.queryByRole('button', { name: '记录投递' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '取消收藏 示例公司' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/job-market/campaigns/c1/favorite', expect.objectContaining({ method: 'DELETE' })))
+  await waitFor(() => expect(fetcher.mock.calls.filter(([path]) => path === '/api/job-market/campaigns?favorite=true')).toHaveLength(2))
+})
+
+it('offers retry when the listing response is invalid and recovers to an empty result', async () => {
+  const fetcher = vi.fn().mockResolvedValueOnce(json({ unexpected: true })).mockResolvedValueOnce(json({ ...page, items: [], total: 0 }))
+  vi.stubGlobal('fetch', fetcher)
+  render(<JobMarketPage search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  expect(await screen.findByRole('alert')).toHaveTextContent('招聘数据格式异常')
+  fireEvent.click(screen.getByRole('button', { name: '重试加载' }))
+  expect(await screen.findByText('没有找到符合条件的招聘信息')).toBeInTheDocument()
+})
+
+it('shows a failed favorite save and expires an unauthorized listing request', async () => {
+  const onExpired = vi.fn()
+  const fetcher = vi.fn(async (path: string) => path === '/api/security/csrf' ? json({ token: 'csrf' }) : path.endsWith('/favorite') ? json({ code: 'unavailable', detail: '收藏服务暂不可用' }, 503) : json(page))
+  vi.stubGlobal('fetch', fetcher)
+  const view = render(<JobMarketPage search="" navigate={vi.fn()} onExpired={onExpired} />)
+  fireEvent.click(await screen.findByRole('button', { name: '收藏 示例公司' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/job-market/campaigns/c1/favorite', expect.anything()))
+  expect(await screen.findByRole('alert')).toHaveTextContent('收藏服务暂不可用')
+  expect(screen.getByRole('button', { name: '收藏 示例公司' })).toHaveAttribute('aria-pressed', 'false')
+  fetcher.mockImplementation(async () => json({ code: 'unauthorized', message: '请登录' }, 401))
+  view.rerender(<JobMarketPage search="?page=2" navigate={vi.fn()} onExpired={onExpired} />)
+  await waitFor(() => expect(onExpired).toHaveBeenCalledOnce())
+})
+
+it('preserves the favorites constraint while filtering by location and status', async () => {
+  const navigate = vi.fn()
+  vi.stubGlobal('fetch', vi.fn(async () => json({ ...page, items: [], total: 0 })))
+  render(<JobMarketPage search="?favorite=true" navigate={navigate} onExpired={vi.fn()} />)
+  await screen.findByText('没有找到符合条件的招聘信息')
+  fireEvent.change(screen.getByLabelText('地点'), { target: { value: ' 上海 ' } })
+  fireEvent.change(screen.getByLabelText('状态'), { target: { value: 'stale' } })
+  fireEvent.click(screen.getByRole('button', { name: '筛选' }))
+  expect(navigate).toHaveBeenCalledWith('/?location=%E4%B8%8A%E6%B5%B7&status=stale&favorite=true')
+  fireEvent.click(screen.getByRole('button', { name: '仅看收藏' }))
+  expect(navigate).toHaveBeenCalledWith('/')
 })

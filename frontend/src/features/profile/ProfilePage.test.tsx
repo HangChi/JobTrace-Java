@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, expect, it, vi } from 'vitest'
 import ProfilePage from './ProfilePage'
 
-const json = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } })
+const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } })
 const profile = { id: 'u1', displayName: '小李', image: null, recoveryEmail: null, emailVerified: false }
 const preferences = { homeEnabled: true, homeView: 'scheduled', defaultLead: '1h', defaultSnoozeMinutes: 30, emailDefault: false }
 
@@ -98,4 +98,40 @@ it('expires the page when loading account data returns 401', async () => {
   render(<ProfilePage onExpired={onExpired} />)
   await waitFor(() => expect(onExpired).toHaveBeenCalled())
   expect(screen.queryByLabelText('显示名称')).not.toBeInTheDocument()
+})
+
+it('uploads an avatar, updates reminder defaults, and shows an email request failure', async () => {
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path === '/api/profile/avatar') return json({ url: 'https://example.test/avatar.png' })
+    if (path === '/api/profile' && init?.method === 'PATCH') return json({ ...profile, image: 'https://example.test/avatar.png' })
+    if (path === '/api/profile/sessions') return json([])
+    if (path === '/api/reminder-settings' && init?.method === 'PATCH') return json({ ...preferences, homeView: 'suggestions', defaultLead: '1d', defaultSnoozeMinutes: 1440 })
+    if (path === '/api/reminder-settings') return json(preferences)
+    if (path === '/api/profile/email/code') return json({ code: 'rate_limited', detail: '请稍后再试' }, 429)
+    return json(profile)
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<ProfilePage onExpired={vi.fn()} />)
+  fireEvent.change(await screen.findByLabelText('上传头像'), { target: { files: [new File(['image'], 'avatar.png', { type: 'image/png' })] } })
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/profile/avatar', expect.objectContaining({ method: 'POST' })))
+  expect(await screen.findByAltText('当前头像')).toHaveAttribute('src', 'https://example.test/avatar.png')
+  fireEvent.change(screen.getByLabelText('首页视图'), { target: { value: 'suggestions' } })
+  fireEvent.change(screen.getByLabelText('默认提前量'), { target: { value: '1d' } })
+  fireEvent.change(screen.getByLabelText('推迟时长'), { target: { value: '1440' } })
+  fireEvent.submit(screen.getByRole('button', { name: '保存提醒设置' }).closest('form')!)
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/reminder-settings', expect.objectContaining({ method: 'PATCH', body: expect.stringContaining('"defaultSnoozeMinutes":1440') })))
+  fireEvent.change(screen.getByLabelText('新邮箱'), { target: { value: 'new@example.test' } })
+  fireEvent.click(screen.getByRole('button', { name: '发送验证码' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('请稍后再试')
+})
+
+it('shows a preference loading failure while leaving account security available', async () => {
+  const fetcher = vi.fn(async (path: string) => path === '/api/profile/sessions' ? json([{ id: 's1', current: true, userAgent: 'Current browser', createdAt: '2026-10-01T00:00:00Z', expiresAt: '2026-11-01T00:00:00Z' }]) : path === '/api/reminder-settings' ? json({ code: 'unavailable', detail: '提醒设置暂不可用' }, 503) : json({ ...profile, recoveryEmail: 'old@example.test', emailVerified: false }))
+  vi.stubGlobal('fetch', fetcher)
+  render(<ProfilePage onExpired={vi.fn()} />)
+  expect(await screen.findByRole('alert')).toHaveTextContent('提醒设置暂不可用')
+  expect(screen.getByText('当前邮箱：old@example.test（待验证）')).toBeInTheDocument()
+  expect(screen.getByText('当前设备')).toBeInTheDocument()
+  expect(screen.getByText('正在加载提醒设置…')).toBeInTheDocument()
 })

@@ -101,3 +101,52 @@ it('moves between numbered pages while keeping sort and page size', async () => 
   fireEvent.change(screen.getByLabelText('每页显示'), { target: { value: '20' } })
   expect(navigate).toHaveBeenCalledWith('/applications?sort=company&limit=20')
 })
+
+it('opens a route detail and retains filter choices', async () => {
+  const item = { id: 'a/1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: 'javascript:alert(1)', appliedDate: '2026-10-01', latestDate: null, status: 'submitted', type: 'campus_recruitment', stages: ['interview_2'], needsFollowUp: true, followUpDays: 5, followUpReason: 'timeline', version: 1 }
+  const fetcher = vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/analytics/summary'
+    ? { total: 1, submitted: 1, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [] }
+    : { items: [item], nextCursor: null, total: 1, page: 1, limit: 10 })))
+  vi.stubGlobal('fetch', fetcher)
+  const navigate = vi.fn()
+  render(<ApplicationList search="q=%E6%98%9F%E6%B2%B3&status=submitted&sort=company&direction=asc&page=1" routeMode navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByText('星河科技')).toBeInTheDocument()
+  expect(screen.getByText('时间线 5 天未更新')).toBeInTheDocument()
+  expect(screen.getByText('未填写')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: /javascript/ })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /星河科技.*前端工程师/ }))
+  expect(navigate).toHaveBeenCalledWith('/applications/a%2F1')
+  fireEvent.click(screen.getByRole('button', { name: '筛选' }))
+  expect(navigate).toHaveBeenCalledWith('/applications?q=%E6%98%9F%E6%B2%B3&status=submitted&sort=company&direction=desc')
+})
+
+it('prefills a new application from the market and strips unsafe job links', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ items: [], total: 0, page: 1, limit: 10 }))))
+  const navigate = vi.fn()
+  render(<ApplicationList search="company=%E6%98%9F%E6%B2%B3&position=Java&city=%E4%B8%8A%E6%B5%B7&jobUrl=javascript%3Aalert(1)" routeMode initialEditingId={null} navigate={navigate} onExpired={vi.fn()} />)
+  expect(screen.getByLabelText('公司名称')).toHaveValue('星河')
+  expect(screen.getByLabelText('岗位名称')).toHaveValue('Java')
+  expect(screen.getByLabelText('岗位链接')).toHaveValue('')
+  fireEvent.click(screen.getByRole('link', { name: /返回投递记录/ }))
+  expect(navigate).toHaveBeenCalledWith('/applications')
+})
+
+it('clears filters from an empty result and resets pagination', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ items: [], nextCursor: null, total: 0, page: 1, limit: 10 }))))
+  const navigate = vi.fn()
+  render(<ApplicationList search="q=missing&status=offer" navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByText('没有符合当前条件的投递，试试清空筛选。')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '清空筛选' }))
+  expect(navigate).toHaveBeenCalledWith('/applications')
+})
+
+it('exports the filtered table and opens a safe job link', async () => {
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: '上海', jobUrl: 'https://jobs.example.test/opening', appliedDate: '2026-10-01', latestDate: '2026-10-02', status: 'submitted', type: 'campus_recruitment', stages: ['assessment'], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 1 }
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/analytics/summary'
+    ? { total: 1, submitted: 1, refused: 0, offers: 0, addedThisWeek: 0, stageDistribution: {}, followUps: [] }
+    : { items: [item], nextCursor: null, total: 1, page: 1, limit: 10 }))))
+  render(<ApplicationList search="q=Java&page=2&limit=10" navigate={vi.fn()} onExpired={vi.fn()} />)
+  expect(await screen.findByRole('link', { name: /jobs.example.test/ })).toHaveAttribute('href', 'https://jobs.example.test/opening')
+  expect(screen.getByText('测评/AI测评')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /CSV 文件/ })).toHaveAttribute('href', '/api/exports/applications?q=Java&scope=filtered&format=csv')
+})

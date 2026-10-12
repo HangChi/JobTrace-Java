@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, expect, it, vi } from 'vitest'
 import InterviewsPage from './InterviewsPage'
 
-const json = (value: unknown) => new Response(JSON.stringify(value), { headers: { 'content-type': 'application/json' } })
+const json = (value: unknown, status = 200) => new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json' } })
 const privateItem = { id: 'i1', applicationId: 'a1', companyName: '测试公司', positionName: '开发', stage: 'interview_1', interviewedOn: '2026-10-08', status: 'draft', roundResult: 'pending', questionCount: 0, visibility: 'private', authorMode: 'anonymous', publishedAt: null }
 const detail = { ...privateItem, version: 1, format: null, durationMinutes: null, interviewerNotes: null, highlights: null, gaps: null, questions: [], actionItems: [] }
 const publicItem = { id: 'p1', companyName: '公开公司', positionName: '工程师', city: null, stage: 'interview_1', interviewedOn: '2026-10-08', publishedAt: '2026-10-08T00:00:00Z', questionCount: 1, author: { username: '匿名', image: null }, engagement: { likeCount: 0, commentCount: 0, viewCount: 1, likedByViewer: false }, highlights: '经验总结', gaps: null, questions: [{ category: 'other', question: '如何准备？', originalAnswer: null, followUpNotes: null, improvedAnswer: null }], recentComments: [] }
@@ -133,4 +133,101 @@ it('applies city and position filters in the public square', async () => {
   fireEvent.change(screen.getByLabelText('城市'), { target: { value: '上海' } })
   fireEvent.change(screen.getByLabelText('岗位'), { target: { value: '工程师' } })
   await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public?sort=latest&limit=20&city=%E4%B8%8A%E6%B5%B7&position=%E5%B7%A5%E7%A8%8B%E5%B8%88', expect.anything()))
+})
+
+it('loads more private reviews, filters by status, and deletes a selected review', async () => {
+  vi.spyOn(window, 'confirm').mockReturnValue(true)
+  const second = { ...privateItem, id: 'i2', companyName: '第二家公司', status: 'completed', roundResult: 'passed', interviewedOn: '2026-10-01' }
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path === '/api/interviews?limit=20&cursor=next') return json({ items: [second], total: 2, nextCursor: null, limit: 20 })
+    if (path === '/api/interviews?limit=20') return json({ items: [privateItem], total: 2, nextCursor: 'next', limit: 20 })
+    if (path === '/api/interviews/i2' && init?.method === 'DELETE') return new Response(null, { status: 204 })
+    if (path === '/api/interviews/i2') return json({ ...detail, ...second })
+    return json({ items: [], total: 0, nextCursor: null, limit: 20 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '加载更多面经' }))
+  expect(await screen.findByRole('button', { name: '第二家公司 · 开发' })).toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('筛选状态'), { target: { value: 'completed' } })
+  expect(screen.queryByRole('button', { name: '测试公司 · 开发' })).not.toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('排序'), { target: { value: 'oldest' } })
+  fireEvent.click(screen.getByRole('button', { name: '查看与编辑' }))
+  expect(await screen.findByRole('heading', { name: '编辑面经 · 第二家公司' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '删除面经' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/i2', expect.objectContaining({ method: 'DELETE' })))
+  expect(await screen.findByText('面经已删除。')).toBeInTheDocument()
+  vi.restoreAllMocks()
+})
+
+it('opens a public deep link and keeps the detail visible when a comment fails', async () => {
+  const fetcher = vi.fn(async (path: string) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path === '/api/interviews/public/p1/comments') return json([])
+    if (path === '/api/interviews/public/p1') return json({ ...publicItem, gaps: '下次改进', questions: [{ ...publicItem.questions[0], originalAnswer: '原回答', improvedAnswer: '改进回答' }] })
+    if (path.startsWith('/api/interviews/public?')) return json({ items: [], nextCursor: null, total: 0, limit: 20, facets: { cities: [], positions: [] } })
+    return json({ items: [], total: 0, nextCursor: null, limit: 20 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  const navigate = vi.fn()
+  render(<InterviewsPage initialTab="public" initialPublicId="p1" navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByText('改进回答：改进回答')).toBeInTheDocument()
+  expect(screen.getByText('待改进：下次改进')).toBeInTheDocument()
+  fetcher.mockImplementation(async path => path === '/api/security/csrf' ? json({ token: 'csrf' }) : json({ code: 'invalid', detail: '评论提交失败' }, 422))
+  fireEvent.change(screen.getByLabelText('发表评论'), { target: { value: '稍后重试' } })
+  fireEvent.submit(screen.getByRole('button', { name: '提交评论' }).closest('form')!)
+  expect(await screen.findByRole('alert')).toHaveTextContent('评论提交失败')
+  expect(screen.getByText('改进回答：改进回答')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '关闭' }))
+  expect(navigate).toHaveBeenCalledWith('/interviews')
+})
+
+it('opens a private deep link, closes it through navigation, and keeps failed saves editable', async () => {
+  const navigate = vi.fn()
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path === '/api/interviews/i1' && init?.method === 'PATCH') return json({ code: 'version_conflict', detail: '面经已被修改' }, 409)
+    if (path === '/api/interviews/i1') return json({ ...detail, highlights: '旧亮点', questions: [{ category: 'other', question: '项目经历', originalAnswer: null, followUpNotes: null, improvedAnswer: null, selfRating: null }] })
+    return json({ items: [], total: 0, nextCursor: null, limit: 20 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage initialPrivateId="i1" navigate={navigate} onExpired={vi.fn()} />)
+  expect(await screen.findByRole('heading', { name: '编辑面经 · 测试公司' })).toBeInTheDocument()
+  fireEvent.change(screen.getByLabelText('亮点'), { target: { value: '新亮点' } })
+  fireEvent.submit(screen.getByRole('button', { name: '保存面经' }).closest('form')!)
+  expect(await screen.findByRole('alert')).toHaveTextContent('面经已被修改')
+  expect(screen.getByLabelText('亮点')).toHaveValue('新亮点')
+  fireEvent.click(screen.getByRole('button', { name: '关闭' }))
+  expect(navigate).toHaveBeenCalledWith('/interviews/mine')
+})
+
+it('shows empty private and public states and can sort the public feed by heat', async () => {
+  const fetcher = vi.fn(async (path: string) => path.startsWith('/api/applications')
+    ? json({ items: [], total: 0 })
+    : path.startsWith('/api/interviews/public?')
+      ? json({ items: [], nextCursor: null, total: 0, limit: 20, facets: { cities: [], positions: [] } })
+      : json({ items: [], total: 0, nextCursor: null, limit: 20 }))
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage onExpired={vi.fn()} />)
+  expect(await screen.findByText('还没有面经，先记录一次面试。')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '公开面经' }))
+  expect(await screen.findByText('暂时没有公开面经')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '按热度' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public?sort=hot&limit=20', expect.anything()))
+  fireEvent.change(screen.getByPlaceholderText('搜索公司名称'), { target: { value: '示例' } })
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/public?sort=hot&limit=20&q=%E7%A4%BA%E4%BE%8B', expect.anything()))
+})
+
+it('shows a private listing failure and expires an unauthorized public listing', async () => {
+  const onExpired = vi.fn()
+  const fetcher = vi.fn(async (path: string) => path.startsWith('/api/applications') ? json({ items: [], total: 0 }) : path.startsWith('/api/interviews/public?') ? json({ code: 'unauthorized', detail: '请登录' }, 401) : json({ code: 'unavailable', detail: '面经列表暂不可用' }, 503))
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage onExpired={onExpired} />)
+  expect(await screen.findByRole('alert')).toHaveTextContent('面经列表暂不可用')
+  fireEvent.click(screen.getByRole('button', { name: '公开面经' }))
+  await waitFor(() => expect(onExpired).toHaveBeenCalledOnce())
 })
