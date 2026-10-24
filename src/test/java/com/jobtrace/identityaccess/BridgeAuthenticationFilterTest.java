@@ -7,6 +7,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.jobtrace.identityaccess.application.ClaimAssertionUseCase;
 import com.jobtrace.identityaccess.domain.BridgeIdentity;
+import com.jobtrace.identityaccess.domain.BrowserIdentity;
 import com.jobtrace.identityaccess.domain.ReplayGuard;
 import com.jobtrace.identityaccess.web.BridgeAuthenticationFilter;
 import com.jobtrace.identityaccess.web.BridgeAuthenticationMetrics;
@@ -18,6 +19,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -76,6 +80,27 @@ class BridgeAuthenticationFilterTest {
                 .contains(BridgeTokenFixtures.REQUEST_ID)
                 .doesNotContain("owner-a");
         assertThat(chain.getRequest()).isNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+    }
+
+    @Test
+    void verifiedBrowserIdentityMayContinueButExplicitBadBridgeStillFails() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        var authentication = new UsernamePasswordAuthenticationToken("owner-a", null,
+                List.of(new SimpleGrantedAuthority("ROLE_USER")));
+        authentication.setDetails(new BrowserIdentity("owner-a", "session-a",
+                BrowserIdentity.Role.USER));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        MockHttpServletRequest browserRequest = request();
+        MockFilterChain accepted = new MockFilterChain();
+        filter.doFilter(browserRequest, new MockHttpServletResponse(), accepted);
+        assertThat(accepted.getRequest()).isSameAs(browserRequest);
+
+        MockHttpServletRequest badBridge = request();
+        badBridge.addHeader("Authorization", "JobTraceBridge invalid");
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+        filter.doFilter(badBridge, rejected, new MockFilterChain());
+        assertThat(rejected.getStatus()).isEqualTo(401);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
     }
 
@@ -267,6 +292,76 @@ class BridgeAuthenticationFilterTest {
             filter.doFilter(request, new MockHttpServletResponse(), chain);
             assertThat(chain.getRequest()).as(path).isSameAs(request);
         }
+    }
+
+    @Test
+    void protectsOnlyExactAdministrationReadsAndAccessPatch() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        for (String path : new String[] {
+                "/api/admin/summary", "/api/admin/users", "/api/admin/users/user-a",
+                "/api/admin/audit-events"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockHttpServletResponse response = new MockHttpServletResponse();
+            filter.doFilter(request, response, new MockFilterChain());
+            assertThat(response.getStatus()).as(path).isEqualTo(401);
+        }
+        for (String path : new String[] {
+                "/api/admin/users/user-a/extra", "/api/admin/job-market/sources",
+                "/api/internal/job-market/sync"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("GET", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+        for (String path : new String[] {
+                "/api/admin/summary", "/api/admin/users", "/api/admin/audit-events"}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("PATCH", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+        MockHttpServletRequest accessChange = new MockHttpServletRequest(
+                "PATCH", "/api/admin/users/user-a");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        filter.doFilter(accessChange, response, new MockFilterChain());
+        assertThat(response.getStatus()).isEqualTo(401);
+
+        for (String path : new String[] {
+                "/api/admin/users/user-a/extra", "/api/admin/users/" + "a".repeat(129)}) {
+            MockHttpServletRequest request = new MockHttpServletRequest("PATCH", path);
+            MockFilterChain chain = new MockFilterChain();
+            filter.doFilter(request, new MockHttpServletResponse(), chain);
+            assertThat(chain.getRequest()).as(path).isSameAs(request);
+        }
+    }
+
+    @Test
+    void administrationAccessAssertionIsBoundToExactPatchAndTarget() throws Exception {
+        BridgeAuthenticationFilter filter = filter(new InMemoryReplayGuard());
+        String path = "/api/admin/users/user-a";
+        String token = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "admin-a", java.util.Map.of("role", "admin", "pth", path, "mth", "PATCH"));
+
+        MockHttpServletRequest exact = new MockHttpServletRequest("PATCH", path);
+        exact.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE, BridgeTokenFixtures.REQUEST_ID);
+        exact.addHeader("Authorization", "JobTraceBridge " + token);
+        MockFilterChain accepted = new MockFilterChain();
+        filter.doFilter(exact, new MockHttpServletResponse(), accepted);
+        assertThat(accepted.getRequest()).isSameAs(exact);
+
+        String wrongTargetToken = BridgeTokenFixtures.token(
+                BridgeTokenFixtures.CURRENT_KEY_ID, BridgeTokenFixtures.CURRENT_SECRET,
+                "admin-a", java.util.Map.of("role", "admin", "pth", path, "mth", "PATCH",
+                        "jti", "YW5vdGhlci1yZXBsYXkta2V5"));
+        MockHttpServletRequest wrongTarget = new MockHttpServletRequest(
+                "PATCH", "/api/admin/users/user-b");
+        wrongTarget.setAttribute(RequestIdFilter.REQUEST_ID_ATTRIBUTE,
+                BridgeTokenFixtures.REQUEST_ID);
+        wrongTarget.addHeader("Authorization", "JobTraceBridge " + wrongTargetToken);
+        MockHttpServletResponse rejected = new MockHttpServletResponse();
+        filter.doFilter(wrongTarget, rejected, new MockFilterChain());
+        assertThat(rejected.getStatus()).isEqualTo(401);
     }
 
     @Test

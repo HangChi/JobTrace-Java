@@ -1,0 +1,72 @@
+openapi: 3.1.0
+info:
+  title: Account email binding slice
+  version: 016
+paths:
+  /api/profile/email:
+    patch:
+      summary: Bind a verified recovery email for the authenticated owner
+      security:
+        - jobTraceBridge: []
+      parameters:
+        - in: header
+          name: X-JobTrace-Session-Id
+          required: true
+          schema:
+            type: string
+            maxLength: 255
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, verificationCode, currentPassword]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                verificationCode:
+                  type: string
+                  pattern: '^\d{6}$'
+                currentPassword:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+      responses:
+        '200':
+          description: Address verified and bound
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: private, no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [email, emailVerified]
+                properties:
+                  email:
+                    type: string
+                    format: email
+                  emailVerified:
+                    type: boolean
+                    const: true
+        '400':
+          description: Invalid request, password, or code
+        '401':
+          description: Invalid trusted assertion
+        '409':
+          description: Email bound to another owner
+        '429':
+          description: Email-change rate limit exceeded
+        '503':
+          description: Verification secret unavailable
+components:
+  securitySchemes:
+    jobTraceBridge:
+      type: http
+      scheme: bearer
+      description: Signed assertion bound to PATCH, path, and request ID

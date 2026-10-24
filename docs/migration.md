@@ -1,5 +1,7 @@
 # Migration Guide
 
+> **历史阶段记录**：本页按 001–029 阶段叙述当时新增的范围，诸如“尚未迁移登录”或“只读”的句子只适用于对应阶段，不能当作当前运行能力。当前架构、认证与运行方式以 [README](../README.md)、[架构](architecture.md)、[接口约定](api.md) 为准；生产路由/写入归属仍须单独决策。
+
 ## Strategy
 
 Use incremental replacement. The existing JobTrace application remains available while bounded capabilities move to this repository.
@@ -41,6 +43,126 @@ Feature 008 leaves collection, synchronization, projection refresh, all writes, 
 schema ownership, frontend routing, deployment, and production traffic with the existing
 service.
 
+Feature 027 job-market operations are documented in
+[`migration-slices/job-market-operations.md`](migration-slices/job-market-operations.md).
+Java reads the shared remote marketplace data and supports explicit owner/admin curation;
+the existing service remains the only crawler, scheduler and sync-run writer. The Java
+catalog has no bundled default data, and no marketplace crawl or lease claim is initiated
+by a Java read. Production route cutover and schema ownership are still separate decisions.
+
+The administrator-only read slice is documented in
+[`migration-slices/admin-read-model.md`](migration-slices/admin-read-model.md). Feature 009 adds
+summary, managed-user, user-detail, and audit-history reads while leaving access changes, sessions,
+job-market administration, schema ownership, frontend routing, deployment, and production traffic
+with the existing service.
+
+The administrator access-change slice is documented in
+[`migration-slices/admin-access-change.md`](migration-slices/admin-access-change.md). Feature 010
+adds only the managed-user access PATCH command and delegates every concurrency, idempotency,
+last-administrator, session-revocation, and audit invariant to the existing atomic database
+operation. Session issuance, ordinary identity settings, job-market administration, schema
+ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
+
+The account-session read slice is documented in
+[`migration-slices/session-read-model.md`](migration-slices/session-read-model.md). Feature 011
+adds only the active owner-scoped session-list GET and current-device projection. Better Auth and
+the existing service retain authentication, cookies, issuance, refresh, expiry, revocation, every
+other identity/profile operation, schema ownership, frontend routing, deployment, CI/CD, and
+production traffic.
+
+The account-session revocation slice is documented in
+[`migration-slices/session-revocation.md`](migration-slices/session-revocation.md). Feature 012
+adds only owner-scoped DELETE on the same session path, using one atomic ID-and-owner deletion and a
+non-disclosing not-found response. Better Auth and the existing service retain every other session
+and identity operation, schema ownership, frontend routing, deployment, CI/CD, and production
+traffic.
+
+The account-profile update slice is documented in
+[`migration-slices/profile-update.md`](migration-slices/profile-update.md). Feature 013 adds only
+owner-scoped PATCH of display name and an already-hosted avatar URL. Avatar upload, email binding,
+credentials, every other identity operation, schema ownership, frontend routing, deployment,
+CI/CD, and production traffic remain unchanged.
+
+The account-password change slice is documented in
+[`migration-slices/password-change.md`](migration-slices/password-change.md). Feature 014 adds only
+owner-scoped POST password replacement after compatible current-password verification, preserving
+the verified current session and atomically revoking other owner sessions. Password reset, email
+binding, login and registration, session issuance, schema ownership, frontend routing, deployment,
+CI/CD, and production traffic remain unchanged.
+
+The account-email unbinding slice is documented in
+[`migration-slices/email-unbinding.md`](migration-slices/email-unbinding.md). Feature 015 adds only
+owner-scoped DELETE of an existing recovery email after current-password verification. Pending
+owner verification codes are consumed in the same transaction. Email binding and code delivery,
+schema ownership, frontend routing, deployment, CI/CD, and production traffic remain unchanged.
+
+The account-email binding slice is documented in
+[`migration-slices/email-binding.md`](migration-slices/email-binding.md). Feature 016 adds only
+owner-scoped PATCH of a recovery email after current-password and existing verification-code
+checks. Code issuance and delivery, schema ownership, frontend routing, deployment, CI/CD, and
+production traffic remain with the existing service.
+
+The account-email binding-code slice is documented in
+[`migration-slices/email-binding-code.md`](migration-slices/email-binding-code.md). Feature 017
+adds only owner-scoped POST to request a short-lived binding code and deliver it through the
+existing mail contract. Registration codes, other mail templates, frontend routing, schema
+ownership, deployment, CI/CD, and production traffic remain unchanged.
+
+The registration-email code slice is documented in
+[`migration-slices/registration-email-code.md`](migration-slices/registration-email-code.md).
+Feature 018 adds only anonymous POST to request a short-lived registration code with exact
+same-origin and rate-limit checks. Account creation, code redemption, frontend routing, schema
+ownership, deployment, CI/CD, and production traffic remain unchanged.
+
+The verified registration slice is documented in
+[`migration-slices/registration.md`](migration-slices/registration.md). Feature 019 adds only
+anonymous POST to redeem a registration-purpose email code and create a compatible user and
+credential without signing in. Login, session issuance, frontend routing, schema ownership,
+deployment, CI/CD, and production traffic remain with the existing service.
+
+The compatible login slice is documented in
+[`migration-slices/login.md`](migration-slices/login.md). Feature 020 adds only anonymous POST to
+verify a username or verified recovery email and issue one shared-format session and signed
+browser cookie. The old service remains the production route owner; Java protected APIs still
+require signed bridge assertions.
+
+The compatible current-session logout slice is documented in
+[`migration-slices/logout.md`](migration-slices/logout.md). Feature 021 adds only anonymous POST to
+verify a signed browser session cookie, delete that one session best-effort, and expire the
+established cookies. Other Java APIs do not accept the browser cookie as authorization.
+
+The account-authentication completion slice is documented in
+[`migration-slices/account-authentication.md`](migration-slices/account-authentication.md).
+Feature 022 adds verified browser-cookie access, current profile/session reads, password recovery,
+and validated avatar upload while preserving the signed bridge and the old service as production
+route owner. The existing database, mail webhook and COS bucket remain shared; no deployment or
+production traffic change is included.
+
+The application and analytics operations slice is documented in
+[`migration-slices/applications-analytics-operations.md`](migration-slices/applications-analytics-operations.md).
+Feature 023 implements owner-scoped application and stage commands, period reports and progress
+resolution while preserving legacy PostgreSQL functions, schema ownership and old-service production
+routing. No frontend, CI/CD, deployment or traffic cutover is included.
+
+The interview review operations slice is documented in
+[`migration-slices/interview-review-operations.md`](migration-slices/interview-review-operations.md).
+Feature 024 implements private review commands, safe public browsing and engagement through
+the existing owner-aware and public PostgreSQL functions. The old service remains production
+route owner; no schema, frontend, CI/CD or deployment change is included.
+
+The reminder operations and delivery slice is documented in
+[`migration-slices/reminder-operations.md`](migration-slices/reminder-operations.md).
+Feature 025 implements owner-scoped reminder commands and settings, email retry and a
+secret-protected internal delivery route while leaving the old service as production
+route and scheduler owner. No schema, frontend, CI/CD or deployment change is included.
+
+The data import completion slice is documented in
+[`migration-slices/data-import.md`](migration-slices/data-import.md). Feature 026 adds
+private CSV/XLSX preview and once-only confirmation against the existing import tables
+and owner-aware PostgreSQL function, completing the workflow beside the Java exports.
+The old service remains production route owner; no schema, frontend, CI/CD, deployment
+or traffic cutover is included.
+
 ## Slice checklist
 
 Every migration slice must:
@@ -72,6 +194,41 @@ the three feature 005 private interview/dialog read routes, and the two feature 
 private reminder/settings read routes.
 The feature 007 bridge also covers only the exact two private export GET routes.
 Feature 008 adds only the exact job-market campaign list GET and UUID-shaped detail GET.
+Feature 009 adds only the exact administration summary, user list, opaque-ID user detail, and audit
+event list GET paths, and additionally requires the verified administrator role.
+Feature 010 adds only PATCH on the same opaque-ID administrator user path and requires the verified
+administrator role; the database command independently revalidates the actor's current access.
+Feature 011 adds only GET on `/api/profile/sessions`, requires the verified owner subject, and uses
+bounded server-to-server current-session metadata only to derive the response marker after owner
+and active-expiry filtering.
+Feature 012 additionally protects only DELETE on `/api/profile/sessions`; its separately bound
+assertion supplies the owner for one opaque, owner-scoped session deletion.
+Feature 013 additionally protects only PATCH on `/api/profile`; the verified subject selects the
+single profile row and no request field can select another account.
+Feature 014 additionally protects only POST on `/api/profile/password`; the verified subject and
+bounded current-session metadata select one owner credential transition, and Java independently
+proves current-session ownership before mutation.
+Feature 015 additionally protects only DELETE on `/api/profile/email`; the verified subject and
+bounded current-session metadata select one owner email transition after compatible password
+verification.
+Feature 016 additionally protects only PATCH on `/api/profile/email`; the verified subject and
+bounded current-session metadata select one owner email transition after compatible password and
+purpose-bound verification-code checks.
+Feature 017 additionally protects only POST on `/api/profile/email/code`; the verified subject
+and bounded current-session metadata select one owner-bound code issuance after rate limits and
+address ownership checks.
+Feature 018 permits only POST on `/api/auth/email-code` without an owner assertion. The endpoint
+checks browser origin and applies source and address limits before issuing a registration-purpose
+code; all other identity routes retain their existing authentication boundary.
+Feature 019 additionally permits only POST on `/api/auth/register` without an owner assertion.
+It applies the same-origin check, source limit, and optional human challenge before redeeming a
+registration code and creating one account. Other identity routes retain their boundary.
+Feature 020 additionally permits only POST on `/api/auth/login` without an owner assertion. It
+applies the same-origin check, login source limit and optional challenge before issuing a shared
+session cookie. The cookie never authorizes other Java APIs by itself.
+Feature 021 additionally permits only POST on `/api/auth/logout` without an owner assertion. It
+requires same-origin and a valid session-cookie signature before deleting one session; missing or
+invalid cookies receive an idempotent 204 with cookie expiry.
 It requires a 30-second assertion bound to the exact method, path, and request ID. Java accepts
 configured current/previous keys only, atomically consumes the one-time ID in shared Valkey, and
 fails closed if validation or replay protection is unavailable. This does not authorize writes

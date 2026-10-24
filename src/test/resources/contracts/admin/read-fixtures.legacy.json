@@ -1,0 +1,25 @@
+{
+  "user": {
+    "id": "user-a",
+    "username": "Alice",
+    "email": "alice@example.test",
+    "internalEmail": "alice@internal.test",
+    "role": "user",
+    "disabled": false,
+    "accessVersion": 2,
+    "applicationCount": 1,
+    "interviewCount": 1
+  },
+  "audit": {
+    "eventType": "disable_user",
+    "outcome": "succeeded",
+    "actorDeleted": false,
+    "targetDeleted": false,
+    "before": {"role": "user", "disabled": false, "accessVersion": 1},
+    "after": {"role": "user", "disabled": true, "accessVersion": 2}
+  },
+  "summary": {
+    "timeZone": "Asia/Shanghai",
+    "activityDefinition": "统计周期内至少创建一次有效登录会话的未禁用用户"
+  }
+}

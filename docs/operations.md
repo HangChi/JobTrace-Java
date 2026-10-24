@@ -1,118 +1,51 @@
-# Production operations
+# 运行与运维
 
-JobTrace ships as one executable Spring Boot JAR and one OCI image. React assets
-are compiled during the build and embedded in the JAR; production requires Java
-21 and PostgreSQL, but not Node.js or npm.
+生产形态为一个 Java 21 可执行 JAR/OCI 镜像。Maven 构建时把 `frontend/dist` 复制进静态资源；运行时不需要 Node.js。开发时的 5173 是 Vite 服务，不应视为生产入口。
 
-## Build and verify
-
-Run the complete artifact verification before publishing a release:
+## 构建产物
 
 ```bash
-./scripts/test-production-artifact.sh
+./mvnw clean package
+java -jar target/jobtrace-0.1.0-SNAPSHOT.jar
 ```
 
-The script starts the executable JAR, builds the runtime image, confirms that the
-image contains Java but no `node` or `npm` executable, and checks the application
-shell, a direct browser route, liveness, and database-backed readiness.
+JAR 的默认监听端口为 8080。`Dockerfile` 将该 JAR 放入 Java 21 JRE 镜像并以非 root 用户运行。`./scripts/test-production-artifact.sh` 可在有 Docker 的隔离环境中验证 JAR、镜像、静态页面和健康端点；它不是连接真实业务库的迁移工具。
 
-The artifact is written to:
-
-```text
-target/jobtrace-0.1.0-SNAPSHOT.jar
-```
-
-Its manifest records `Build-Revision` and `Frontend-Asset-SHA256`. Inspect them
-without starting the application:
+构建 manifest 记录 `Build-Revision` 与 `Frontend-Asset-SHA256`，可以用下列命令确认正在发布的前端资源来自哪次构建：
 
 ```bash
 unzip -p target/jobtrace-0.1.0-SNAPSHOT.jar META-INF/MANIFEST.MF
 ```
 
-## Runtime configuration
+## 部署前检查
 
-Supply secrets through the deployment platform. Do not bake them into the image.
-The required database settings are:
+1. 确认目标数据库是被授权的环境，schema 与原版兼容，已备份并有可执行回滚方案。`JOBTRACE_FLYWAY_ENABLED=false`；[基线审批](database-baseline.md)未完成前不得打开。
+2. 从密钥管理器提供 JDBC 账号、`BETTER_AUTH_SECRET`、正确的 `BETTER_AUTH_URL`；按启用功能提供邮件、头像、提醒和桥接密钥。不要把密钥构建进镜像或记录在部署日志。
+3. 确认新旧服务的写入路径有明确的单一归属。岗位市场采集、调度与同步运行仍只由原服务执行；Java 不能接管这些任务。
+4. 先在非生产环境验证登录、受保护页面刷新、写请求 Origin/CSRF、跨账号隔离、管理员权限和深链接，再考虑路由切换。
 
-- `JOBTRACE_DATABASE_URL`
-- `JOBTRACE_DATABASE_USERNAME`
-- `JOBTRACE_DATABASE_PASSWORD`
+部署平台应只暴露预期的浏览器/API 入口。若启用签名内部身份桥接，桥接调用必须限定在可信内部网络并使用共享 Valkey/Redis 重放防护，不得将内部路由公开给浏览器。
 
-The signed identity bridge remains off unless all of these are configured:
+## 健康与监测
 
-- `JOBTRACE_AUTH_BRIDGE_ENABLED=true`
-- `JOBTRACE_AUTH_BRIDGE_ISSUER=legacy-jobtrace`
-- `JOBTRACE_AUTH_BRIDGE_AUDIENCE=jobtrace-java`
-- `JOBTRACE_AUTH_BRIDGE_KEYS_0_ID` and `JOBTRACE_AUTH_BRIDGE_KEYS_0_SECRET`
-- `JOBTRACE_REDIS_URL` for a shared Redis-compatible replay store
+| 路径 | 语义 | 期望 |
+| --- | --- | --- |
+| `GET /api/health/live` | Java 进程可响应 | 200 `{"status":"ok"}` |
+| `GET /api/health/ready` | 对配置的 PostgreSQL 执行 `select 1` | 200 `{"status":"ok"}`；连接失败为 503 |
+| `GET /actuator/health` | Spring Actuator 汇总状态 | 可能包含 Redis 等附加指标；不等同于数据库就绪 |
+| `GET /api/auth/session` | 浏览器会话服务 | 匿名 401；有有效 Cookie 时 200；签名密钥/依赖不可用时可能 503 |
 
-Expose the Java analytics route only to the legacy service over the trusted
-internal network. Ingress must reject browser and public network access. Never
-forward browser cookies or public identity headers to Java.
+探针按部署平台的需要分别使用 `live` 和 `ready`。不能只检查 `/` 返回 200：静态页面可显示时数据库或认证仍可能失败。Actuator 汇总显示 DOWN 时应排查具体依赖；不要为了“变绿”直接关掉健康指标。
 
-Keep `JOBTRACE_FLYWAY_ENABLED=false` while the legacy database baseline is not
-approved. Expose port 8080 and route probes as follows:
+涉及写入或管理员操作的失败应按 `requestId`、时间、状态码和错误 `code` 排查，不记录 Cookie、令牌、密码、邮箱验证码或完整请求体。
 
-- liveness: `GET /api/health/live`
-- readiness: `GET /api/health/ready`
+## 回滚
 
-Readiness must be removed from load-balancer rotation when it returns a non-200
-status. Liveness should only restart a process that cannot respond.
+保留上一个可运行的不可变 JAR/镜像与对应配置。若新版本出现错误：
 
-## Deploy
+1. 停止把新流量导向故障版本；必要时先关闭新路由的写入入口。
+2. 恢复上一个经验证的版本，检查 `live`、`ready` 和受保护业务路径。
+3. 核查故障期间已写入的业务记录。回滚应用**不会**撤销 PostgreSQL 中已经提交的投递、提醒、面经或账号更改。
+4. 记录版本、前端资源摘要、错误码与请求 ID，再决定是否重试发布。
 
-Build the JAR and image from one immutable source revision:
-
-```bash
-./mvnw clean package
-revision="$(git rev-parse --short=12 HEAD)"
-docker build --tag "jobtrace:$revision" .
-```
-
-Publish the image under an immutable digest. Before shifting traffic, compare the
-image revision and frontend digest with the values reviewed in CI, then require
-both health probes to pass against the intended PostgreSQL instance.
-
-## Rollback
-
-Keep the previously healthy image digest available throughout the observation
-window. To roll back:
-
-1. Stop routing new traffic to the failing revision.
-2. Redeploy the previous immutable image digest with the same external settings.
-3. Wait for liveness and readiness to return HTTP 200.
-4. Restore traffic and record the failing source revision, frontend digest, and
-   request IDs in the incident evidence.
-
-The foundation release does not own schema changes, so application rollback does
-not require a database migration. If a future release changes that rule, its own
-migration specification must provide a tested data-restoration procedure.
-
-### Analytics canary rollback
-
-The legacy deployment controls analytics routing with
-`ANALYTICS_JAVA_CANARY_ENABLED` and `ANALYTICS_JAVA_CANARY_PERCENT`. On any
-contract mismatch, replay/unknown-key spike, owner-isolation failure, error-rate
-increase, or p95 above 500 ms:
-
-1. Set `ANALYTICS_JAVA_CANARY_ENABLED=false` (or percentage to `0`) and deploy.
-2. Confirm all analytics responses come from legacy within five minutes.
-3. Leave the Java route deployed but unreachable from public ingress.
-4. Record only revision, request ID, status class, mismatch class, and duration.
-
-No database repair is needed because Java has no write ownership.
-
-### Signing-key rotation
-
-1. Generate a random 32-byte base64url secret in the secret manager with a new
-   versioned key ID.
-2. Add the new ID/secret to Java while retaining the previous key and verify
-   readiness.
-3. Change the legacy `IDENTITY_BRIDGE_ACTIVE_KEY_ID` and
-   `IDENTITY_BRIDGE_ACTIVE_SECRET` to the new key.
-4. Verify current and previous fixtures, then wait at least 35 seconds.
-5. Remove the previous Java key and prove that it is rejected.
-
-Alert on `jobtrace.auth.bridge.requests` failures by bounded reason and on
-`jobtrace.auth.bridge.duration` p95. Key material, assertions, owner IDs, and
-response bodies must never be logged.
+旧版仍拥有 DDL；Java 版本回滚不能替代数据库备份恢复。未来若批准 schema 变更，必须为该变更单独提供迁移和数据恢复方案。历史的分析灰度路由仅是迁移切片记录，不能直接当作当前全站部署手册。

@@ -1,6 +1,7 @@
 package com.jobtrace.identityaccess.web;
 
 import com.jobtrace.identityaccess.domain.BridgeIdentity;
+import com.jobtrace.identityaccess.domain.BrowserIdentity;
 import com.jobtrace.shared.web.Problem;
 import java.security.Principal;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,21 @@ public final class BridgePrincipalOwner {
                 && identity.subject().equals(authentication.getName())) {
             return identity.subject();
         }
+        if (principal instanceof Authentication authentication
+                && authentication.getDetails() instanceof BrowserIdentity identity
+                && identity.subject().equals(authentication.getName())) {
+            return identity.subject();
+        }
         throw new Problem("unauthorized", "Authentication is required.", HttpStatus.UNAUTHORIZED);
+    }
+
+    public static String currentSessionId(Principal principal, String bridgeSessionId) {
+        if (principal instanceof Authentication authentication
+                && authentication.getDetails() instanceof BrowserIdentity identity
+                && identity.subject().equals(authentication.getName())) {
+            return identity.sessionId();
+        }
+        require(principal);
+        return bridgeSessionId;
     }
 }

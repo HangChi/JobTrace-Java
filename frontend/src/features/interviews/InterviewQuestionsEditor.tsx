@@ -1,0 +1,9 @@
+import type { InterviewQuestion } from './api'
+
+export default function InterviewQuestionsEditor({ questions, onChange }: { questions: InterviewQuestion[]; onChange: (questions: InterviewQuestion[]) => void }) {
+  function update(index: number, next: InterviewQuestion) {
+    onChange(questions.map((question, current) => current === index ? next : question))
+  }
+
+  return <div className="interview-questions"><h3>面试问题</h3>{questions.map((item, index) => <div className="interview-question-editor" key={item.id ?? `new-${index}`}><div className="editor-heading"><h4>问题 {index + 1}</h4><button type="button" className="quiet-button" onClick={() => onChange(questions.filter((_, current) => current !== index))}>移除</button></div><label>问题类别<select value={item.category} onChange={event => update(index, { ...item, category: event.target.value })}><option value="technical">技术</option><option value="project">项目</option><option value="behavioral">行为</option><option value="system_design">系统设计</option><option value="other">其他</option></select></label><label>面试问题<textarea rows={3} value={item.question} onChange={event => update(index, { ...item, question: event.target.value })} /></label><label>原始回答<textarea rows={3} value={item.originalAnswer ?? ''} onChange={event => update(index, { ...item, originalAnswer: event.target.value })} /></label><label>追问记录<textarea rows={3} value={item.followUpNotes ?? ''} onChange={event => update(index, { ...item, followUpNotes: event.target.value })} /></label><label>改进回答<textarea rows={3} value={item.improvedAnswer ?? ''} onChange={event => update(index, { ...item, improvedAnswer: event.target.value })} /></label></div>)}<button type="button" className="quiet-button" onClick={() => onChange([...questions, { category: 'other', question: '', originalAnswer: '', followUpNotes: '', improvedAnswer: '', selfRating: null }])}>添加问题</button></div>
+}

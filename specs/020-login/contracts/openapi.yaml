@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Compatible account login slice
+  version: 020
+paths:
+  /api/auth/login:
+    post:
+      summary: Sign in by username or verified recovery email
+      security: []
+      parameters:
+        - in: header
+          name: Origin
+          schema: { type: string }
+        - in: header
+          name: x-auth-challenge
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password]
+              properties:
+                identifier: { type: string }
+                username: { type: string, description: Legacy alias for identifier }
+                password: { type: string, minLength: 1, maxLength: 128 }
+                returnTo: { type: string }
+      responses:
+        '200':
+          description: Safe redirect target and signed session cookie
+          headers:
+            Set-Cookie:
+              schema: { type: string }
+        '400':
+          description: Invalid input or missing configured challenge
+        '401':
+          description: Uniform invalid credentials
+        '403':
+          description: Origin or challenge rejected
+        '429':
+          description: Source limit reached
+        '503':
+          description: Signing, challenge, or persistence unavailable

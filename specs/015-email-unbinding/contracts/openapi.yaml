@@ -1,0 +1,62 @@
+openapi: 3.1.0
+info:
+  title: Account email unbinding slice
+  version: 015
+paths:
+  /api/profile/email:
+    delete:
+      summary: Remove the authenticated owner's recovery email
+      security:
+        - jobTraceBridge: []
+      parameters:
+        - in: header
+          name: X-JobTrace-Session-Id
+          required: true
+          schema:
+            type: string
+            maxLength: 255
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword]
+              properties:
+                currentPassword:
+                  type: string
+                  minLength: 1
+                  maxLength: 128
+      responses:
+        '200':
+          description: Email removed and pending codes consumed
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: private, no-store
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [email, emailVerified]
+                properties:
+                  email:
+                    type: 'null'
+                  emailVerified:
+                    type: boolean
+                    const: false
+        '400':
+          description: Invalid request or current password
+        '401':
+          description: Absent or invalid trusted assertion
+        '429':
+          description: Email-change rate limit exceeded
+        '500':
+          description: Safe dependency or account-state failure
+components:
+  securitySchemes:
+    jobTraceBridge:
+      type: http
+      scheme: bearer
+      description: Signed JobTraceBridge assertion bound to DELETE, path, and request ID

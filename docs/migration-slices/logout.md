@@ -1,0 +1,7 @@
+# Compatible Current-Session Logout (Feature 021)
+
+This slice adds only anonymous `POST /api/auth/logout`. It keeps the established same-origin check: explicit cross-site browser requests or a mismatched Origin are rejected before any cookie or database action. An absent Origin remains allowed for non-browser clients. The exact POST is exempt from the framework CSRF token; all other identity routes retain their existing authentication boundary.
+
+The configured Better Auth session-token cookie is decoded and HMAC-verified with `BETTER_AUTH_SECRET` before it can select a session. Invalid, missing, duplicated or stale cookies cannot revoke another session. A valid token deletes only its matching row in the existing `sessions` table. The empty 204 response expires the session-token, cached-session and remember-state cookies, plus any present cached-session chunks, with `Path=/`, `HttpOnly`, `SameSite=Lax` and the configured `Secure` behavior. Responses are non-cacheable. A database deletion failure preserves the old best-effort 204 and cookie cleanup but increments a bounded failure metric; the session may remain until expiry. Missing signing configuration returns 503 before deletion.
+
+The old service remains the production route owner. Browser cookies do not authorize any other Java API; those routes still require signed bridge assertions. Frontend, schema ownership, deployment, CI/CD and production traffic remain unchanged. A future rollback returns only this POST path to the old service.

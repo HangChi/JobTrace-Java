@@ -52,5 +52,14 @@ Before enabling Flyway, record all of the following in a reviewed change:
 4. A tested backup/restore reference and maintenance rollback procedure.
 5. The exact Flyway baseline version and the environments where it is permitted.
 
-Until that change is approved, keep `jobtrace.migration.flyway-enabled=false`; the Java runtime
-may issue owner-scoped reads but must not mutate or claim ownership of the legacy schema.
+Until that change is approved, keep `jobtrace.migration.flyway-enabled=false`. The Java runtime
+may execute its documented owner/admin business reads and writes against the existing schema,
+but must not apply DDL, replay legacy migrations, or claim schema-migration ownership.
+
+## Stage 029 ownership decision
+
+Stage 029 does not approve the candidate baseline or activate Flyway. The legacy repository
+continues to own DDL and migration ordering. Java uses the existing schema for documented
+owner/admin business operations only; marketplace ATS/WeChat collection and sync-run writes
+remain in the legacy service. Setting `JOBTRACE_FLYWAY_ENABLED=true` before the five approval
+items above are recorded is an unsupported operator action, not a migration shortcut.

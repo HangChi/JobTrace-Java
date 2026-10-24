@@ -4,6 +4,7 @@ import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,8 +21,14 @@ public class HealthController {
     }
 
     @GetMapping("/live")
-    public Map<String, String> live() {
-        return Map.of("status", "ok");
+    public ResponseEntity<Map<String, String>> live() {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(Map.of("status", "ok"));
+    }
+
+    @GetMapping
+    public ResponseEntity<Map<String, String>> health() {
+        return ready();
     }
 
     @GetMapping("/ready")
@@ -29,11 +36,14 @@ public class HealthController {
         try {
             Integer result = jdbcTemplate.queryForObject("select 1", Integer.class);
             if (result != null && result == 1) {
-                return ResponseEntity.ok(Map.of("status", "ok"));
+                return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                        .body(Map.of("status", "ok"));
             }
-            return ResponseEntity.internalServerError().body(Map.of("status", "error"));
+            return ResponseEntity.internalServerError().cacheControl(CacheControl.noStore())
+                    .body(Map.of("status", "error"));
         } catch (DataAccessException exception) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .cacheControl(CacheControl.noStore())
                     .body(Map.of("status", "error"));
         }
     }

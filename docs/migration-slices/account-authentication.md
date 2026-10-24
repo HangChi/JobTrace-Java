@@ -1,0 +1,13 @@
+# Account Authentication Completion (Feature 022)
+
+The Java service adds signed-cookie browser authentication alongside the existing short-lived signed bridge. A cookie signature alone does not authorize any protected route: each request reads the matching live session and current user state. The browser principal is distinct from the bridge principal, and public identity headers remain untrusted. State-changing browser requests require the exact trusted origin; authenticated responses are non-cacheable.
+
+`GET /api/auth/session` and `GET /api/profile` expose only safe current-user projections. The existing account update, password change, recovery-email and session-revocation routes can accept a verified browser principal while continuing to support explicit bridge calls. Current role and disabled status are checked from the database on each browser request.
+
+Password recovery uses the legacy `verification_tokens` table and hashed `reset-password:<token>` identifiers. The token lifetime is one hour. Successful redemption updates a credential, deletes all of its owner's sessions and removes the grant in one database transaction. The public request response must remain identical for known and unknown recovery addresses. Reset links are sent only to a verified recovery email through the configured server-side delivery service; the token and full address must not be logged.
+
+Avatar upload accepts only PNG, JPEG, WebP or GIF content no larger than 5 MiB, checks magic bytes before storage and stores under `avatars/<owner-id>/<random-id>.<extension>`. The upload returns a URL; applying it to the profile remains a separate owner-only update.
+
+The Java mail adapter uses the existing `AUTH_EMAIL_DELIVERY_URL` and `AUTH_EMAIL_DELIVERY_SECRET` contract, limited to HTTPS, with the `password_reset` template. Avatar storage uses the existing `COS_SECRET_ID`, `COS_SECRET_KEY`, `COS_BUCKET`, `COS_REGION` and optional `COS_PUBLIC_BASE_URL` values. No secret values belong in Git. A missing or invalid connector configuration fails closed; no reset link or avatar bytes are sent to another destination. Local tests replace external connectors and do not send real mail or objects.
+
+The old service remains the production route owner. Schema ownership and frontend routing are unchanged. Rollback returns the affected HTTP routes to the old service and disables Java browser-cookie authorization; no data migration is needed because both implementations share the existing tables and storage contract. Rotate signing or delivery credentials only under the ordinary incident procedure, not as part of route rollback.

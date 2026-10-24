@@ -23,7 +23,7 @@ class OpenApiContractTest {
         assertThat(result.getMessages()).isEmpty();
         assertThat(result.getOpenAPI()).isNotNull();
         assertThat(result.getOpenAPI().getPaths())
-                .containsKeys("/api/health/live", "/api/health/ready",
+                .containsKeys("/api/health", "/api/health/live", "/api/health/ready",
                         "/api/applications", "/api/applications/{id}",
                         "/api/interviews", "/api/interviews/{id}",
                         "/api/applications/{id}/detail", "/api/reminders",

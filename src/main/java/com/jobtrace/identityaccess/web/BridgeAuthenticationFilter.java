@@ -37,6 +37,8 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
             "/api/interviews/" + UUID_PATH);
     private static final Pattern JOB_MARKET_DETAIL = Pattern.compile(
             "/api/job-market/campaigns/" + UUID_PATH);
+    private static final Pattern ADMIN_USER_DETAIL = Pattern.compile(
+            "/api/admin/users/[^/?#]{1,128}");
 
     private final ClaimAssertionUseCase claimAssertion;
     private final BridgeAuthenticationEntryPoint entryPoint;
@@ -55,6 +57,22 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return !PROTECTED_PATH.equals(path)
+                && !(("GET".equals(request.getMethod())
+                        || "DELETE".equals(request.getMethod()))
+                    && AccountSessionReadController.PATH.equals(path))
+                && !(("GET".equals(request.getMethod())
+                        || "PATCH".equals(request.getMethod()))
+                    && AccountProfileController.PATH.equals(path))
+                && !("POST".equals(request.getMethod())
+                    && AccountPasswordController.PATH.equals(path))
+                && !("POST".equals(request.getMethod())
+                    && AvatarController.PATH.equals(path))
+                && !("DELETE".equals(request.getMethod())
+                    && AccountEmailUnbindingController.PATH.equals(path))
+                && !("PATCH".equals(request.getMethod())
+                    && AccountEmailBindingController.PATH.equals(path))
+                && !("POST".equals(request.getMethod())
+                    && AccountEmailCodeController.PATH.equals(path))
                 && !"/api/applications".equals(path)
                 && !APPLICATION_DETAIL.matcher(path).matches()
                 && !"/api/interviews".equals(path)
@@ -67,7 +85,14 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
                         || "/api/exports/interviews".equals(path)))
                 && !("GET".equals(request.getMethod())
                     && ("/api/reminders".equals(path)
-                        || "/api/reminder-settings".equals(path)));
+                        || "/api/reminder-settings".equals(path)))
+                && !("GET".equals(request.getMethod())
+                    && ("/api/admin/summary".equals(path)
+                        || "/api/admin/users".equals(path)
+                        || ADMIN_USER_DETAIL.matcher(path).matches()
+                        || "/api/admin/audit-events".equals(path)))
+                && !("PATCH".equals(request.getMethod())
+                    && ADMIN_USER_DETAIL.matcher(path).matches());
     }
 
     @Override
@@ -75,6 +100,13 @@ public final class BridgeAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
+        if (request.getHeader("Authorization") == null
+                && SecurityContextHolder.getContext().getAuthentication() != null
+                && SecurityContextHolder.getContext().getAuthentication().getDetails()
+                        instanceof com.jobtrace.identityaccess.domain.BrowserIdentity) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         Instant startedAt = Instant.now();
         try {
             String assertion = assertion(request.getHeader("Authorization"));

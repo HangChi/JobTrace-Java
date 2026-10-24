@@ -1,0 +1,258 @@
+/* Layout and control proportions observed on the public JobTrace site. */
+.auth-layout,.auth-layout.auth-layout-register{display:flex;align-items:center;justify-content:center;width:min(480px,calc(100% - 32px));min-height:100dvh;margin:auto;padding:24px 0}
+.auth-layout-register{width:min(860px,calc(100% - 32px))!important}
+.auth-surface{width:100%;padding:28px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.auth-layout-register .auth-surface{padding:32px}
+.auth-surface-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.auth-brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.auth-brand-mark{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:7px;background:var(--brand);color:#fff;font-size:1rem;font-weight:750}
+.auth-brand>span:last-child{display:flex;align-items:baseline;gap:5px}
+.auth-brand strong{font-size:.95rem;letter-spacing:-.01em}
+.auth-brand small{font-size:.72rem;color:var(--muted);font-weight:600}
+.auth-top-switch{margin:0;color:var(--muted);font-size:.82rem}
+.auth-top-switch a{margin-left:6px;font-weight:700;text-decoration:none}
+.auth-heading{margin:32px 0 22px}
+.auth-layout-register .auth-heading{margin-top:28px}
+.auth-heading h1{margin:0;color:#142f2c;font-family:STSong,'Songti SC','Noto Serif CJK SC',serif;font-size:1.75rem;font-weight:600;line-height:1.2}
+.auth-heading p{margin:8px 0 0;color:var(--muted);font-size:.9rem;line-height:1.55}
+.auth-form{display:grid;gap:16px}
+.auth-register-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 18px}
+.auth-field{min-width:0}
+.auth-field-label{display:flex;justify-content:space-between;gap:8px;margin-bottom:7px;color:var(--ink);font-size:.82rem;font-weight:650}
+.auth-field-label small{color:var(--muted);font-size:.72rem;font-weight:500}
+.auth-input-wrap{position:relative;display:flex;align-items:center;min-width:0}
+.auth-input-wrap input{width:100%;min-width:0;min-height:54px;padding:10px 48px;border:1px solid #d8e2de;border-radius:6px;background:#fff;color:var(--ink);box-shadow:0 2px 2px rgb(17 63 57 / 3%);font-size:.9rem}
+.auth-input-wrap input::placeholder{color:#9aa9a4}
+.auth-input-icon{position:absolute;left:16px;top:50%;z-index:1;display:grid;place-items:center;width:18px;height:18px;color:#6d827c;transform:translateY(-50%);pointer-events:none}
+.auth-input-icon svg,.auth-visibility-toggle svg{width:18px;height:18px}
+.auth-visibility-toggle{position:absolute;right:6px;top:50%;display:grid;place-items:center;width:42px;height:42px;min-height:42px!important;padding:0;border:0;border-radius:5px;background:transparent;color:#5b7770;transform:translateY(-50%)}
+.auth-visibility-toggle:hover{background:#edf7f3}
+.auth-send-code{position:absolute;right:5px;top:50%;min-height:44px!important;padding:0 18px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--ink);font-size:.78rem;font-weight:700;white-space:nowrap;transform:translateY(-50%)}
+.auth-field:has(.auth-send-code) input{padding-right:150px}
+.auth-field-hint{display:block;margin-top:7px;color:var(--muted);font-size:.74rem;line-height:1.5}
+.auth-recovery-link{justify-self:end;color:var(--muted);font-size:.76rem;text-decoration:none}
+.auth-recovery-link:hover{text-decoration:underline}
+.auth-submit{display:flex;align-items:center;justify-content:center;gap:14px;width:100%;min-height:44px;margin-top:2px;padding:10px 16px;border:0;border-radius:6px;background:var(--brand);color:#fff;font-weight:700;box-shadow:none}
+.auth-submit span{font-size:1.2rem;line-height:1}
+.auth-register-form .auth-submit{grid-column:1/-1}
+.auth-switch{display:flex;justify-content:center;gap:7px;margin:22px 0 0;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
+.auth-switch a{font-weight:700;text-decoration:none}
+.auth-terms{margin:14px 0 0;color:var(--muted);font-size:.75rem;text-align:center}
+
+/* The reference uses a transparent header and a left aligned primary nav. */
+.app-header{position:relative;grid-template-columns:auto minmax(0,1fr) auto;gap:24px;min-height:90px;width:min(1200px,calc(100% - 48px));margin:auto;padding:10px 0;border-bottom:1px solid var(--line);background:transparent;box-shadow:none;backdrop-filter:none}
+.app-primary-nav{justify-content:flex-start;gap:4px}
+.app-primary-nav a{min-height:40px;padding:0 13px;font-size:.83rem}
+.app-primary-nav a[aria-current=page]{border-color:transparent;border-radius:9px;background:#e0f2ed;box-shadow:inset 0 -2px var(--brand)}
+.workspace-main{width:min(1200px,calc(100% - 48px));padding-top:24px}
+.workspace-header,.market-hero{min-height:138px;padding:22px 24px;border-radius:22px;background:linear-gradient(110deg,#fff 10%,#e9f8f2 100%);box-shadow:0 16px 45px rgb(34 105 94 / 5%)}
+.workspace-header{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.workspace-header-actions{display:grid;justify-items:stretch;gap:8px;min-width:118px}
+.workspace-header-actions>button,.workspace-header-cta{min-height:42px;padding:9px 14px;border:1px solid var(--brand);border-radius:10px;background:var(--brand);color:#fff;font-size:.82rem;font-weight:700;white-space:nowrap}
+.workspace-header-actions .application-export-menu summary{justify-content:center;min-height:42px}
+.interview-hero-create{background:#526d87;border-color:#526d87}
+.workspace-header h1,.market-hero h1{font-size:clamp(2rem,3vw,2.25rem)}
+.workspace-header .eyebrow,.market-hero .eyebrow{font-size:.72rem;font-weight:700}
+.workspace-description,.market-hero p:last-child{margin-top:10px;font-size:.88rem}
+
+/* The summary is a joined strip, followed by distinct work panels. */
+.application-summary-grid{gap:0;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#fff;box-shadow:var(--shadow)}
+.application-summary-card{min-height:112px;border:0;border-right:1px solid var(--line);border-top:3px solid var(--brand);border-radius:0;box-shadow:none;padding:20px}
+.application-summary-card:last-child{border-right:0}
+.application-summary-card.summary-active,.application-summary-card.summary-offer,.application-summary-card.summary-week{background:#fff}
+.application-summary-card>span{display:none}
+.application-summary-card strong{font-size:1.8rem}
+.application-summary-card.summary-active{border-top-color:#67b7a5}.application-summary-card.summary-offer{border-top-color:#9382cf}.application-summary-card.summary-week{border-top-color:#73afc8}.application-summary-card.summary-rejected{border-top-color:#d6a4a5}
+.application-overview{gap:16px}
+.application-dashboard-actions{margin-top:0}
+.application-section-heading{padding-top:4px;border-top:1px solid var(--line)}
+.application-overview-panel{box-shadow:var(--shadow)}
+.application-filters,.market-filters{padding:16px;border-radius:16px}
+.application-filters input,.application-filters select,.market-filters input,.market-filters select{min-height:42px;border-radius:7px}
+.application-filter-actions button,.market-filter-actions button{min-height:42px;border-radius:9px}
+.market-hero{border:1px solid #d9ebe5;background:linear-gradient(110deg,#fff 10%,#e8f7f1 100%)}
+.market-count{border:0;background:#e5f4ed}
+.market-filters{margin:16px 0 20px}
+.campaign-table{border-radius:13px}
+.campaign-table th{font-size:.75rem;letter-spacing:.02em}
+.campaign-table td{padding-top:15px;padding-bottom:15px}
+.market-row-actions button,.market-row-actions a{min-height:34px;border-radius:7px}
+
+/* The public feed opens with search, then a plain heading and a side rail. */
+.interview-square-page{max-width:none}
+.interviews-content.interview-square-page{width:100%;margin-inline:0}
+.public-feed-heading{padding:0;border:0;border-radius:0;background:transparent;box-shadow:none}
+.public-feed-heading .eyebrow,.public-feed-heading p:last-child{display:none}
+.public-feed-heading h1{font-size:2rem}
+.public-feed-heading{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.public-feed-heading span{color:var(--muted);font-size:.8rem}
+.public-square-layout{grid-template-columns:minmax(0,1fr) 280px;gap:24px}
+.public-feed-toolbar{margin-bottom:24px}
+.public-company-search{grid-template-columns:minmax(180px,1.5fr) minmax(120px,1fr) minmax(140px,1.2fr) auto}
+.public-mine-link{width:100%;border-color:var(--brand);background:var(--brand);color:#fff}
+.public-feed-sidebar{align-content:start}
+.public-feed-sidebar .content-card{box-shadow:none}
+.public-feed-list{gap:16px}
+.public-feed-card{border-color:var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.interview-private-page{max-width:none}
+.private-interview-filters{display:grid;grid-template-columns:minmax(160px,1.4fr) repeat(4,minmax(100px,1fr)) auto;align-items:end;gap:10px;padding:16px 18px;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:var(--shadow)}
+.private-interview-filters label{display:grid;gap:7px;color:var(--muted);font-size:.77rem;font-weight:700}
+.private-interview-filters input,.private-interview-filters select{min-width:0;width:100%;min-height:42px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:7px;background:#fff;color:var(--ink);font-size:.81rem}
+.private-interview-filters button{min-height:42px;padding:8px 12px}
+.interview-list-panel{padding:0!important;overflow:hidden;border:1px solid var(--line);border-radius:13px;background:#fff;box-shadow:var(--shadow)}
+.interview-list-panel>.interview-empty{padding:0 22px 20px}
+.interview-list-panel>header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0;padding:19px 22px;border-bottom:1px solid var(--line)}
+.interview-list-panel>header h2{margin:0;font-size:1.1rem}
+.interview-list-panel>header span{color:var(--muted);font-size:.8rem}
+.interview-record-list{margin:0;padding:0;list-style:none}
+.interview-record-list li{display:grid;grid-template-columns:100px minmax(0,1fr) 230px 58px 100px;align-items:center;gap:16px;min-height:76px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.interview-record-list li:last-child{border-bottom:0}
+.interview-record-list time{color:var(--muted);font-size:.8rem}
+.interview-record-main{display:grid;gap:4px;min-width:0}
+.interview-record-main button{overflow:hidden;padding:0;border:0;background:transparent;color:var(--ink);font-size:.91rem;font-weight:750;text-align:left;text-overflow:ellipsis;white-space:nowrap}
+.interview-record-main small{color:var(--muted);font-size:.75rem}
+.interview-record-status{display:flex;flex-wrap:wrap;gap:5px}
+.interview-record-status span{padding:4px 7px;border-radius:5px;background:#edf6f2;color:#3b7669;font-size:.7rem;white-space:nowrap}
+.interview-record-list a{color:var(--brand-dark);font-size:.8rem;text-decoration:none}
+.interview-record-edit{min-height:34px!important;padding:6px 8px!important;font-size:.75rem!important}
+.interview-create,.interview-editor{max-width:900px!important}
+
+/* Import is a focused three step flow. */
+.workspace-main:has(.import-content)>.workspace-header{border:0;border-radius:0;background:transparent;box-shadow:none;min-height:0;padding:0;margin-bottom:22px}
+.workspace-main:has(.import-content)>.workspace-header .eyebrow{display:none}
+.import-content{max-width:720px;gap:16px}
+.transfer-steps{gap:0;overflow:hidden;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.transfer-steps li{border:0;border-right:1px solid var(--line);border-radius:0;min-height:56px;padding:12px 16px}
+.transfer-steps li:last-child{border-right:0}
+.import-intro{padding:22px!important}
+.import-intro h2{margin:0 0 4px;font-size:1.35rem}
+.import-intro p{margin:0 0 20px}
+.import-intro form{display:grid;gap:18px}
+.import-intro input[type=file]{padding:8px;border:1px dashed var(--line-strong);border-radius:8px}
+.import-intro button{width:100%}
+.import-file-label{display:grid;gap:8px;color:var(--ink);font-size:.83rem;font-weight:650}
+.import-intro input[type=file]{width:100%;min-height:112px;padding:36px 20px;text-align:center;background:#fbfefd}
+
+/* Analytics uses one five-part metric band as on the source dashboard. */
+.analytics-content{max-width:none}
+.analytics-content>.feature-toolbar{display:none}
+.analytics-hero-pills{display:grid;gap:7px;justify-items:end}
+.analytics-hero-pills span{min-width:122px;padding:7px 11px;border:1px solid #e1e9e5;border-radius:8px;background:#fff;color:#52726b;font-size:.77rem;text-align:center}
+.analytics-hero-pills span:first-child{border-color:#cce7dc;background:#e5f5ed;color:var(--brand-dark);font-weight:700}
+.analytics-filters{padding:18px 20px;border-radius:16px}
+.analytics-filter-grid{grid-template-columns:repeat(5,minmax(0,1fr)) auto;gap:12px}
+.analytics-filter-grid label{font-size:.78rem}
+.analytics-filters>.muted-note{font-size:.75rem}
+.analytics-report-meta{justify-content:flex-end;gap:8px}
+.analytics-report-meta span{padding:5px 10px;border-radius:7px}
+.analytics-summary-strip,.admin-summary-strip{gap:0;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:#fff;box-shadow:var(--shadow)}
+.analytics-summary-strip{grid-template-columns:repeat(5,minmax(0,1fr))}
+.analytics-summary-strip article,.admin-summary-strip article{min-height:112px;padding:19px;border:0;border-right:1px solid var(--line);border-radius:0}
+.analytics-summary-strip article:last-child,.admin-summary-strip article:last-child{border-right:0}
+.analytics-summary-strip strong,.admin-summary-strip strong{font-size:1.75rem}
+.analytics-grid{gap:16px}
+.analytics-grid .content-card,.analytics-wide{padding:22px}
+
+/* Admin navigation sits above every admin page on the reference site. */
+.admin-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:22px}
+.admin-side{position:static;display:block;padding:0;border:0;background:transparent;box-shadow:none}
+.admin-side>.eyebrow{display:none}
+.admin-nav.segmented-tabs{display:inline-flex;flex-wrap:wrap;padding:6px;border-radius:9px}
+.admin-nav button{width:auto;min-height:40px;padding:8px 16px}
+.admin-page-header{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:0 0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none}
+.admin-page-header h1{font-size:2rem}
+.admin-page-header p{margin:0}
+.admin-content{max-width:none}
+.admin-summary-strip{grid-template-columns:repeat(6,minmax(0,1fr))}
+.admin-activity-card h2{margin-bottom:16px}
+.admin-activity-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.admin-activity-grid div{display:grid;gap:8px;padding:18px;border-right:1px solid var(--line)}
+.admin-activity-grid div:last-child{border-right:0}
+.admin-activity-grid span{color:var(--muted);font-size:.8rem}
+.admin-activity-grid strong{color:var(--brand-dark);font-size:1.35rem}
+.admin-user-filter{display:flex;align-items:end;justify-content:space-between;gap:16px;padding:15px 18px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.admin-user-filter label{min-width:min(360px,100%)}
+.admin-user-filter>span{color:var(--muted);font-size:.82rem}
+.admin-user-table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:13px;background:#fff}
+.admin-user-table{width:100%;border-collapse:collapse;text-align:left}
+.admin-user-table th,.admin-user-table td{padding:15px 16px;border-bottom:1px solid var(--line);font-size:.8rem;white-space:nowrap}
+.admin-user-table th{background:#f4f9f6;color:var(--muted);font-size:.75rem}
+.admin-user-table tr:last-child td{border-bottom:0}
+.admin-user-table td:first-child strong,.admin-user-table td:first-child small{display:block}
+.admin-user-table td:first-child small{margin-top:4px;color:var(--muted)}
+.admin-user-table .quiet-button{min-height:32px;padding:6px 9px;font-size:.75rem}
+.admin-status-active,.admin-status-disabled{padding:4px 8px;border-radius:6px;background:#e6f5ed;color:#2b8065}
+.admin-status-disabled{background:#f9e9e8;color:#ac4c4c}
+.profile-page{max-width:none}
+.profile-layout{grid-template-columns:220px minmax(0,1fr)}
+.profile-content .content-card{border-radius:15px}
+.profile-form>label:not(.checkbox-line){max-width:500px}
+.profile-content #profile-details .profile-avatar{padding:16px;border:1px dashed var(--line-strong);border-radius:11px;background:#fbfefd}
+.profile-content #profile-data .form-actions{flex-wrap:wrap}
+.profile-hero{background:linear-gradient(110deg,#fff 15%,#e9f7f2 100%)}
+.profile-index{box-shadow:var(--shadow)}
+.profile-index nav a{border-radius:7px}
+.profile-content #profile-details .profile-form{grid-template-columns:repeat(2,minmax(0,1fr));align-items:end}
+.profile-content #profile-details .profile-avatar{grid-column:1/-1}
+.profile-content #profile-details .profile-form button[type=submit]{grid-column:1/-1}
+.profile-account-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0}
+.profile-account-facts div{display:grid;gap:6px;padding:14px;border:1px solid var(--line);border-radius:8px;background:#f8fcfa}
+.profile-account-facts dt{color:var(--muted);font-size:.77rem}
+.profile-account-facts dd{margin:0;color:var(--ink);font-size:.84rem;font-weight:700;overflow-wrap:anywhere}
+
+@media(max-width:900px){
+  .application-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .application-summary-card:nth-child(2n){border-right:0}
+  .application-summary-card:nth-child(n+3){border-top:1px solid var(--line)}
+  .public-square-layout{grid-template-columns:1fr}
+  .analytics-filter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .analytics-summary-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .admin-summary-strip{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .admin-activity-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .interview-record-list li{grid-template-columns:90px minmax(0,1fr) 110px}
+  .private-interview-filters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .interview-record-status{display:none}
+  .interview-record-list a{display:none}
+}
+@media(max-width:700px){
+  .app-header{width:calc(100% - 32px);min-height:0;gap:4px 8px;padding:10px 0 0}
+  .app-primary-nav{grid-column:1/-1;grid-row:2;overflow-x:auto;justify-content:flex-start;gap:2px}
+  .workspace-main{width:calc(100% - 32px);padding-top:18px}
+  .workspace-header,.market-hero{min-height:0;padding:20px;border-radius:16px}
+  .workspace-header{align-items:flex-start;flex-direction:column}
+  .workspace-header-actions{display:flex;min-width:0;width:100%}
+  .workspace-header-actions>*{flex:1}
+  .analytics-hero-pills{display:flex;flex-wrap:wrap;justify-items:start}
+  .public-company-search{grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+  .public-company-search-field,.public-sort-control{grid-column:1/-1;width:100%}
+  .public-filter-select{min-width:0}
+  .public-filter-select select{min-width:0}
+  .application-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .application-summary-card{min-height:96px;padding:16px}
+  .admin-page-header{display:block}
+  .admin-page-header p{margin-top:6px}
+  .analytics-filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .private-interview-filters{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .analytics-summary-strip,.admin-summary-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .profile-layout{grid-template-columns:1fr}
+  .profile-account-facts{grid-template-columns:1fr}
+  .profile-content #profile-details .profile-form{grid-template-columns:1fr}
+  .auth-layout{align-items:flex-start;padding:12px 0}
+  .auth-layout-register .auth-surface{padding:22px 18px}
+  .auth-register-form{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .auth-layout,.auth-layout-register{width:calc(100% - 24px)!important}
+  .auth-surface{padding:22px 18px}
+  .auth-top-switch{display:none}
+  .auth-heading{margin-top:28px}
+  .auth-field:has(.auth-send-code) input{padding-right:135px}
+  .auth-send-code{padding-inline:10px;font-size:.72rem}
+  .application-summary-card:last-child{grid-column:auto}
+  .admin-nav.segmented-tabs{display:flex}
+  .admin-nav button{flex:1 1 auto}
+  .interview-record-list li{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:14px}
+  .interview-record-list time{grid-column:1/-1}
+  .private-interview-filters{grid-template-columns:1fr}
+  .analytics-filter-grid{grid-template-columns:1fr}
+}
