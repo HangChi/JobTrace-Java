@@ -58,9 +58,9 @@ Implementation and local pre-production verification are complete. The migration
 remains `VERIFIED`, not `ACTIVE`; production traffic and the authoritative write path
 remain with the legacy service.
 
-The [release preparation record](release-readiness.md) was assembled on 2026-10-26. Production
-deployment has not been approved; the required environment, owner, observability and approval
-fields are unset. No canary observation day or activation decision is claimed.
+The [release preparation record](release-readiness.md) was assembled on 2026-10-26. The user
+approved preparation but requested no deployment. Environment, owner and observability fields
+remain unset. No canary observation day or activation decision is claimed.
 
 Remaining release evidence:
 

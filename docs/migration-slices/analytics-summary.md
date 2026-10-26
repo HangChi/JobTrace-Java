@@ -47,7 +47,7 @@ Activation still requires recorded evidence named `identity bridge verified` and
 
 The [release preparation record](../../specs/003-signed-identity-bridge/release-readiness.md)
 lists the approvals, owners, ingress, monitoring and rollback evidence still needed before a
-production canary can start. As of 2026-10-26, deployment is not approved and the share is 0%.
+production canary can start. As of 2026-10-26, the user requested no deployment and the share is 0%.
 
 For a canary, compare legacy and Java responses after the documented normalization and monitor:
 

@@ -1,7 +1,7 @@
 # Analytics canary release preparation
 
 **Preparation date:** 2026-10-26  
-**Decision:** Awaiting production deployment approval. Java receives 0% production analytics traffic; legacy remains the traffic and write owner. `JOBTRACE_AUTH_BRIDGE_ENABLED=false` and `JOBTRACE_FLYWAY_ENABLED=false` remain the safe defaults.
+**Decision:** User approved preparation on 2026-10-26 and explicitly requested no deployment. Java receives 0% production analytics traffic; legacy remains the traffic and write owner. `JOBTRACE_AUTH_BRIDGE_ENABLED=false` and `JOBTRACE_FLYWAY_ENABLED=false` remain the safe defaults.
 
 ## Evidence already available
 
@@ -37,6 +37,6 @@ Do not infer approval from a merged PR, successful synthetic test, or a filled t
 
 ## Current blockers
 
-- Production deployment and traffic approval have not been granted; environment, owner and observability links are not yet recorded.
+- No production deployment was requested; environment, owner and observability links are not recorded.
 - The seven-day observation window has not started, so no production activation decision can be made.
-- The separate Flyway baseline has not been approved and the legacy migration chain has a duplicate version; its disabled state is independent of this read-only canary.
+- The separate Flyway baseline was rehearsed only in isolation; production activation is unapproved. The legacy migration chain has a duplicate version, and the Java runtime switch remains disabled independently of this read-only canary.

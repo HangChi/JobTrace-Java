@@ -14,7 +14,7 @@ class MigrationActivationGateTest {
         String configuration = Files.readString(Path.of("src/main/resources/application.yaml"));
         String baseline = Files.readString(Path.of("docs/database-baseline.md"));
         assertThat(configuration).contains("JOBTRACE_FLYWAY_ENABLED:false");
-        assertThat(baseline).contains("**Not approved**")
+        assertThat(baseline).contains("**Not approved for production**")
                 .contains("Before enabling Flyway");
         assertThat(Files.exists(Path.of("src/main/resources/db/migration"))).isFalse();
     }
