@@ -1,6 +1,6 @@
 # Dependency advisory cleanup
 
-**Status**: Implemented locally; remote alert closure requires merging the verified lockfile into `main`
+**Status**: Complete — merged in PR #24 on 2026-10-26; GitHub shows zero open Dependabot alerts
 
 ## Goal
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-08
 
-**Status**: In progress
+**Status**: Complete — automated validation passed and PR #23 merged; live/manual acceptance remains delegated in [quickstart.md](quickstart.md)
 
 **Input**: Finish stage 029: compare legacy and Java behavior, close security, concurrency and error-contract gaps, add end-to-end regression, and resolve schema ownership without enabling an unapproved migration baseline. Stage 028 coverage and manual acceptance are outside this request.
 
