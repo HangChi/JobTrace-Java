@@ -6,22 +6,28 @@ no schema changes and does not create `flyway_schema_history`.
 
 ## Candidate snapshot
 
-Captured on 2026-10-01 from `/Users/songhangchi/Project/JobTrace`:
+Recaptured on 2026-10-26 from a clean `/Users/songhangchi/Project/JobTrace` checkout:
 
 | Evidence | Value |
 | --- | --- |
-| Source Git revision | `c9e00dd685344c2fc054212d4eb11e5d558a0f7a` |
+| Source Git revision | `bf0ba5478d77a51f1f1aed20fe1293754d28dca3` |
+| Source status | Clean; candidate head is tracked |
 | Migration count | 66 |
 | Candidate head | `supabase/migrations/20260929000100_spring_recruitment_type.sql` |
 | Candidate head SHA-256 | `d82ec5da0e0729f0aafad2c38241b3dacb3f149d6c53f8416964c1ce17f66a15` |
-| Ordered migration-chain SHA-256 | `323731860c40e6230bbd8ad6baf670daa0fd35be0b390d631a61e7da97aaf4de` |
+| Ordered relative-path manifest | [database-baseline-manifest.sha256](database-baseline-manifest.sha256) |
+| Manifest SHA-256 | `c82ff6f14877459fc480f7a47ba09dd58e94f3fb9e90eba1a373e57c84c690f8` |
 | Approval status | **Not approved** |
 | Approved by / at | Unset |
 | Backup reference | Unset |
 
-The source checkout was dirty when captured, and the candidate head migration was untracked.
-These values are evidence for review, not an approved Flyway baseline. The head must first be
-committed in the legacy repository, then the manifest and hashes must be recaptured.
+The earlier 2026-10-01 snapshot came from a dirty checkout with an untracked head migration.
+That source-state issue is resolved in this recapture, but the chain contains two files with
+the same migration version `20260927000300`:
+`20260927000300_persist_admin_jobs.sql` and
+`20260927000300_scheduled_reminders.sql`. Resolve the version collision in the legacy-owned
+chain and recapture the manifest before proposing a Flyway baseline. These values are review
+evidence, not approval or permission to run migrations against an existing database.
 
 ## Capture procedure
 

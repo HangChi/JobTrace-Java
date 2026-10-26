@@ -45,5 +45,5 @@
 
 ## Phase 6: Validation
 
-- [ ] T019 Run lint, unit, coverage and production build; meet changed-code 80% line/branch coverage.
-- [ ] T020 Verify representative browser flows, responsive widths, keyboard/a11y and performance budgets; update spec/checklist only after evidence.
+- [x] T019 Run lint, unit, coverage and production build; meet changed-code 80% line/branch coverage.
+- [x] T020 Verify representative browser flows, responsive widths, keyboard/a11y and performance budgets; update spec/checklist only after evidence.
