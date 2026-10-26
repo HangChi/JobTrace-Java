@@ -8,6 +8,22 @@ const preferences = { homeEnabled: true, homeView: 'scheduled', defaultLead: '1h
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('removes an existing avatar while preserving the display name', async () => {
+  const withAvatar = { ...profile, image: 'https://example.test/avatar.png' }
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path === '/api/profile/sessions') return json([])
+    if (path === '/api/reminder-settings') return json(preferences)
+    if (path === '/api/profile' && init?.method === 'PATCH') return json(profile)
+    return json(withAvatar)
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<ProfilePage onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('button', { name: '移除头像' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/profile', expect.objectContaining({ method: 'PATCH', body: JSON.stringify({ displayName: '小李', image: null }) })))
+  expect(screen.queryByRole('button', { name: '移除头像' })).not.toBeInTheDocument()
+})
+
 it('updates the current owner profile and changes password with CSRF', async () => {
   const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
     if (path === '/api/security/csrf') return json({ token: 'csrf' })

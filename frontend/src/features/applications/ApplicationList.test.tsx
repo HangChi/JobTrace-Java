@@ -4,6 +4,47 @@ import ApplicationList from './ApplicationList'
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('selects applications, exports the selected records and deletes them in one request', async () => {
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 1 }
+  let deleted = false
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return new Response(JSON.stringify({ token: 'csrf' }))
+    if (path === '/api/analytics/summary') return new Response(JSON.stringify({ total: 1, stageDistribution: {}, followUps: [] }))
+    if (path === '/api/applications' && init?.method === 'DELETE') { deleted = true; return new Response(JSON.stringify({ deletedCount: 1 })) }
+    return new Response(JSON.stringify({ items: deleted ? [] : [item], nextCursor: null, total: deleted ? 0 : 1, page: 1, limit: 10 }))
+  })
+  vi.stubGlobal('fetch', fetcher)
+  vi.stubGlobal('confirm', vi.fn(() => true))
+  render(<ApplicationList search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  const selectPage = await screen.findByRole('checkbox', { name: '选择当前页投递' })
+  fireEvent.click(selectPage)
+  expect(screen.getByRole('checkbox', { name: '选择 星河科技 前端工程师' })).toBeChecked()
+  fireEvent.click(selectPage)
+  expect(screen.getByRole('checkbox', { name: '选择 星河科技 前端工程师' })).not.toBeChecked()
+  fireEvent.click(screen.getByRole('checkbox', { name: '选择 星河科技 前端工程师' }))
+  expect(screen.getByRole('link', { name: '所选导出 Excel' })).toHaveAttribute('href', '/api/exports/applications?scope=selected&id=a1&format=xlsx')
+  fireEvent.click(screen.getByRole('button', { name: '删除所选' }))
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/applications', expect.objectContaining({ method: 'DELETE', body: JSON.stringify({ ids: ['a1'] }) })))
+  expect(await screen.findByText('还没有投递记录')).toBeInTheDocument()
+})
+
+it('keeps the application selection after a failed bulk delete', async () => {
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 1 }
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => path === '/api/security/csrf'
+    ? new Response(JSON.stringify({ token: 'csrf' }))
+    : path === '/api/applications' && init?.method === 'DELETE'
+      ? new Response(JSON.stringify({ code: 'storage_unavailable', detail: '删除服务暂不可用' }), { status: 503 })
+      : path === '/api/analytics/summary'
+        ? new Response(JSON.stringify({ total: 1, stageDistribution: {}, followUps: [] }))
+        : new Response(JSON.stringify({ items: [item], nextCursor: null, total: 1, page: 1, limit: 10 }))))
+  vi.stubGlobal('confirm', vi.fn(() => true))
+  render(<ApplicationList search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('checkbox', { name: '选择 星河科技 前端工程师' }))
+  fireEvent.click(screen.getByRole('button', { name: '删除所选' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('删除服务暂不可用')
+  expect(screen.getByRole('checkbox', { name: '选择 星河科技 前端工程师' })).toBeChecked()
+})
+
 it('shows live Java results and applies search filters in the URL', async () => {
   vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/analytics/summary'
     ? { total: 1, submitted: 1, refused: 0, offers: 0, addedThisWeek: 1, stageDistribution: {}, followUps: [] }

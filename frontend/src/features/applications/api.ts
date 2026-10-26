@@ -64,6 +64,7 @@ export const updateApplication = (item: ApplicationDetail, draft: ApplicationDra
 export const updateApplicationStatus = (item: Pick<ApplicationSummary, 'id' | 'version'>, status: ApplicationSummary['status']) =>
   apiRequest<{ id: string; status: ApplicationSummary['status']; latestDate: string; version: number }>(`${path(item.id)}/status`, { method: 'PATCH', body: { status, version: item.version } })
 export const deleteApplication = (id: string) => apiRequest<void>(path(id), { method: 'DELETE' })
+export const deleteApplications = (ids: string[]) => apiRequest<{ deletedCount: number }>('/api/applications', { method: 'DELETE', body: { ids } })
 export const addApplicationStage = (item: ApplicationDetail, stage: string, occurredOn: string) =>
   apiRequest<ApplicationDetail>(`${path(item.id)}/stages`, { method: 'POST', body: { stage, occurredOn } })
 export const updateApplicationStage = (item: ApplicationDetail, occurrenceId: string, stage: string, occurredOn: string, changeDate: string) =>

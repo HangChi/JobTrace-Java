@@ -3,7 +3,7 @@ import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
 import { getAnalyticsSummary } from '../analytics/api'
 import type { AnalyticsSummary } from '../analytics/api'
-import { deleteApplication, listApplications, updateApplicationStatus } from './api'
+import { deleteApplication, deleteApplications, listApplications, updateApplicationStatus } from './api'
 import type { ApplicationPage, ApplicationSummary } from './api'
 import ApplicationEditor from './ApplicationEditor'
 import ApplicationOverview from './ApplicationOverview'
@@ -32,6 +32,7 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
   const [pendingId, setPendingId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [reload, setReload] = useState(0)
   const [editingId, setEditingId] = useState<string | null | undefined>(initialEditingId)
   const requestedLimit = Number(params.get('limit') ?? 10)
@@ -106,10 +107,35 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
     try {
       await deleteApplication(item.id)
       setPage(current => current ? { ...current, total: Math.max(0, current.total - 1), items: current.items.filter(row => row.id !== item.id) } : current)
+      setSelectedIds(current => { const next = new Set(current); next.delete(item.id); return next })
       setReload(value => value + 1)
     } catch (caught) {
       if (caught instanceof ApiError && caught.status === 401) onExpired()
       else setActionError(caught instanceof ApiError ? caught.message : '删除失败，请重试。')
+    } finally { setPendingId(null) }
+  }
+
+  function toggleSelection(id: string) {
+    if (!selectedIds.has(id) && selectedIds.size >= 100) { setActionError('一次最多选择 100 条投递记录。'); return }
+    setSelectedIds(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next })
+  }
+
+  function selectVisible(checked: boolean) {
+    const next = new Set(selectedIds)
+    visibleIds.forEach(id => { if (checked) next.add(id); else next.delete(id) })
+    if (next.size > 100) { setActionError('一次最多选择 100 条投递记录。'); return }
+    setActionError(''); setSelectedIds(next)
+  }
+
+  async function removeSelected() {
+    if (!selectedIds.size || pendingId || !window.confirm(`确定删除所选的 ${selectedIds.size} 条投递记录？此操作无法撤销。`)) return
+    setPendingId('__bulk__'); setActionError('')
+    try {
+      await deleteApplications([...selectedIds])
+      setSelectedIds(new Set()); setReload(value => value + 1)
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.status === 401) onExpired()
+      else setActionError(caught instanceof ApiError ? caught.message : '批量删除失败，请重试。')
     } finally { setPendingId(null) }
   }
 
@@ -127,9 +153,13 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
   exportQuery.delete('page')
   exportQuery.delete('limit')
   exportQuery.set('scope', 'filtered')
+  const selectedExportQuery = new URLSearchParams({ scope: 'selected' })
+  selectedIds.forEach(id => selectedExportQuery.append('id', id))
+  const visibleIds = page?.items.map(item => item.id) ?? []
+  const allVisibleSelected = visibleIds.length > 0 && visibleIds.every(id => selectedIds.has(id))
 
   return <section className="applications-content application-dashboard">
-    {!routeMode && <div className="application-dashboard-actions"><button type="button" onClick={() => setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}
+    {!routeMode && <div className="application-dashboard-actions"><button type="button" onClick={() => setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>当前筛选</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a><p>全部记录</p><a href="/api/exports/applications?scope=all&format=xlsx">全部导出 Excel</a>{selectedIds.size > 0 && <><p>所选 {selectedIds.size} 条</p><a href={`/api/exports/applications?${selectedExportQuery}&format=xlsx`}>所选导出 Excel</a><a href={`/api/exports/applications?${selectedExportQuery}&format=csv`}>所选导出 CSV</a></>}</div></details></div>}
     {editingId !== undefined && <ApplicationEditor key={editingId ?? 'new'} id={editingId} onClose={() => setEditingId(undefined)} onChanged={() => setReload(value => value + 1)} onExpired={onExpired} />}
     <ApplicationOverview summary={summary} onOpen={id => routeMode ? navigate(`/applications/${encodeURIComponent(id)}`) : setEditingId(id)} />
     <form className="application-filters" aria-label="筛选投递记录" onSubmit={filter}>
@@ -143,10 +173,12 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
     {error ? <div className="content-card"><p role="alert">{error}</p><button onClick={() => { setPage(null); setReload(value => value + 1) }}>重试加载</button></div> :
       !page ? <p role="status">正在加载投递记录…</p> : page.items.length === 0 ? <div className="content-card application-empty"><h2>还没有投递记录</h2><p>{filtered ? '没有符合当前条件的投递，试试清空筛选。' : '开始记录你的下一次投递。'}</p><button type="button" onClick={() => filtered ? goTo(new URLSearchParams()) : routeMode ? navigate('/applications/new') : setEditingId(null)}>{filtered ? '清空筛选' : '新建投递'}</button></div> :
       <section className="application-list-panel" aria-labelledby="application-list-title"><div className="application-list-heading"><div><h2 id="application-list-title">投递记录</h2><p>点击公司与岗位可查看详情</p></div><span className="application-record-count">共 {page.total} 条</span></div>
-        <div className="application-table-wrap"><table className="application-table"><thead><tr><th scope="col">公司与岗位</th><th scope="col">投递链接</th><th scope="col">类型</th><th scope="col">阶段</th><th scope="col">状态</th><th scope="col">投递日期</th><th scope="col">最新日期</th><th scope="col">操作</th></tr></thead><tbody>{page.items.map(item => {
+        <div className="form-actions"><label><input type="checkbox" aria-label="选择当前页投递" checked={allVisibleSelected} onChange={event => selectVisible(event.target.checked)} />选择当前页</label>{selectedIds.size > 0 && <><span>已选择 {selectedIds.size} 条</span><button type="button" className="danger-button" disabled={Boolean(pendingId)} onClick={() => void removeSelected()}>删除所选</button><button type="button" className="quiet-button" onClick={() => setSelectedIds(new Set())}>清除选择</button></>}</div>
+        <div className="application-table-wrap"><table className="application-table"><thead><tr><th scope="col">选择</th><th scope="col">公司与岗位</th><th scope="col">投递链接</th><th scope="col">类型</th><th scope="col">阶段</th><th scope="col">状态</th><th scope="col">投递日期</th><th scope="col">最新日期</th><th scope="col">操作</th></tr></thead><tbody>{page.items.map(item => {
           const link = safeJobUrl(item.jobUrl)
           const stage = item.stages.at(-1)
           return <tr key={item.id}>
+            <td data-label="选择"><input type="checkbox" aria-label={`选择 ${item.companyName} ${item.positionName}`} checked={selectedIds.has(item.id)} onChange={() => toggleSelection(item.id)} /></td>
             <td data-label="公司与岗位"><button type="button" className="application-name-button" onClick={() => showItem(item)}><strong>{item.companyName}{item.city ? ` · ${item.city}` : ''}</strong><span>{item.positionName}</span></button></td>
             <td data-label="投递链接">{link ? <a className="application-job-link" href={link} target="_blank" rel="noopener noreferrer">{jobLinkLabel(link)} <span aria-hidden="true">↗</span></a> : <span className="application-muted">未填写</span>}</td>
             <td data-label="类型"><span className={`application-type-pill type-${item.type}`}>{types[item.type] ?? item.type}</span></td>
