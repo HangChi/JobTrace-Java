@@ -9,6 +9,6 @@
 - [x] Raise repository-wide frontend coverage to the existing 80% gate with meaningful behavior tests.
 - [x] Verify frontend lint, unit tests, build, browser performance, and the packaged application test.
 - [x] Verify the frontend coverage gate.
-- [ ] Measure application-list query plans and latency before any SQL optimization.
+- [x] Measure application-list query plans and latency before any SQL optimization.
 - [x] Run `./mvnw verify` with JVM agent attachment available.
-- [ ] Run Docker-backed integration tests when the Docker daemon is available.
+- [x] Run Docker-backed integration tests when the Docker daemon is available.

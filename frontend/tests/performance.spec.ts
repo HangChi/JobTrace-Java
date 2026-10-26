@@ -123,3 +123,37 @@ test('workspace primary navigation is reachable by keyboard', async ({ page }) =
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: '我的投递' })).toBeFocused()
 })
+
+test('guest routes and protected deep links resolve without a dead end', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({
+    status: 401,
+    contentType: 'application/problem+json',
+    body: JSON.stringify({ status: 401, title: 'Unauthorized' }),
+  }))
+
+  for (const [path, heading] of [
+    ['/login', '登录 JobTrace'],
+    ['/register', '创建账号'],
+    ['/forgot-password', '找回密码'],
+  ] as const) {
+    await page.goto(path)
+    await expect(page.getByRole('heading', { name: heading })).toBeVisible()
+    await expect(page.getByRole('heading', { name: '页面未找到' })).toHaveCount(0)
+  }
+
+  await page.goto('/applications/record-1')
+  await expect(page).toHaveURL(/\/login\?returnTo=%2Fapplications%2Frecord-1$/)
+  await expect(page.getByRole('heading', { name: '登录 JobTrace' })).toBeVisible()
+})
+
+test('ordinary users cannot open administrator deep links', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }),
+  }))
+
+  await page.goto('/admin/users/other-user')
+  await expect(page.getByRole('heading', { name: '无权访问' })).toBeVisible()
+  await expect(page.getByRole('link', { name: '管理后台' })).toHaveCount(0)
+})

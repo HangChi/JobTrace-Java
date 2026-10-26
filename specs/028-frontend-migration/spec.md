@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-08
 
-**Status**: In progress
+**Status**: Complete — validated on 2026-10-26; see [validation report](validation-report.md)
 
 **Input**: Replace the Java build's health-check-only shell with the existing JobTrace browser workflows for login, applications, interviews, reminders, analytics, profile, import and administration, using Java APIs.
 
