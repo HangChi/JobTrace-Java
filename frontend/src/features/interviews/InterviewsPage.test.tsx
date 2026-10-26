@@ -9,6 +9,38 @@ const publicItem = { id: 'p1', companyName: '公开公司', positionName: '工�
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('exports multiple selected reviews as a ZIP', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path.startsWith('/api/applications')
+    ? json({ items: [], total: 0 })
+    : json({ items: [privateItem, { ...privateItem, id: 'i2', companyName: '第二家公司' }], total: 2, nextCursor: null, limit: 20 })))
+  render(<InterviewsPage initialTab="private" navigate={vi.fn()} onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByRole('checkbox', { name: '选择 测试公司 开发 面经' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: '选择 第二家公司 开发 面经' }))
+  expect(screen.getByRole('link', { name: '导出 ZIP' })).toHaveAttribute('href', '/api/exports/interviews?id=i1&id=i2')
+})
+
+it('autosaves a private draft with its rich interview fields', async () => {
+  const fetcher = vi.fn(async (path: string, init?: RequestInit) => {
+    if (path === '/api/security/csrf') return json({ token: 'csrf' })
+    if (path.startsWith('/api/applications')) return json({ items: [], total: 0 })
+    if (path === '/api/interviews/i1' && init?.method === 'PATCH') return json({ ...detail, version: 2, highlights: '新的复盘' })
+    if (path === '/api/interviews/i1') return json(detail)
+    return json({ items: [], total: 0, nextCursor: null, limit: 20 })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<InterviewsPage initialTab="private" initialPrivateId="i1" navigate={vi.fn()} onExpired={vi.fn()} />)
+  await screen.findByRole('heading', { name: '编辑面经 · 测试公司' })
+  fireEvent.change(screen.getByLabelText('亮点'), { target: { value: '新的复盘' } })
+  fireEvent.change(screen.getByLabelText('面试形式'), { target: { value: 'online' } })
+  fireEvent.change(screen.getByLabelText('面试时长（分钟）'), { target: { value: '45' } })
+  fireEvent.change(screen.getByLabelText('面试官备注'), { target: { value: '交流顺畅' } })
+  fireEvent.click(screen.getByRole('button', { name: '添加行动' }))
+  fireEvent.change(screen.getByLabelText('行动内容'), { target: { value: '复习系统设计' } })
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/interviews/i1', expect.objectContaining({ method: 'PATCH', body: expect.stringContaining('复习系统设计') })), { timeout: 2500 })
+  const patch = fetcher.mock.calls.find(([path, init]) => path === '/api/interviews/i1' && init?.method === 'PATCH')
+  expect(patch && JSON.parse(String(patch[1]?.body))).toMatchObject({ version: 1, format: 'online', durationMinutes: 45, interviewerNotes: '交流顺畅', highlights: '新的复盘' })
+})
+
 it('filters private review rows and restores them', async () => {
   vi.stubGlobal('fetch', vi.fn(async (path: string) => path.startsWith('/api/applications')
     ? json({ items: [], total: 0 })

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { listApplications } from '../applications/api'
 import type { ApplicationSummary } from '../applications/api'
@@ -35,6 +35,11 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
   const [newStage, setNewStage] = useState('interview_1')
   const [newDate, setNewDate] = useState(today)
   const [questions, setQuestions] = useState<InterviewQuestion[]>([emptyQuestion()])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [format, setFormat] = useState<string>('')
+  const [durationMinutes, setDurationMinutes] = useState('')
+  const [interviewerNotes, setInterviewerNotes] = useState('')
+  const [actionItems, setActionItems] = useState<InterviewDetail['actionItems']>([])
   const [highlights, setHighlights] = useState('')
   const [gaps, setGaps] = useState('')
   const [status, setStatus] = useState<InterviewDetail['status']>('draft')
@@ -44,6 +49,9 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [reload, setReload] = useState(0)
+  const savedDraftRef = useRef<string | null>(null)
+  const failedDraftRef = useRef<string | null>(null)
+  const versionRef = useRef(0)
 
   useEffect(() => {
     let active = true
@@ -76,7 +84,14 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
 
   function openDetail(value: InterviewDetail) {
     setDetail(value)
+    versionRef.current = value.version
+    savedDraftRef.current = null
+    failedDraftRef.current = null
     setQuestions(value.questions.length > 0 ? value.questions : [emptyQuestion()])
+    setFormat(value.format ?? '')
+    setDurationMinutes(value.durationMinutes == null ? '' : String(value.durationMinutes))
+    setInterviewerNotes(value.interviewerNotes ?? '')
+    setActionItems(value.actionItems)
     setHighlights(value.highlights ?? '')
     setGaps(value.gaps ?? '')
     setStatus(value.status)
@@ -97,10 +112,28 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     if (visibility === 'public' && status !== 'completed') { setError('请先完成复盘，再公开面经。'); return }
     void execute(async () => {
       const validQuestions = questions.filter(item => item.question.trim()).map(item => ({ ...item, question: item.question.trim() }))
-      const value = await updatePrivateInterview(detail.id, { version: detail.version, status, visibility, authorMode, roundResult: detail.roundResult, highlights, gaps, questions: validQuestions, actionItems: detail.actionItems })
+      const value = await updatePrivateInterview(detail.id, { version: versionRef.current, status, visibility, authorMode, roundResult: detail.roundResult, format: format || null, durationMinutes: durationMinutes ? Number(durationMinutes) : null, interviewerNotes, highlights, gaps, questions: validQuestions, actionItems: actionItems.filter(item => item.content.trim()) })
       openDetail(value); setReload(index => index + 1); setNotice('面经已保存。')
     })
   }
+
+  const draftFingerprint = JSON.stringify({ questions, format, durationMinutes, interviewerNotes, highlights, gaps, actionItems })
+  useEffect(() => {
+    if (!detail || savedDraftRef.current === null) {
+      if (detail) savedDraftRef.current = draftFingerprint
+      return
+    }
+    if (status !== 'draft' || visibility !== 'private' || busy || draftFingerprint === savedDraftRef.current || draftFingerprint === failedDraftRef.current) return
+    const timer = window.setTimeout(() => {
+      setBusy(true)
+      const validQuestions = questions.filter(item => item.question.trim()).map(item => ({ ...item, question: item.question.trim() }))
+      updatePrivateInterview(detail.id, { version: versionRef.current, status: 'draft', visibility: 'private', authorMode, roundResult: detail.roundResult, format: format || null, durationMinutes: durationMinutes ? Number(durationMinutes) : null, interviewerNotes, highlights, gaps, questions: validQuestions, actionItems: actionItems.filter(item => item.content.trim()) })
+        .then(value => { versionRef.current = value.version; setDetail(value); savedDraftRef.current = draftFingerprint; setNotice('草稿已自动保存。') })
+        .catch(caught => { failedDraftRef.current = draftFingerprint; if (caught instanceof ApiError && caught.status === 401) onExpired(); else setError(message(caught)) })
+        .finally(() => setBusy(false))
+    }, 800)
+    return () => window.clearTimeout(timer)
+  }, [detail, draftFingerprint, questions, format, durationMinutes, interviewerNotes, highlights, gaps, actionItems, status, visibility, authorMode, busy, onExpired])
 
   function openPublic(id: string) {
     void execute(async () => { const [value, discussion] = await Promise.all([getPublicInterview(id), listPublicComments(id)]); setPublicDetail(value); setComments(discussion) })
@@ -142,12 +175,19 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     })
   }
 
+  function toggleSelectedInterview(id: string) {
+    if (!selectedIds.has(id) && selectedIds.size >= 100) { setError('一次最多选择 100 篇面经。'); return }
+    setSelectedIds(current => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next })
+  }
+
   const visiblePrivateItems = (privatePage?.items ?? []).filter(item =>
     item.companyName.toLocaleLowerCase().includes(privateCompany.trim().toLocaleLowerCase()) &&
     (!privateStage || item.stage === privateStage) &&
     (!privateStatus || item.status === privateStatus) &&
     (!privateResult || item.roundResult === privateResult)
   ).sort((left, right) => privateSort === 'oldest' ? left.interviewedOn.localeCompare(right.interviewedOn) : right.interviewedOn.localeCompare(left.interviewedOn))
+  const selectedExport = new URLSearchParams()
+  selectedIds.forEach(id => selectedExport.append('id', id))
 
   return <section className={`interviews-content ${tab === 'public' ? 'interview-square-page' : 'interview-private-page'}`}>
     {navigate ? tab === 'private' ? initialPrivateId || startCreating ? <div className="interview-route-actions"><button className="quiet-button interview-switch" onClick={() => navigate('/interviews/mine')}>← 返回个人面经</button></div> : null : initialPublicId ? <button className="quiet-button interview-switch" onClick={() => navigate('/interviews')}>← 返回面经广场</button> : null : <div className="segmented-tabs" role="group" aria-label="面经分类"><button aria-pressed={tab === 'private'} onClick={() => setTab('private')}>我的面经</button><button aria-pressed={tab === 'public'} onClick={() => setTab('public')}>公开面经</button></div>}
@@ -155,11 +195,11 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     {tab === 'private' ? <>
       {(!navigate || startCreating) && <form className="content-card interview-create" onSubmit={create}><h2>记录一次面试</h2><div className="form-pair"><label>关联投递<select value={newApplication} onChange={event => setNewApplication(event.target.value)} required><option value="">请选择投递</option>{applications.map(item => <option key={item.id} value={item.id}>{item.companyName} · {item.positionName}</option>)}</select></label><label>轮次<select value={newStage} onChange={event => setNewStage(event.target.value)}>{stages.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>日期<input type="date" value={newDate} onChange={event => setNewDate(event.target.value)} required /></label></div><button disabled={busy || applications.length === 0} type="submit">创建草稿</button></form>}
       {(!navigate || (!startCreating && !initialPrivateId)) && <div className="private-interview-filters" role="group" aria-label="筛选复盘记录"><label>搜索公司<input value={privateCompany} onChange={event => setPrivateCompany(event.target.value)} placeholder="公司名称" /></label><label>面试轮次<select value={privateStage} onChange={event => setPrivateStage(event.target.value)}><option value="">全部轮次</option>{stages.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>筛选状态<select value={privateStatus} onChange={event => setPrivateStatus(event.target.value)}><option value="">全部状态</option><option value="draft">草稿</option><option value="pending_review">待复盘</option><option value="completed">已完成</option></select></label><label>面试结果<select value={privateResult} onChange={event => setPrivateResult(event.target.value)}><option value="">全部结果</option><option value="pending">待反馈</option><option value="passed">通过</option><option value="failed">未通过</option></select></label><label>排序<select value={privateSort} onChange={event => setPrivateSort(event.target.value)}><option value="latest">最新面试</option><option value="oldest">最早面试</option></select></label><button type="button" className="quiet-button" onClick={() => { setPrivateCompany(''); setPrivateStage(''); setPrivateStatus(''); setPrivateResult(''); setPrivateSort('latest') }}>清除</button></div>}
-      {(!navigate || (!startCreating && !initialPrivateId)) && (!privatePage ? <p role="status">正在加载我的面经…</p> : <section className="interview-list-panel" aria-label="复盘记录"><header><h2>复盘记录</h2><span>共 {visiblePrivateItems.length} 篇</span></header>{visiblePrivateItems.length === 0 ? <p className="muted-note interview-empty">{privatePage.items.length === 0 ? '还没有面经，先记录一次面试。' : '没有符合条件的复盘记录。'}</p> : <ul className="interview-record-list">{visiblePrivateItems.map(item => <li key={item.id}><time dateTime={item.interviewedOn}>{item.interviewedOn}</time><div className="interview-record-main"><button type="button" className="interview-record-title" disabled={busy} onClick={() => navigate ? navigate(`/interviews/${encodeURIComponent(item.id)}`) : void execute(async () => openDetail(await getPrivateInterview(item.id)))}>{item.companyName} · {item.positionName}</button><small>{stages.find(([key]) => key === item.stage)?.[1] ?? item.stage} · {item.questionCount} 个问题</small></div><div className="interview-record-status"><span>{item.status === 'completed' ? '已完成' : item.status === 'pending_review' ? '待复盘' : '草稿'}</span><span>{item.roundResult === 'passed' ? '通过' : item.roundResult === 'failed' ? '未通过' : '待反馈'}</span><span>{item.visibility === 'public' ? item.authorMode === 'anonymous' ? '匿名公开' : '署名公开' : '私有'}</span></div><a href={`/api/exports/interviews?id=${encodeURIComponent(item.id)}`}>导出</a><button type="button" className="quiet-button interview-record-edit" disabled={busy} onClick={() => navigate ? navigate(`/interviews/${encodeURIComponent(item.id)}`) : void execute(async () => openDetail(await getPrivateInterview(item.id)))}>查看与编辑</button></li>)}</ul>}{privatePage.nextCursor && <button className="quiet-button" disabled={busy} onClick={morePrivate}>加载更多面经</button>}</section>)}
+      {(!navigate || (!startCreating && !initialPrivateId)) && (!privatePage ? <p role="status">正在加载我的面经…</p> : <section className="interview-list-panel" aria-label="复盘记录"><header><h2>复盘记录</h2><span>共 {visiblePrivateItems.length} 篇</span></header>{selectedIds.size > 0 && <div className="form-actions"><span>已选择 {selectedIds.size} 篇</span><a className="quiet-button" href={`/api/exports/interviews?${selectedExport}`}>{selectedIds.size === 1 ? "导出 Markdown" : "导出 ZIP"}</a><button type="button" className="quiet-button" onClick={() => setSelectedIds(new Set())}>清除选择</button></div>}{visiblePrivateItems.length === 0 ? <p className="muted-note interview-empty">{privatePage.items.length === 0 ? '还没有面经，先记录一次面试。' : '没有符合条件的复盘记录。'}</p> : <ul className="interview-record-list">{visiblePrivateItems.map(item => <li key={item.id}><input type="checkbox" aria-label={`选择 ${item.companyName} ${item.positionName} 面经`} checked={selectedIds.has(item.id)} onChange={() => toggleSelectedInterview(item.id)} /><time dateTime={item.interviewedOn}>{item.interviewedOn}</time><div className="interview-record-main"><button type="button" className="interview-record-title" disabled={busy} onClick={() => navigate ? navigate(`/interviews/${encodeURIComponent(item.id)}`) : void execute(async () => openDetail(await getPrivateInterview(item.id)))}>{item.companyName} · {item.positionName}</button><small>{stages.find(([key]) => key === item.stage)?.[1] ?? item.stage} · {item.questionCount} 个问题</small></div><div className="interview-record-status"><span>{item.status === 'completed' ? '已完成' : item.status === 'pending_review' ? '待复盘' : '草稿'}</span><span>{item.roundResult === 'passed' ? '通过' : item.roundResult === 'failed' ? '未通过' : '待反馈'}</span><span>{item.visibility === 'public' ? item.authorMode === 'anonymous' ? '匿名公开' : '署名公开' : '私有'}</span></div><a href={`/api/exports/interviews?id=${encodeURIComponent(item.id)}`}>导出</a><button type="button" className="quiet-button interview-record-edit" disabled={busy} onClick={() => navigate ? navigate(`/interviews/${encodeURIComponent(item.id)}`) : void execute(async () => openDetail(await getPrivateInterview(item.id)))}>查看与编辑</button></li>)}</ul>}{privatePage.nextCursor && <button className="quiet-button" disabled={busy} onClick={morePrivate}>加载更多面经</button>}</section>)}
       {detail && <form className="content-card interview-editor" onSubmit={save}>
         <div className="editor-heading"><h2>编辑面经 · {detail.companyName}</h2><button className="quiet-button" type="button" onClick={() => navigate ? navigate('/interviews/mine') : setDetail(null)}>关闭</button></div>
         <p>{stages.find(([key]) => key === detail.stage)?.[1] ?? detail.stage} · {detail.interviewedOn}</p>
-        <InterviewQuestionsEditor questions={questions} onChange={setQuestions} />
+        <div className="form-pair"><label>面试形式<select value={format} onChange={event => setFormat(event.target.value)}><option value="">未填写</option><option value="online">线上</option><option value="offline">线下</option><option value="phone">电话</option></select></label><label>面试时长（分钟）<input type="number" min={1} max={600} value={durationMinutes} onChange={event => setDurationMinutes(event.target.value)} /></label></div><label>面试官备注<textarea rows={3} maxLength={2000} value={interviewerNotes} onChange={event => setInterviewerNotes(event.target.value)} /></label><InterviewQuestionsEditor questions={questions} onChange={setQuestions} /><div className="interview-action-items"><h3>下一步行动</h3>{actionItems.map((item, index) => <div key={item.id ?? index} className="form-pair"><label>行动内容<input value={item.content} maxLength={1000} onChange={event => setActionItems(current => current.map((entry, position) => position === index ? { ...entry, content: event.target.value } : entry))} /></label><label><input type="checkbox" checked={item.completed} onChange={event => setActionItems(current => current.map((entry, position) => position === index ? { ...entry, completed: event.target.checked } : entry))} />已完成</label><button type="button" className="quiet-button" onClick={() => setActionItems(current => current.filter((_, position) => position !== index))}>移除行动</button></div>)}<button type="button" className="quiet-button" onClick={() => setActionItems(current => [...current, { content: "", completed: false }])}>添加行动</button></div>
         <label>亮点<textarea rows={3} value={highlights} onChange={event => setHighlights(event.target.value)} /></label>
         <label>待改进<textarea rows={3} value={gaps} onChange={event => setGaps(event.target.value)} /></label>
         <div className="form-pair"><label>复盘状态<select value={status} onChange={event => setStatus(event.target.value as InterviewDetail['status'])}><option value="draft">草稿</option><option value="pending_review">待复盘</option><option value="completed">已完成</option></select></label><label>可见范围<select value={visibility} onChange={event => setVisibility(event.target.value as InterviewDetail['visibility'])}><option value="private">仅自己可见</option><option value="public">公开</option></select></label><label>公开身份<select value={authorMode} onChange={event => setAuthorMode(event.target.value as InterviewDetail['authorMode'])}><option value="anonymous">匿名</option><option value="attributed">展示用户名</option></select></label></div>

@@ -34,6 +34,26 @@ it('does not render a non-HTTPS destination as an application link', async () =>
   expect(screen.getByText('暂无入口')).toBeInTheDocument()
 })
 
+it('blocks application actions for closed campaigns and expands every position and location', async () => {
+  const closed = { ...campaign, status: 'closed', positions: ['甲岗位', '乙岗位', '丙岗位'], positionCount: 3, locations: [{ name: '北京' }, { name: '上海' }, { name: '深圳' }] }
+  vi.stubGlobal('fetch', vi.fn(async () => json({ ...page, items: [closed] })))
+  render(<JobMarketPage search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  expect(await screen.findByText('招聘记录已失效')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '记录投递' })).toBeDisabled()
+  expect(screen.queryByRole('link', { name: /立即投递/ })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByText('查看全部岗位'))
+  fireEvent.click(screen.getByText('查看全部地点'))
+  expect(screen.getByText('丙岗位')).toBeInTheDocument()
+  expect(screen.getByText('深圳')).toBeInTheDocument()
+})
+
+it('labels a truncated position projection as a summary', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => json({ ...page, items: [{ ...campaign, positionCount: 80, positions: ['前端', '后端'] }] })))
+  render(<JobMarketPage search="" navigate={vi.fn()} onExpired={vi.fn()} />)
+  fireEvent.click(await screen.findByText('查看岗位摘要（共 80 个）'))
+  expect(screen.getByText('这里只展示前 2 个岗位，请前往招聘官网查看全部。')).toBeInTheDocument()
+})
+
 it('keeps filters while paging and toggling the favorites view', async () => {
   const navigate = vi.fn()
   vi.stubGlobal('fetch', vi.fn(async () => json({ ...page, page: 2, total: 45, limit: 20 })))

@@ -27,6 +27,19 @@ it('previews without importing, then confirms only the selected row', async () =
   expect(await screen.findByRole('heading', { name: '导入完成' })).toBeInTheDocument()
 })
 
+it('allows review and explicit selection of a duplicate after the first hundred rows', async () => {
+  const rows = Array.from({ length: 101 }, (_, index) => ({ rowNumber: index + 2, data: { companyName: `公司${index}`, positionName: '开发', appliedDate: '2026-10-08' }, errors: [], duplicateApplicationIds: index === 100 ? ['existing'] : [] }))
+  vi.stubGlobal('fetch', vi.fn(async path => path === '/api/imports/preview' ? json({ ...preview, rows, totalRows: 101 }) : json({ token: 'csrf' })))
+  render(<ImportPage onExpired={vi.fn()} />)
+  fireEvent.change(screen.getByLabelText('选择 CSV 或 XLSX 文件'), { target: { files: [new File(['x'], 'rows.csv')] } })
+  fireEvent.submit(screen.getByRole('button', { name: '预览文件' }).closest('form')!)
+  expect(await screen.findByRole('heading', { name: '导入预览' })).toBeInTheDocument()
+  expect(screen.queryByRole('checkbox', { name: '导入第 102 行' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /显示更多行/ }))
+  fireEvent.click(screen.getByRole('checkbox', { name: '导入第 102 行' }))
+  expect(screen.getByRole('checkbox', { name: '导入第 102 行' })).toBeChecked()
+})
+
 it('keeps invalid rows disabled and allows a duplicate row only after explicit selection', async () => {
   const mixed = { ...preview, totalRows: 3, validRows: 2, invalidRows: 1, rows: [...preview.rows, { rowNumber: 4, data: { companyName: 123, positionName: null }, errors: [{ field: 'companyName', message: '公司名称无效' }], duplicateApplicationIds: [] }] }
   const fetcher = vi.fn(async (path: string) => path === '/api/security/csrf' ? json({ token: 'csrf' }) : path === '/api/imports/preview' ? json(mixed) : json({ created: 0, skipped: 1, failed: 1, rows: [{ rowNumber: 3, error: { message: '重复记录' } }] }))
