@@ -130,7 +130,7 @@ describe('App authentication', () => {
 
   it('opens a shared interview detail directly instead of returning to the list', async () => {
     window.history.replaceState(null, '', '/interviews/shared/p1')
-    const interview = { id: 'p1', companyName: '公开公司', positionName: '开发', interviewedOn: '2026-10-08', author: { username: '匿名' }, highlights: '经验总结', gaps: null, questions: [], engagement: { likedByViewer: false, likeCount: 2, commentCount: 0, viewCount: 0 } }
+    const interview = { id: 'p1', companyName: '公开公司', positionName: '开发', stage: 'interview_1', city: null, publishedAt: '2026-10-09T00:00:00Z', interviewedOn: '2026-10-08', author: { username: '匿名' }, highlights: '经验总结', gaps: null, questions: [], engagement: { likedByViewer: false, likeCount: 2, commentCount: 0, viewCount: 0 } }
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json(session) : path === '/api/interviews/public/p1' ? json(interview) : path === '/api/interviews/public/p1/comments' ? json([]) : path.startsWith('/api/interviews/public?') ? json({ items: [], total: 0, nextCursor: null, limit: 20 }) : json(emptyApplications)))
     render(<App />)
     expect(await screen.findByRole('heading', { name: '公开公司 · 开发' })).toBeInTheDocument()

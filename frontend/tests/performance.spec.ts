@@ -226,7 +226,7 @@ test('interview and analytics layouts support long content and responsive filter
     const card = page.locator('.public-feed-card').first()
     await expect(card).toBeVisible()
     expect((await card.boundingBox())!.height).toBeLessThan(640)
-    const question = card.locator('.public-feed-preview-question')
+    const question = card.locator('.public-feed-excerpt')
     expect(await question.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true)
     const city = page.getByRole('combobox', { name: '城市', exact: true })
     await city.focus()
@@ -493,5 +493,69 @@ test('color hierarchy preserves the brand and readable semantic text', async ({ 
     await page.setViewportSize({ width, height: 1000 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
     await page.screenshot({ path: test.info().outputPath(`color-login-${width}.png`), fullPage: true })
+  }
+})
+
+
+test('full public interviews keep a readable document and separate discussion on desktop and mobile', async ({ page }) => {
+  const post = { id: 'p1', companyName: '星河科技', positionName: 'AI 应用与平台研发工程师', city: '上海', stage: 'interview_1', interviewedOn: '2026-10-08', publishedAt: '2026-10-09T00:00:00Z', questionCount: 1, author: { username: '分享者', image: null }, engagement: { likeCount: 0, commentCount: 0, viewCount: 1, likedByViewer: false }, highlights: null, gaps: null, questions: [{ category: 'other', question: '# 面试记录\n\n围绕项目经历和系统设计展开交流。\n\n## 项目交流\n\n- 介绍项目背景\n- 说明技术取舍\n\n> 面试前整理关键决策。\n\n```typescript\nconst result = "' + 'x'.repeat(180) + '";\n```', originalAnswer: null, followUpNotes: null, improvedAnswer: null }], recentComments: [] }
+  const fulfill = (value: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+  await page.route('**/api/auth/session', route => route.fulfill(fulfill({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } })))
+  await page.route('**/api/security/csrf', route => route.fulfill(fulfill({ token: 'test-csrf' })))
+  await page.route('**/api/applications**', route => route.fulfill(fulfill({ items: [], total: 0 })))
+  await page.route('**/api/interviews**', route => {
+    const url = new URL(route.request().url())
+    if (url.pathname.endsWith('/like')) return route.fulfill(fulfill({ ...post.engagement, likeCount: 1, likedByViewer: true }))
+    if (url.pathname.endsWith('/comments')) {
+      if (route.request().method() === 'POST') return route.fulfill(fulfill({ comment: { id: 'c1', content: '感谢分享，准备方向很清晰。', createdAt: '2026-10-10T00:00:00Z', author: { username: '测试用户', image: null } }, engagement: { ...post.engagement, commentCount: 1 } }))
+      return route.fulfill(fulfill([]))
+    }
+    if (url.pathname.endsWith('/public/p1')) return route.fulfill(fulfill(post))
+    return route.fulfill(fulfill({ items: [post], total: 1, nextCursor: null, limit: 20, facets: { cities: ['上海'], positions: [] } }))
+  })
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/interviews')
+    await page.getByRole('button', { name: '查看完整面经' }).click()
+    await expect(page).toHaveURL(/shared\/p1$/)
+    await expect(page.getByRole('heading', { name: '星河科技 · AI 应用与平台研发工程师', level: 1 })).toBeVisible()
+    const body = page.getByRole('region', { name: '面经正文' })
+    await expect(body.getByRole('heading', { name: '面试记录', level: 2 })).toBeVisible()
+    await expect(body.getByRole('list')).toBeVisible()
+    await expect(page.locator('.public-feed-sidebar')).toBeHidden()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    expect(await body.locator('pre').evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true)
+    await page.getByRole('button', { name: '点赞 · 0', exact: true }).click()
+    await expect(page.getByRole('button', { name: '取消点赞 · 1' })).toHaveAttribute('aria-pressed', 'true')
+    await page.getByLabel('发表评论').fill('感谢分享，准备方向很清晰。')
+    await page.getByRole('button', { name: '提交评论' }).click()
+    await expect(page.locator('.public-comment-list')).toContainText('感谢分享，准备方向很清晰。')
+    await page.screenshot({ path: test.info().outputPath(`public-reading-${width}.png`), fullPage: true })
+    await page.getByRole('button', { name: '返回面经广场' }).click()
+    await expect(page).toHaveURL(/\/interviews$/)
+  }
+})
+
+
+test('export menu keeps its chevron aligned and opens by keyboard', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }) }))
+  await page.route('**/api/applications**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [], total: 0, page: 1, limit: 10 }) }))
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto('/applications')
+    const menu = page.locator('.workspace-header-actions .application-export-menu')
+    const trigger = menu.locator('summary')
+    await expect(trigger).toHaveText('导出')
+    const label = (await trigger.locator('span').boundingBox())!
+    const icon = (await trigger.locator('svg').boundingBox())!
+    expect(Math.abs(label.y + label.height / 2 - icon.y - icon.height / 2)).toBeLessThan(1)
+    expect(icon.x - label.x - label.width).toBe(8)
+    await trigger.focus()
+    await page.keyboard.press('Enter')
+    await expect(menu).toHaveAttribute('open', '')
+    await expect(menu.getByRole('link', { name: 'Excel 工作簿 .xlsx' })).toHaveAttribute('href', /format=xlsx/)
+    await page.screenshot({ path: test.info().outputPath(`export-menu-${width}.png`) })
+    await page.keyboard.press('Enter')
+    await expect(menu).not.toHaveAttribute('open')
   }
 })

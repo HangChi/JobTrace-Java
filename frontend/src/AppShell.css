@@ -241,3 +241,7 @@ select:not([multiple]):not([size]):focus-visible{outline:2px solid var(--brand);
 @media(max-width:700px){.auth-register-form{grid-template-columns:1fr}}
 @media(max-width:560px){.auth-layout{align-content:start;width:calc(100% - 24px);min-height:100dvh;padding:12px 0}.auth-intro{padding:22px 18px 0}.auth-panel{padding:0 18px 22px}.auth-heading{margin:25px 0 20px}}
 @media(max-width:560px){.auth-layout-register .auth-intro{padding:22px 18px 0}.auth-layout-register .auth-panel{padding:0 18px 22px}}
+
+.application-export-menu summary { justify-content: center; gap: 8px; line-height: 1.4; }
+.export-menu-chevron { display: block; flex: none; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
+.application-export-menu[open] .export-menu-chevron { transform: rotate(180deg); }
