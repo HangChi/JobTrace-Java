@@ -13,6 +13,7 @@ test('market details stay compact and status controls remain keyboard operable',
     const row = page.getByRole('row').filter({ hasText: '星河科技' })
     await expect(row).toBeVisible()
     const rowHeight = (await row.boundingBox())!.height
+    await page.screenshot({ path: test.info().outputPath(`color-market-${width}.png`), fullPage: true })
     await page.getByRole('button', { name: '查看全部岗位' }).click()
     const positions = page.getByRole('dialog', { name: '星河科技的岗位列表' })
     await expect(positions).toBeVisible()
@@ -316,5 +317,181 @@ test('private reviews keep statuses visible and editing controls usable at suppo
     await expect(page.getByRole('button', { name: '创建草稿' })).toBeEnabled()
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
     await page.screenshot({ path: test.info().outputPath(`private-create-${width}.png`), fullPage: true })
+  }
+})
+
+test('profile settings stay readable and operable across supported widths', async ({ page }) => {
+  let profile = { id: 'user-0123456789-abcdefghij-0123456789', displayName: '求职记录用户', image: '/test-avatar.svg', recoveryEmail: 'candidate@example.test', emailVerified: true }
+  let preferences = { homeEnabled: true, homeView: 'scheduled', defaultLead: '1h', defaultSnoozeMinutes: 30, emailDefault: false }
+  const sessions = [{ id: 's1', createdAt: '2026-10-27T08:00:00Z', expiresAt: '2026-11-27T08:00:00Z', userAgent: 'Chrome / macOS', current: true }, { id: 's2', createdAt: '2026-10-20T08:00:00Z', expiresAt: '2026-11-20T08:00:00Z', userAgent: 'Mozilla/5.0 Chrome 浏览器 · Windows 11 · 已登录的其他设备', current: false }]
+  const fulfill = (value: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+  await page.route('**/api/auth/session', route => route.fulfill(fulfill({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } })))
+  await page.route('**/api/security/csrf', route => route.fulfill(fulfill({ token: 'test-csrf' })))
+  await page.route('**/api/profile', route => {
+    if (route.request().method() === 'PATCH') profile = { ...profile, ...route.request().postDataJSON() }
+    return route.fulfill(fulfill(profile))
+  })
+  await page.route('**/api/profile/sessions', route => route.fulfill(fulfill(sessions)))
+  await page.route('**/api/reminder-settings', route => {
+    if (route.request().method() === 'PATCH') preferences = route.request().postDataJSON()
+    return route.fulfill(fulfill(preferences))
+  })
+  await page.route('**/test-avatar*.svg', route => route.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="#087f73"/><circle cx="32" cy="24" r="10" fill="white"/><path d="M14 54a18 18 0 0136 0" fill="white"/></svg>' }))
+  await page.route('**/api/profile/avatar', route => route.fulfill(fulfill({ url: '/test-avatar-new.svg' })))
+  for (const [width, height] of [[1440, 1000], [375, 812], [812, 375]]) {
+    await page.setViewportSize({ width, height })
+    profile = { ...profile, image: '/test-avatar.svg' }
+    await page.goto('/profile')
+    await expect(page.getByRole('heading', { name: '个人中心', exact: true })).toBeVisible()
+    const avatar = page.locator('.account-menu .avatar img')
+    await expect(avatar).toBeVisible()
+    await expect(avatar).toHaveAttribute('src', '/test-avatar.svg')
+    await page.getByLabel('上传头像', { exact: true }).setInputFiles({ name: 'avatar.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') })
+    await expect(page.getByRole('status')).toHaveText('头像已更新。')
+    await expect(avatar).toHaveAttribute('src', '/test-avatar-new.svg')
+    await expect(avatar).toHaveJSProperty('naturalWidth', 64)
+    await page.locator('.account-menu').screenshot({ path: test.info().outputPath(`account-avatar-${width}.png`) })
+    await page.getByRole('button', { name: '移除头像', exact: true }).click()
+    await expect(avatar).toHaveCount(0)
+    const menu = page.locator('.account-menu')
+    await menu.locator('summary').focus()
+    await page.keyboard.press('Enter')
+    await expect(menu.locator('.account-popover')).toBeVisible()
+    expect(await menu.locator('.menu-chevron').evaluate(el => el.tagName.toLowerCase())).toBe('svg')
+    expect((await menu.locator('.menu-chevron').boundingBox())!.width).toBe(16)
+    await menu.getByRole('link', { name: '个人中心', exact: true }).click()
+    await expect(menu).not.toHaveAttribute('open')
+    const name = page.getByRole('textbox', { name: '显示名称', exact: true })
+    await name.fill('我的求职记录')
+    await page.getByRole('button', { name: '保存资料', exact: true }).click()
+    await expect(page.getByRole('status')).toHaveText('个人资料已保存。')
+    await expect(page.locator('.account-menu .user-summary strong')).toHaveText('我的求职记录')
+    await page.getByRole('navigation', { name: '个人中心分区' }).getByRole('link', { name: '提醒设置', exact: true }).click()
+    const home = page.getByRole('checkbox', { name: '在首页显示提醒' })
+    await home.focus()
+    const wasChecked = await home.isChecked()
+    await page.keyboard.press('Space')
+    await expect(home).toBeChecked({ checked: !wasChecked })
+    expect((await home.boundingBox())!.width).toBeLessThanOrEqual(20)
+    await page.getByRole('combobox', { name: '默认提前量', exact: true }).selectOption('30m')
+    const settingsRequest = page.waitForRequest(req => req.url().endsWith('/api/reminder-settings') && req.method() === 'PATCH')
+    await page.getByRole('button', { name: '保存提醒设置', exact: true }).click()
+    expect((await settingsRequest).postDataJSON()).toMatchObject({ defaultLead: '30m', homeEnabled: !wasChecked })
+    await expect(page.getByRole('status')).toHaveText('提醒设置已保存。')
+    await page.getByRole('navigation', { name: '个人中心分区' }).getByRole('link', { name: '账号安全', exact: true }).click()
+    await expect(page.getByRole('region', { name: '安全邮箱', exact: true })).toBeVisible()
+    await expect(page.getByRole('region', { name: '修改密码', exact: true })).toBeVisible()
+    await expect(page.getByRole('region', { name: '登录设备', exact: true })).toBeVisible()
+    const nav = page.getByRole('navigation', { name: '个人中心分区' })
+    await nav.getByRole('link', { name: '账号信息', exact: true }).click()
+    await expect(page).toHaveURL(/#profile-account$/)
+    await expect(page.getByRole('heading', { name: '账号信息', exact: true })).toBeInViewport()
+    await nav.getByRole('link', { name: '数据管理', exact: true }).click()
+    await expect(page.getByRole('link', { name: '导出投递 Excel', exact: true })).toHaveAttribute('href', '/api/exports/applications?scope=all&format=xlsx')
+    await page.evaluate(() => scrollTo(0, 0))
+    for (const section of ['个人资料', '提醒设置', '账号安全', '数据管理', '账号信息']) {
+      await nav.getByRole('link', { name: section, exact: true }).click()
+      await expect(nav.getByRole('link', { name: section, exact: true })).toHaveAttribute('aria-current', 'location')
+      await expect(page.locator('.profile-content>.content-card:visible')).toHaveCount(1)
+      expect(await page.evaluate(() => scrollY)).toBe(0)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+      await page.screenshot({ path: test.info().outputPath(`profile-${section}-${width}.png`), fullPage: true })
+    }
+    await nav.getByRole('link', { name: '个人资料', exact: true }).click()
+    await expect(name).toHaveValue('我的求职记录')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`profile-${width}.png`), fullPage: true })
+  }
+})
+
+test('application statuses stay centered with and without follow-up reminders', async ({ page }) => {
+  const base = { companyName: '状态对齐公司', positionName: '研发工程师', city: null, jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-10', type: 'campus_recruitment', stages: ['interview_1'], version: 1 }
+  const items = [
+    { ...base, id: 'a1', status: 'submitted', needsFollowUp: false, followUpDays: 0, followUpReason: null },
+    { ...base, id: 'a2', status: 'offer', needsFollowUp: true, followUpDays: 17, followUpReason: 'timeline' },
+    { ...base, id: 'a3', status: 'refused', needsFollowUp: true, followUpDays: 120, followUpReason: 'application' },
+  ]
+  const fulfill = (value: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+  await page.route('**/api/auth/session', route => route.fulfill(fulfill({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } })))
+  await page.route('**/api/security/csrf', route => route.fulfill(fulfill({ token: 'test-csrf' })))
+  await page.route('**/api/applications**', route => {
+    if (route.request().method() === 'PATCH') {
+      const item = items[0]
+      item.status = route.request().postDataJSON().status
+      return route.fulfill(fulfill({ id: item.id, status: item.status, latestDate: item.latestDate, version: 2 }))
+    }
+    return route.fulfill(fulfill({ items, total: 3, page: 1, limit: 10, nextCursor: null }))
+  })
+  for (const [width, height] of [[1440, 1000], [375, 812], [812, 375]]) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/applications')
+    const cells = page.locator('.application-status-cell')
+    await expect(cells).toHaveCount(3)
+    const rowHeights: number[] = []
+    const statusHeights: number[] = []
+    for (const cell of await cells.all()) {
+      const control = cell.getByRole('combobox')
+      const box = (await control.boundingBox())!
+      expect(box.width).toBeLessThanOrEqual(90)
+      expect(box.height).toBeLessThanOrEqual(34)
+      const stack = (await cell.locator('.application-status-stack').boundingBox())!
+      expect(Math.abs(box.y + box.height / 2 - stack.y - stack.height / 2)).toBeLessThan(1)
+      statusHeights.push(stack.height)
+      const style = await control.evaluate(el => { const css = getComputedStyle(el); return { left: css.paddingLeft, right: css.paddingRight, align: css.textAlign } })
+      expect(style.left).toBe(style.right)
+      expect(style.align).toBe('center')
+      await expect(control).toHaveCSS('border-radius', '999px')
+      const colors: Record<string, string> = { submitted: 'rgb(237, 247, 241)', offer: 'rgb(251, 244, 230)', refused: 'rgb(252, 240, 242)' }
+      await expect(control).toHaveCSS('background-color', colors[await control.inputValue()])
+      const row = (await cell.locator('..').boundingBox())!
+      rowHeights.push(row.height)
+      const reminder = cell.locator('.follow-up')
+      if (await reminder.count()) {
+        const reminderBox = (await reminder.boundingBox())!
+        expect(reminderBox.y).toBeGreaterThanOrEqual(box.y + box.height)
+        expect(reminderBox.y + reminderBox.height).toBeLessThanOrEqual(row.y + row.height + 1)
+      }
+      if (width > 700) {
+        const date = (await cell.locator('..').locator('time').first().boundingBox())!
+        expect(Math.abs(box.y + box.height / 2 - date.y - date.height / 2)).toBeLessThan(2)
+      }
+    }
+    expect(Math.max(...statusHeights) - Math.min(...statusHeights)).toBeLessThan(1)
+    if (width > 700) expect(Math.max(...rowHeights) - Math.min(...rowHeights)).toBeLessThan(1)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`application-status-${width}.png`), fullPage: true })
+    const control = cells.first().getByRole('combobox')
+    const statusRequest = page.waitForRequest(req => req.url().endsWith('/api/applications/a1/status') && req.method() === 'PATCH')
+    const nextStatus = items[0].status === 'offer' ? 'submitted' : 'offer'
+    await control.selectOption(nextStatus)
+    await statusRequest
+    await expect(control).toHaveValue(nextStatus)
+    await expect(control).toHaveCSS('background-color', nextStatus === 'offer' ? 'rgb(251, 244, 230)' : 'rgb(237, 247, 241)')
+  }
+})
+
+test('color hierarchy preserves the brand and readable semantic text', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ code: 'unauthorized', detail: '请登录' }) }))
+  await page.goto('/login')
+  await expect(page.getByRole('heading', { name: '登录 JobTrace', exact: true })).toBeVisible()
+  const colors = await page.evaluate(() => {
+    const css = getComputedStyle(document.documentElement)
+    return Object.fromEntries(['brand', 'brand-dark', 'brand-soft', 'ink', 'muted', 'paper', 'surface', 'accent-info', 'accent-info-soft', 'accent-warm', 'accent-warm-soft', 'accent-review', 'accent-review-soft', 'accent-danger', 'accent-danger-soft'].map(name => [name, css.getPropertyValue(`--${name}`).trim()]))
+  })
+  expect({ brand: colors.brand, dark: colors['brand-dark'], soft: colors['brand-soft'] }).toEqual({ brand: '#357f78', dark: '#246b64', soft: '#e4f4ef' })
+  function luminance(hex: string) {
+    const full = hex.length === 4 ? '#' + hex.slice(1).split('').map(value => value + value).join('') : hex
+    const channels = [1, 3, 5].map(index => parseInt(full.slice(index, index + 2), 16) / 255).map(value => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+    return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722
+  }
+  for (const [foreground, background] of [['ink', 'surface'], ['muted', 'surface'], ['muted', 'paper'], ['brand', 'surface'], ['accent-info', 'accent-info-soft'], ['accent-warm', 'accent-warm-soft'], ['accent-review', 'accent-review-soft'], ['accent-danger', 'accent-danger-soft']]) {
+    const a = luminance(colors[foreground]); const b = luminance(colors[background])
+    expect((Math.max(a, b) + .05) / (Math.min(a, b) + .05), `${foreground} on ${background}`).toBeGreaterThanOrEqual(4.5)
+  }
+  await expect(page.getByRole('button', { name: '登录', exact: false })).toHaveCSS('background-color', 'rgb(53, 127, 120)')
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 1000 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`color-login-${width}.png`), fullPage: true })
   }
 })
