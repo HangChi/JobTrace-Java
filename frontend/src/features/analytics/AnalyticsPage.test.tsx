@@ -69,6 +69,8 @@ it('shows empty insights and recovers after a failed report request', async () =
   fireEvent.click(screen.getByRole('button', { name: '重试' }))
   expect(await screen.findByText('所选周期暂无投递。')).toBeInTheDocument()
   expect(screen.getByText('尚无阶段数据。')).toBeInTheDocument()
+  expect(screen.getByText('所选范围暂无招聘类型数据。')).toBeInTheDocument()
+  expect(screen.getByText('所选范围暂无城市数据。')).toBeInTheDocument()
   expect(screen.getByText('部分记录缺少城市。')).toBeInTheDocument()
   expect(screen.getByText(/还没有面经数据/)).toBeInTheDocument()
   expect(screen.getByText('目前没有待处理的进度提醒。')).toBeInTheDocument()
@@ -84,4 +86,18 @@ it('reports reminder resolution failure and leaves the reminder actionable', asy
   expect(await screen.findByRole('alert')).toHaveTextContent('提醒状态已变化')
   expect(screen.getByRole('button', { name: '忽略' })).toBeEnabled()
   expect(fetcher).toHaveBeenCalledWith('/api/analytics/progress-reminders/stage1/resolve', expect.objectContaining({ body: JSON.stringify({ resolution: 'dismissed' }) }))
+})
+
+
+it('shows populated breakdowns, missing metrics and review results without losing range context', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/analytics/summary' ? json({ ...summary, progressReminders: [] }) : json({ ...report, query: { period: 'all' }, metrics: { applications: { value: 8 }, interviewRate: { value: 25 }, medianDaysToFirstInterview: { value: null } }, biggestDrop: { count: 3 }, milestones: [{ key: 'interviews', label: '面试', count: 2, conversionFromPrevious: 25 }], typeBreakdown: [{ key: 'campus', label: '校园招聘', applications: 8, interviewRate: 25, offerRate: 0 }], cityBreakdown: [{ key: 'sh', label: '上海市', applications: 8, interviewRate: 25, offerRate: 0 }], interviews: { ...report.interviews, resolved: 0, byStage: [{ stage: 'interview_1', results: { passed: 0, failed: 0, pending: 2 } }] } })))
+  const onOverview = vi.fn()
+  render(<AnalyticsPage onExpired={vi.fn()} onOverview={onOverview} />)
+  expect(await screen.findByText('校园招聘')).toBeInTheDocument()
+  expect(screen.getByText('上海市')).toBeInTheDocument()
+  expect(screen.getByText('上一步转化 25%')).toBeInTheDocument()
+  expect(screen.getByText('最大流失 3 个机会')).toBeInTheDocument()
+  expect(screen.getByText('通过 0 · 未通过 0 · 待反馈 2')).toBeInTheDocument()
+  expect(screen.queryByText('所选范围暂无城市数据。')).not.toBeInTheDocument()
+  expect(onOverview).toHaveBeenCalledWith({ period: '全部历史', applications: 8, interviews: 2 })
 })

@@ -202,3 +202,51 @@ test('ordinary users cannot open administrator deep links', async ({ page }) => 
   await expect(page.getByRole('heading', { name: '无权访问' })).toBeVisible()
   await expect(page.getByRole('link', { name: '管理后台' })).toHaveCount(0)
 })
+
+
+test('interview and analytics layouts support long content and responsive filters', async ({ page }) => {
+  const summary = { total: 8, submitted: 5, refused: 2, offers: 1, addedThisWeek: 2, stageDistribution: {}, followUps: [], progressReminders: [{ id: 'p1', companyName: '测试公司', positionName: '开发', stageOccurrenceId: 'stage1', stage: '一面', occurredOn: '2026-10-08', reviewStatus: null, completed: false }] }
+  const report = { query: { period: '90d' }, availableCities: ['上海'], metrics: { applications: { value: 8, previous: 4, delta: 100, deltaKind: 'percent' } }, trend: [{ periodStart: '2026-10-01', label: '10/01', applications: 8, interviewed: 2, offers: 1 }], milestones: [{ key: 'applications', label: '投递', count: 8, conversionFromPrevious: null }], stageReach: [{ stage: 'interview_1', count: 2, rate: 25 }], interviews: { total: 2, completed: 1, completionRate: 50, resolved: 1, passed: 1, passRate: 100, byStage: [] }, typeBreakdown: [], cityBreakdown: [], summary: ['本周期投递量上升。'], dataQuality: [], sampleSufficient: true }
+  const post = { id: 'p1', companyName: '公开公司', positionName: '工程师', city: null, stage: 'interview_1', interviewedOn: '2026-10-08', publishedAt: '2026-10-08T00:00:00Z', questionCount: 1, author: { username: '匿名', image: null }, engagement: { likeCount: 0, commentCount: 0, viewCount: 1, likedByViewer: false }, highlights: '经验总结', gaps: null, questions: [{ category: 'other', question: '如何准备？', originalAnswer: '', followUpNotes: null, improvedAnswer: null }], recentComments: [] }
+  Object.assign(report.metrics, { interviewRate: { value: 25 }, offerRate: { value: 12.5 }, medianDaysToFirstInterview: { value: 7 }, reviewCompletionRate: { value: 50 } })
+  report.milestones.push({ key: 'interviews', label: '面试', count: 2, conversionFromPrevious: null }, { key: 'offers', label: 'Offer', count: 1, conversionFromPrevious: null })
+  post.questions[0].question = '请介绍你如何设计一个高可用的任务调度系统？'.repeat(15)
+  post.questions[0].originalAnswer = '通过分片调度、重试与幂等控制保证任务执行。'.repeat(40)
+  const fulfill = (value: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+  await page.route('**/api/auth/session', route => route.fulfill(fulfill({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } })))
+  await page.route('**/api/applications**', route => route.fulfill(fulfill({ items: [], total: 0 })))
+  await page.route('**/api/interviews**', route => route.fulfill(fulfill({ items: [], total: 0, nextCursor: null, limit: 20 })))
+  await page.route('**/api/interviews/public**', route => route.fulfill(fulfill({ items: [post], total: 1, nextCursor: null, limit: 20, facets: { cities: ['上海'], positions: ['工程师'] } })))
+  await page.route('**/api/analytics/summary', route => route.fulfill(fulfill(summary)))
+  await page.route('**/api/analytics/report**', route => route.fulfill(fulfill(report)))
+  for (const [width, height] of [[1440, 1000], [375, 812], [812, 375]]) {
+    await page.setViewportSize({ width, height })
+    await page.goto('/interviews')
+    const card = page.locator('.public-feed-card').first()
+    await expect(card).toBeVisible()
+    expect((await card.boundingBox())!.height).toBeLessThan(640)
+    const question = card.locator('.public-feed-preview-question')
+    expect(await question.evaluate(el => el.scrollHeight > el.clientHeight)).toBe(true)
+    const city = page.getByRole('combobox', { name: '城市', exact: true })
+    await city.focus()
+    await expect(city).toBeFocused()
+    await city.selectOption('上海')
+    await expect(city).toHaveValue('上海')
+    await page.getByRole('button', { name: '按热度', exact: true }).click()
+    await expect(page.getByRole('button', { name: '按热度', exact: true })).toHaveAttribute('aria-pressed', 'true')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`interviews-${width}.png`), fullPage: true })
+    await page.goto('/analytics')
+    await expect(page.getByRole('heading', { name: '投递趋势', exact: true })).toBeVisible()
+    const period = page.getByRole('combobox', { name: '周期', exact: true })
+    await period.focus()
+    await expect(period).toBeFocused()
+    await period.selectOption('30d')
+    const request = page.waitForRequest(req => req.url().includes('/api/analytics/report?period=30d'))
+    await page.getByRole('button', { name: '应用筛选', exact: true }).click()
+    await request
+    await expect(page.getByRole('heading', { name: '投递趋势', exact: true })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`analytics-${width}.png`), fullPage: true })
+  }
+})

@@ -111,7 +111,7 @@ describe('App authentication', () => {
     window.history.replaceState(null, '', '/interviews/public')
     vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json(session) : path.startsWith('/api/interviews/public?') ? json({ items: [], nextCursor: null, total: 0, limit: 20, facets: { cities: [], positions: [] } }) : json({ items: [], nextCursor: null, total: 0, limit: 20 })))
     render(<App />)
-    expect(await screen.findByRole('heading', { name: '最新面经' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '面经分享' })).toBeInTheDocument()
     window.history.pushState(null, '', '/no-such-page')
     window.dispatchEvent(new PopStateEvent('popstate'))
     expect(await screen.findByRole('heading', { name: '页面未找到', level: 1 })).toBeInTheDocument()
@@ -135,7 +135,7 @@ describe('App authentication', () => {
     render(<App />)
     expect(await screen.findByRole('heading', { name: '公开公司 · 开发' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /返回面经广场/ })).toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: '最新面经' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: '面经分享' })).not.toBeInTheDocument()
   })
 
   it('opens the administrator user archive on its legacy URL', async () => {

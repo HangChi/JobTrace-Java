@@ -1,0 +1,157 @@
+/* Shared, restrained refinements for reading and reviewing job-search activity. */
+.interview-square-page .public-feed-toolbar {
+  display: block;
+  margin: 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.interview-square-page .public-company-search {
+  grid-template-columns: minmax(180px, 1.5fr) minmax(110px, .8fr) minmax(140px, 1fr) auto;
+  align-items: end;
+  gap: 14px;
+}
+.interview-square-page .public-company-search-field {
+  position: relative;
+  display: grid;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.interview-square-page .public-filter-label {
+  color: var(--muted);
+  font-size: .78rem;
+  font-weight: 650;
+}
+.interview-square-page .public-company-search-field svg { position: absolute; left: 12px; bottom: 13px; }
+.interview-square-page .public-company-search-field input {
+  min-height: 44px;
+  padding: 9px 12px 9px 38px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+}
+.interview-square-page .public-filter-select { display: grid; min-width: 0; gap: 7px; }
+.interview-square-page .public-filter-select select { min-height: 44px; padding-inline: 12px; }
+.interview-square-page .public-sort-control {
+  grid-column: auto;
+  min-height: 44px;
+  padding: 3px;
+  gap: 3px;
+  border-color: var(--line);
+  background: var(--surface-soft, #f4f8f6);
+}
+.interview-square-page .public-sort-control button { min-height: 36px; padding: 7px 12px; border: 0; border-radius: 5px; background: transparent; }
+.interview-square-page .public-sort-control button[aria-pressed=true] { background: #fff; color: var(--brand-dark); box-shadow: 0 1px 3px rgb(20 60 50 / 10%); }
+.interview-square-page .public-square-layout { gap: 24px; }
+.interview-square-page .public-main { gap: 0; }
+.interview-square-page .public-feed-heading { align-items: center; margin: 0 0 14px; padding: 0 2px; }
+.interview-square-page .public-feed-heading h1 { font-size: 1.1rem; }
+.interview-square-page .public-feed-card { border-radius: 12px; box-shadow: none; }
+.interview-square-page .public-feed-card-header { min-height: 64px; padding: 16px 20px 12px; }
+.interview-square-page .public-feed-avatar { width: 34px; height: 34px; flex-basis: 34px; border-radius: 50%; }
+.interview-square-page .public-feed-author { gap: 9px; }
+.interview-square-page .public-feed-author strong { font-size: .83rem; }
+.interview-square-page .public-feed-card-body { padding: 0 20px; }
+.interview-square-page .public-feed-company { flex-direction: column; align-items: flex-start; gap: 5px; padding: 0 0 14px; }
+.interview-square-page .public-feed-title-link h2 { font-size: 1.06rem; overflow-wrap: anywhere; text-wrap: wrap; }
+.interview-square-page .public-feed-preview { margin-top: 14px; padding: 0; border: 0; }
+.interview-square-page .public-feed-preview-heading strong { font-size: .8rem; }
+.interview-square-page .public-feed-status-dot { width: 6px; height: 6px; }
+.interview-square-page .public-feed-preview-question { margin-top: 10px; color: var(--ink); font-size: .91rem; font-weight: 600; }
+.interview-square-page .public-feed-preview-answer { display: block; margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 7px; background: var(--surface-soft, #f4f8f6); }
+.interview-square-page .public-feed-preview-answer p { color: var(--muted); font-size: .85rem; }
+.interview-square-page :is(.public-feed-preview-question, .public-feed-highlights) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.interview-square-page .public-feed-preview-answer p { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.interview-square-page .public-feed-card-footer { padding: 8px 16px; }
+.interview-square-page .public-feed-engagement { margin-inline: 20px; padding: 12px 0; gap: 18px; font-size: .75rem; }
+.interview-square-page .public-feed-sidebar :is(.content-card, .public-mine-link) { width: 100%; border-radius: 12px; box-shadow: none; }
+.interview-square-page .public-mine-link { padding: 18px; gap: 7px; }
+.interview-square-page .public-feed-sidebar h2 { margin-top: 0; }
+.interview-square-page .public-interview { padding: 24px; }
+.interview-square-page .public-question { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.interview-square-page .public-question h3 { line-height: 1.6; }
+.interview-square-page .public-question p { color: var(--muted); line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; }
+.analytics-content { gap: 20px; }
+.analytics-content :is(.content-card, .metric-grid article) { min-width: 0; border-radius: 12px; box-shadow: none; }
+.analytics-content .analytics-filters { padding: 20px; }
+.analytics-content h2 { margin-top: 0; font-size: 1rem; }
+.analytics-content .analytics-section-note { margin: 6px 0 18px; color: var(--muted); font-size: .78rem; line-height: 1.6; }
+.analytics-filter-heading .analytics-section-note { margin-bottom: 0; }
+.analytics-content .analytics-filter-grid { gap: 12px; margin-top: 20px; }
+.analytics-content .analytics-filter-grid :is(input, select, button) { min-width: 0; min-height: 44px; }
+.analytics-content .analytics-filter-grid input:disabled { opacity: .65; }
+.analytics-content .analytics-summary-strip { border-radius: 12px; }
+.analytics-content .analytics-summary-strip article { display: flex; flex-direction: column; justify-content: space-between; gap: 16px; min-height: 118px; border-radius: 0; padding: 20px; }
+.analytics-content .analytics-summary-strip article:first-child { background: var(--brand-soft); }
+.analytics-content .analytics-summary-strip article>span { font-size: .78rem; line-height: 1.5; }
+.analytics-content .analytics-summary-strip strong { color: var(--ink); font-size: 1.9rem; font-variant-numeric: tabular-nums; line-height: 1; }
+.analytics-content .analytics-summary-strip article:first-child strong { color: var(--brand-dark); }
+.analytics-content .analytics-primary-grid { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); }
+.analytics-content .trend-list { gap: 15px; }
+.analytics-content .trend-row { grid-template-columns: minmax(60px, max-content) minmax(0, 1fr) 3ch; gap: 14px; }
+.analytics-content .trend-track { height: 8px; }
+.analytics-content .trend-row strong { color: var(--ink); text-align: right; font-variant-numeric: tabular-nums; }
+.analytics-content .report-metrics { gap: 0; font-size: .85rem; }
+.analytics-content .report-metrics div { padding: 12px 0; }
+.analytics-content .report-metrics div:first-child { padding-top: 0; }
+.analytics-content .report-metrics div:last-child { border: 0; padding-bottom: 0; }
+.analytics-content .milestone-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.analytics-content .milestone-list article { gap: 7px; padding: 14px; border: 1px solid var(--line); background: transparent; }
+.analytics-content .milestone-list strong { font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.analytics-content .milestone-list span { font-size: .82rem; }
+.analytics-content .milestone-list small { font-size: .73rem; }
+.analytics-content .stage-reach-list { gap: 16px; }
+.analytics-content .stage-reach-track { height: 6px; }
+.analytics-content .breakdown-list { gap: 0; }
+.analytics-content .breakdown-list li { padding: 12px 0; }
+.analytics-content .breakdown-list small { color: var(--muted); }
+.analytics-content .insight-list { max-height: 360px; overflow: auto; overscroll-behavior: contain; }
+.analytics-content .insight-list li { padding: 12px 0; line-height: 1.6; overflow-wrap: anywhere; }
+.analytics-content .insight-list strong { font-size: .85rem; }
+.analytics-content .insight-list span { font-size: .78rem; }
+.analytics-content .reminder-actions { gap: 8px; }
+.analytics-content .reminder-actions button { min-height: 36px; }
+.analytics-content .analytics-wide>p { font-size: .85rem; line-height: 1.8; }
+@media (max-width: 1000px) {
+  .interview-square-page .public-company-search { grid-template-columns: minmax(0, 1.4fr) repeat(2, minmax(0, 1fr)); }
+  .interview-square-page .public-sort-control { grid-column: 1 / -1; justify-self: start; }
+}
+@media (max-width: 800px) {
+  .analytics-content .analytics-primary-grid { grid-template-columns: 1fr; }
+  .analytics-content .analytics-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics-content .analytics-summary-strip article { border-bottom: 1px solid var(--line); }
+  .analytics-content .analytics-summary-strip article:nth-child(even) { border-right: 0; }
+  .analytics-content .analytics-summary-strip article:last-child { grid-column: 1 / -1; border-bottom: 0; }
+}
+@media (max-width: 560px) {
+  .interview-square-page .public-feed-toolbar, .analytics-content .analytics-filters { padding: 16px; }
+  .interview-square-page .public-company-search { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .interview-square-page .public-company-search-field { grid-column: 1 / -1; }
+  .interview-square-page .public-sort-control { width: 100%; }
+  .interview-square-page .public-feed-card-header, .interview-square-page .public-feed-card-body { padding-inline: 16px; }
+  .interview-square-page .public-feed-engagement { margin-inline: 16px; }
+  .interview-square-page .public-interview { padding: 16px; }
+  .analytics-content .analytics-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .analytics-content .analytics-filter-grid label:first-child, .analytics-content .analytics-filter-grid button { grid-column: 1 / -1; }
+  .analytics-content .analytics-summary-strip article { padding: 16px; min-height: 108px; }
+  .analytics-content .analytics-summary-strip strong { font-size: 1.7rem; }
+  .analytics-content .content-card { padding: 18px; }
+  .analytics-content .analytics-filters { padding: 16px; }
+}
+.analytics-content .analytics-filter-grid button[type=submit] {
+  padding: 10px 16px;
+  border: 1px solid var(--brand);
+  border-radius: 8px;
+  background: var(--brand);
+  color: #fff;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.analytics-content .analytics-filter-grid button[type=submit]:hover { background: var(--brand-dark); }
+.interview-square-page button.public-mine-link { background: var(--brand-soft); color: var(--brand-dark); border-color: var(--line-strong); }
+.interview-square-page .public-mine-link small { color: var(--muted); }
