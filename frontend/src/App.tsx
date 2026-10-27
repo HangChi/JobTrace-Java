@@ -10,6 +10,7 @@ import './Polish.css'
 import './ReferenceLayout.css'
 import './FormSurfaces.css'
 import './Insights.css'
+import './PrivateInterviews.css'
 
 const AuthPage = lazy(() => import('./features/auth/AuthPage'))
 const ApplicationList = lazy(() => import('./features/applications/ApplicationList'))
