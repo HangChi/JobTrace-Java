@@ -299,3 +299,155 @@
   .application-table .application-row-actions { justify-content: flex-end; }
   .application-list-panel > .form-actions { padding-inline: 14px; }
 }
+
+/* Keep the native select's keyboard and form semantics, with a styled picker where supported. */
+:is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size]),
+.application-table select.application-status-select {
+  appearance: none;
+  padding-right: 38px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2355746b' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.application-table select.application-status-select {
+  width: auto;
+  min-width: 104px;
+  min-height: 34px;
+  margin: 0;
+  padding: 6px 30px 6px 12px;
+  border-radius: 999px;
+  background-position: right 9px center;
+  box-shadow: none;
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
+.status-control:disabled { opacity: .55; cursor: wait; }
+
+@supports (appearance: base-select) {
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size]),
+  .application-table select.application-status-select,
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size])::picker(select),
+  .application-status-select::picker(select) { appearance: base-select; }
+
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size])::picker-icon,
+  .application-status-select::picker-icon { display: none; }
+
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size])::picker(select),
+  .application-status-select::picker(select) {
+    min-width: anchor-size(width);
+    max-height: 300px;
+    margin-block: 7px;
+    padding: 5px;
+    border: 1px solid #cddfd9;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 10px 28px rgb(24 64 53 / 14%);
+    color: var(--ink);
+  }
+
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size]) option,
+  .application-status-select option {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 38px;
+    padding: 9px 11px;
+    border-radius: 7px;
+    background: #fff;
+    color: #345a53;
+    font-size: .81rem;
+    font-weight: 550;
+    cursor: pointer;
+  }
+
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size]) option:is(:hover, :focus, :checked),
+  .application-status-select option:is(:hover, :focus, :checked) { outline: none; background: #eef6f2; }
+  select.status-control option::before { content: ''; width: 7px; height: 7px; flex: 0 0 7px; border-radius: 50%; background: #91a59e; }
+  select.status-control option:is([value=open], [value=submitted])::before { background: #31836b; }
+  select.status-control option:is([value=offer], [value=stale])::before { background: #c08b31; }
+  select.status-control option:is([value=refused], [value=closed])::before { background: #b66976; }
+  :is(.market-filters, .application-filters, .application-form-section) select:not([multiple]):not([size]) option::checkmark,
+  .application-status-select option::checkmark { order: 1; margin-left: auto; color: var(--brand-dark); font-size: .8rem; }
+}
+
+.campaign-table tbody :is(th, td) { vertical-align: middle; }
+@media (min-width: 701px) {
+  .campaign-table thead th:nth-child(1) { width: 26%; }
+  .campaign-table thead th:nth-child(2) { width: 24%; }
+  .campaign-table thead th:nth-child(3) { width: 13%; }
+  .campaign-table thead th:nth-child(4) { width: 15%; }
+  .campaign-table thead th:nth-child(5) { width: 22%; }
+  .campaign-table tbody :is(th, td) { padding: 16px 14px; }
+}
+.campaign-table td[data-label=岗位] > small,
+.campaign-table td[data-label=地点] > small {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.campaign-table td[data-label=招聘渠道] > small { white-space: nowrap; font-size: .72rem; }
+.market-detail { margin-top: 6px; }
+.campaign-table .market-detail-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  max-width: 100%;
+  padding: 3px 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--brand-dark);
+  font-size: .75rem;
+  font-weight: 650;
+  text-align: left;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.campaign-table .market-detail-trigger:hover { color: #185a46; text-decoration: underline; text-underline-offset: 4px; }
+.market-detail-trigger span { flex: 0 0 auto; color: #71968a; }
+.market-detail-popover {
+  position: fixed;
+  inset: 0;
+  width: min(348px, calc(100vw - 32px));
+  height: fit-content;
+  max-height: min(360px, calc(100dvh - 32px));
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  border: 1px solid #c8ddd4;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 14px 42px rgb(24 64 53 / 18%);
+  font-family: inherit;
+}
+.market-detail-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 16px 12px; border-bottom: 1px solid #e6efea; }
+.market-detail-heading small { display: block; max-width: 260px; color: var(--muted); font-size: .72rem; overflow-wrap: anywhere; }
+.market-detail-heading h3 { display: flex; align-items: center; gap: 7px; margin: 4px 0 0; font-size: .9rem; }
+.market-detail-heading h3 span { padding: 1px 6px; border-radius: 5px; background: #edf5f0; color: #608073; font-size: .69rem; font-variant-numeric: tabular-nums; }
+.market-detail-popover .market-detail-close { flex: 0 0 28px; width: 28px; min-height: 28px; padding: 0; border: 0; border-radius: 7px; background: #f2f6f4; color: #608073; font-size: 1.2rem; font-weight: 400; cursor: pointer; }
+.market-detail-popover .market-detail-close:hover { background: #e4eee8; color: var(--ink); }
+.market-detail-scroll { max-height: 210px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #bad1c5 transparent; padding: 8px 16px 12px; }
+.market-detail-scroll:focus-visible { outline: 2px solid var(--brand); outline-offset: -3px; }
+.market-detail-scroll ul { margin: 0; padding: 0; list-style: none; }
+.market-position-list li { padding: 9px 0; border-bottom: 1px solid #edf2ef; font-size: .81rem; line-height: 1.5; overflow-wrap: anywhere; }
+.market-position-list li:last-child { border-bottom: 0; }
+.market-detail-scroll .market-location-tags { display: flex; flex-wrap: wrap; gap: 7px; padding-block: 5px; }
+.market-location-tags li { padding: 5px 10px; border: 1px solid #e1ebe5; border-radius: 6px; background: #f5f9f6; color: #42665a; font-size: .79rem; line-height: 1.5; overflow-wrap: anywhere; }
+.market-detail-note { margin: 0; padding: 11px 16px; border-top: 1px solid #e6efea; background: #f7faf8; color: #657e73; font-size: .73rem; line-height: 1.6; }
+
+@supports (position-area: bottom) {
+  .market-detail-popover { inset: auto; margin: 6px 0; position-area: bottom span-right; position-try-fallbacks: flip-inline, flip-block; }
+}
+
+@media (max-width: 700px) {
+  .market-detail-popover { position-anchor: auto; position-area: none; inset: 0; width: calc(100vw - 32px); margin: auto; }
+  .campaign-table td[data-label] > :is(small, .market-detail) { grid-column: 2; margin-top: 0; }
+  .campaign-table td[data-label] > strong { min-width: 0; }
+  .application-table select.application-status-select { min-width: 104px; }
+}

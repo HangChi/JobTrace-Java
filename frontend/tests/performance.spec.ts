@@ -4,6 +4,51 @@ const LCP_BUDGET_MS = 2_500
 const INP_BUDGET_MS = 200
 const CLS_BUDGET = 0.1
 
+test('market details stay compact and status controls remain keyboard operable', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }) }))
+  await page.route('**/api/job-market/campaigns**', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ items: [{ id: 'c1', listingKind: 'synced_jobs', company: { name: '星河科技', type: '企业', industry: '软件服务' }, recruitmentType: null, positions: Array.from({ length: 60 }, (_, index) => `软件研发工程师 · 业务方向 ${index + 1}`), positionCount: 60, locations: Array.from({ length: 30 }, (_, index) => ({ name: `招聘城市 ${index + 1}` })), status: 'open', primaryApplyUrl: 'https://example.com/jobs', source: { name: '招聘官网', url: 'https://example.com/jobs' }, publishedAt: '2026-10-27', lastConfirmedAt: null, isFavorite: false }], page: 1, limit: 20, total: 1 }) }))
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/')
+    const row = page.getByRole('row').filter({ hasText: '星河科技' })
+    await expect(row).toBeVisible()
+    const rowHeight = (await row.boundingBox())!.height
+    await page.getByRole('button', { name: '查看全部岗位' }).click()
+    const positions = page.getByRole('dialog', { name: '星河科技的岗位列表' })
+    await expect(positions).toBeVisible()
+    expect((await row.boundingBox())!.height).toBe(rowHeight)
+    const bounds = (await positions.boundingBox())!
+    expect(bounds.height).toBeLessThanOrEqual(360)
+    expect(bounds.x).toBeGreaterThanOrEqual(16)
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width - 16)
+    const scroll = positions.getByRole('region')
+    await scroll.focus()
+    await page.keyboard.press('End')
+    await expect(positions.getByText('软件研发工程师 · 业务方向 60')).toBeInViewport()
+    await page.screenshot({ path: test.info().outputPath(`market-details-${width}.png`) })
+    await page.keyboard.press('Escape')
+    await expect(positions).not.toBeVisible()
+    await page.getByRole('button', { name: '查看全部地点' }).click()
+    const locations = page.getByRole('dialog', { name: '星河科技的地点列表' })
+    await expect(locations).toBeVisible()
+    expect((await row.boundingBox())!.height).toBe(rowHeight)
+    await page.screenshot({ path: test.info().outputPath(`market-locations-${width}.png`) })
+    await locations.getByRole('button', { name: '关闭地点列表' }).click()
+    await expect(locations).not.toBeVisible()
+    const status = page.getByRole('combobox', { name: '状态', exact: true })
+    await status.focus()
+    await page.keyboard.press('ArrowDown')
+    await expect(status.locator('option[value=closed]')).toBeVisible()
+    await page.screenshot({ path: test.info().outputPath(`market-status-${width}.png`) })
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await expect(status).toHaveValue('closed')
+    await page.getByRole('button', { name: '筛选', exact: true }).click()
+    await expect(page).toHaveURL(/status=closed/)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false)
+  }
+})
+
 type BrowserMetrics = {
   lcp: number
   inp: number
