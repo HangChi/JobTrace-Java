@@ -1,3 +1,4 @@
+import Pagination from '../../shared/ui/Pagination'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
@@ -199,7 +200,7 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
             <td data-label="操作"><div className="application-row-actions"><button type="button" disabled={pendingId === item.id} onClick={() => showItem(item)}>编辑</button><button type="button" disabled={pendingId === item.id} onClick={() => void removeItem(item)}>删除</button></div></td>
           </tr>
         })}</tbody></table></div>
-        <div className="application-pagination"><label>每页显示<select aria-label="每页显示" value={pageSize} onChange={event => { const next = new URLSearchParams(search); next.delete('page'); next.delete('cursor'); next.set('limit', event.target.value); goTo(next) }}>{pageSizes.map(size => <option key={size} value={size}>{size} 条</option>)}</select></label><span>第 {currentPage} / {totalPages} 页</span><div><button type="button" disabled={currentPage <= 1} onClick={() => { const next = new URLSearchParams(search); next.set('page', String(currentPage - 1)); next.delete('cursor'); goTo(next) }}>上一页</button><button type="button" disabled={currentPage >= totalPages} onClick={() => { const next = new URLSearchParams(search); next.set('page', String(currentPage + 1)); next.delete('cursor'); goTo(next) }}>下一页</button></div></div>
+        <div className="application-pagination"><label className="pagination-page-size">每页显示<select aria-label="每页显示" value={pageSize} onChange={event => { const next = new URLSearchParams(search); next.delete('page'); next.delete('cursor'); next.set('limit', event.target.value); goTo(next) }}>{pageSizes.map(size => <option key={size} value={size}>{size} 条</option>)}</select></label><Pagination page={currentPage} totalPages={totalPages} label="投递记录分页" onChange={value => { const next = new URLSearchParams(search); next.set('page', String(value)); next.delete('cursor'); goTo(next) }} /></div>
       </section>}
   </section>
 }

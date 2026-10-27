@@ -15,6 +15,7 @@ import './PrivateInterviews.css'
 import './ProfileSurfaces.css'
 import './ColorBalance.css'
 import './PublicInterviews.css'
+import './Pagination.css'
 
 const AuthPage = lazy(() => import('./features/auth/AuthPage'))
 const ApplicationList = lazy(() => import('./features/applications/ApplicationList'))

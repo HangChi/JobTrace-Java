@@ -559,3 +559,46 @@ test('export menu keeps its chevron aligned and opens by keyboard', async ({ pag
     await expect(menu).not.toHaveAttribute('open')
   }
 })
+
+test('numbered pagination preserves filters and fits desktop and mobile', async ({ page }) => {
+  const fulfill = (value: unknown) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(value) })
+  await page.route('**/api/auth/session', route => route.fulfill(fulfill({ session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } })))
+  const item = { id: 'a1', companyName: '星河科技', positionName: '前端工程师', city: '上海', jobUrl: null, appliedDate: '2026-10-01', latestDate: '2026-10-01', status: 'submitted', type: 'campus_recruitment', stages: [], needsFollowUp: false, followUpDays: 0, followUpReason: null, version: 1 }
+  await page.route('**/api/applications**', route => {
+    const params = new URL(route.request().url()).searchParams
+    return route.fulfill(fulfill({ items: [item], total: 240, page: Number(params.get('page') ?? 1), limit: Number(params.get('limit') ?? 10) }))
+  })
+  await page.route('**/api/job-market/campaigns**', route => route.fulfill(fulfill({ items: [{ id: 'c1', listingKind: 'synced_jobs', company: { name: '星河科技', type: '企业', industry: '软件' }, recruitmentType: null, positions: ['软件工程师'], positionCount: 1, locations: [], status: 'open', primaryApplyUrl: 'https://example.com/jobs', source: { name: '官网', url: 'https://example.com/jobs' }, publishedAt: '2026-10-27', isFavorite: false }], page: Number(new URL(route.request().url()).searchParams.get('page') ?? 1), total: 480, limit: 20 })))
+  for (const width of [1440, 375]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/applications?q=星河&sort=company&page=10')
+    const nav = page.getByRole('navigation', { name: '投递记录分页' })
+    await expect(nav.getByRole('button', { name: '第 10 页' })).toHaveAttribute('aria-current', 'page')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`pagination-middle-${width}.png`), fullPage: true })
+    await nav.getByRole('button', { name: '向后跳 5 页' }).click()
+    await expect(nav.getByRole('button', { name: '第 15 页' })).toHaveAttribute('aria-current', 'page')
+    expect(new URL(page.url()).searchParams.get('q')).toBe('星河')
+    await nav.getByLabel('跳转页码').fill('22')
+    await nav.getByLabel('跳转页码').press('Enter')
+    await expect(nav.getByRole('button', { name: '第 22 页' })).toHaveAttribute('aria-current', 'page')
+    await page.getByLabel('每页显示', { exact: true }).selectOption('20')
+    await expect(nav.getByRole('button', { name: '第 1 页' })).toHaveAttribute('aria-current', 'page')
+    const size = (await page.getByLabel('每页显示', { exact: true }).boundingBox())!
+    expect(size.width).toBeLessThan(90)
+    expect(size.height).toBeLessThanOrEqual(36)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`pagination-applications-${width}.png`), fullPage: true })
+    await page.goto('/?status=open&page=10')
+    const market = page.getByRole('navigation', { name: '招聘记录分页' })
+    await expect(market.getByRole('button', { name: '第 10 页' })).toHaveAttribute('aria-current', 'page')
+    await market.getByRole('button', { name: '向前跳 5 页' }).click()
+    await expect(market.getByRole('button', { name: '第 5 页' })).toHaveAttribute('aria-current', 'page')
+    await market.getByLabel('跳转页码').fill('24')
+    await market.getByRole('button', { name: '跳转', exact: true }).click()
+    await expect(market.getByRole('button', { name: '下一页' })).toBeDisabled()
+    expect(new URL(page.url()).searchParams.get('status')).toBe('open')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await page.screenshot({ path: test.info().outputPath(`pagination-market-${width}.png`), fullPage: true })
+  }
+})
