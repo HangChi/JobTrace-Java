@@ -1,0 +1,301 @@
+/* The market and application searches share a calm, two-level control surface. */
+.market-filters.filter-panel,
+.application-filters.filter-panel {
+  display: block;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #cddfd9;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgb(28 87 76 / 7%);
+}
+
+.filter-panel-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 19px 24px 16px;
+}
+
+.filter-panel-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--brand-dark);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .06em;
+}
+
+.filter-panel-heading h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.16rem;
+  font-weight: 760;
+  letter-spacing: -.025em;
+}
+
+.filter-panel-heading p {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: .79rem;
+  line-height: 1.5;
+}
+
+.market-filters .filter-panel-fields,
+.application-filters .filter-panel-fields {
+  display: grid;
+  grid-template-columns: minmax(230px, 1.6fr) minmax(150px, 1fr) minmax(135px, .85fr) minmax(180px, 1fr);
+  align-items: end;
+  gap: 14px;
+  padding: 0 24px 22px;
+}
+
+.market-filters .filter-panel-fields label,
+.application-filters .filter-panel-fields label {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  color: #345a53;
+  font-size: .77rem;
+  font-weight: 750;
+}
+
+.market-filters .filter-panel-fields :is(input, select),
+.application-filters .filter-panel-fields :is(input, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #bed6cf;
+  border-radius: 10px;
+  background-color: #fbfdfc;
+  color: var(--ink);
+  font-size: .87rem;
+  font-weight: 560;
+  box-shadow: inset 0 1px 2px rgb(27 73 64 / 3%);
+}
+
+.market-filters .filter-panel-fields :is(input, select):hover,
+.application-filters .filter-panel-fields :is(input, select):hover {
+  border-color: #90bcb0;
+}
+
+.market-filters .filter-search-field input,
+.application-filters .filter-search-field input {
+  padding-left: 43px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='10.8' cy='10.8' r='6.3' stroke='%23648077' stroke-width='1.8'/%3E%3Cpath d='m15.5 15.5 5 5' stroke='%23648077' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 14px center;
+  background-size: 18px 18px;
+}
+
+.filter-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 65px;
+  padding: 11px 24px;
+  border-top: 1px solid #e4eee9;
+  background: #f8fbf9;
+}
+
+.filter-panel-footer > span {
+  color: #55746b;
+  font-size: .77rem;
+  font-weight: 620;
+}
+
+.market-filters .market-filter-actions,
+.application-filters .application-filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+.market-filters .market-filter-actions button,
+.application-filters .application-filter-actions button {
+  min-width: 96px;
+  min-height: 42px;
+  padding: 9px 16px;
+  border: 1px solid var(--brand);
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-size: .82rem;
+  font-weight: 750;
+}
+
+.market-filters .market-filter-actions .quiet-button,
+.application-filters .application-filter-actions button:first-child {
+  border-color: transparent;
+  background: transparent;
+  color: var(--brand-dark);
+}
+
+.market-filters .market-filter-actions .quiet-button:hover,
+.application-filters .application-filter-actions button:first-child:hover {
+  background: #e8f4ee;
+}
+
+/* Entry forms are grouped by what the user knows about a position. */
+.application-editor.content-card {
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+}
+
+.application-editor .editor-heading {
+  padding: 22px 26px;
+  border-bottom: 1px solid var(--line);
+  background: #f8fcfa;
+}
+
+.application-editor .editor-heading h2 { font-size: 1.35rem; }
+.application-editor > .error { margin: 18px 26px 0; }
+.application-editor > .application-form { gap: 0; }
+
+.application-form-section {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  margin: 0;
+  padding: 23px 26px 25px;
+  border: 0;
+  border-bottom: 1px solid #e6efeb;
+}
+
+.application-form-section legend {
+  float: left;
+  width: 100%;
+  padding: 0 0 3px;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 780;
+  letter-spacing: -.02em;
+}
+
+.application-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  clear: both;
+}
+
+.application-form-grid-link { grid-template-columns: minmax(180px, .65fr) minmax(0, 1.35fr); }
+.application-form-grid-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.application-form-section label { min-width: 0; }
+
+.application-form-section :is(input, select, textarea) {
+  min-height: 48px;
+  padding: 11px 13px;
+  border: 1px solid #bed6cf;
+  border-radius: 10px;
+  background: #fbfdfc;
+}
+
+.application-form-section textarea { min-height: 120px; }
+.application-form-section :is(input, select, textarea):hover { border-color: #90bcb0; }
+.application-form-footer { display: flex; justify-content: flex-end; padding: 19px 26px; background: #f8fcfa; }
+.application-form .application-form-footer button[type=submit] { min-height: 46px; padding: 10px 24px; border-radius: 9px; }
+.application-editor .application-operations { padding: 22px 26px 26px; }
+
+/* The selection column has its own width; dates stay on one line. */
+.application-table { min-width: 1170px; table-layout: fixed; }
+.application-table th,
+.application-table td { padding: 14px 10px; overflow-wrap: normal; }
+.application-table th:first-child,
+.application-table td:first-child { width: 58px; padding-left: 18px; padding-right: 4px; text-align: left; }
+.application-table th:nth-child(2) { width: 225px; }
+.application-table th:nth-child(3) { width: 145px; }
+.application-table th:nth-child(4) { width: 113px; }
+.application-table th:nth-child(5) { width: 120px; }
+.application-table th:nth-child(6) { width: 125px; }
+.application-table th:nth-child(7),
+.application-table th:nth-child(8) { width: 110px; }
+.application-table th:last-child { width: 130px; }
+.application-table th:nth-child(2),
+.application-table td:nth-child(2),
+.application-table th:nth-child(3),
+.application-table td:nth-child(3) { text-align: left; }
+.application-table td time { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.application-table td input[type=checkbox],
+.application-list-panel > .form-actions input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--brand); }
+.application-table .application-status-select { min-width: 0; }
+.application-list-panel > .form-actions {
+  min-height: 54px;
+  gap: 12px;
+  padding: 10px 22px;
+  border-top: 1px solid var(--line);
+  background: #fbfdfc;
+  color: #42675f;
+  font-size: .79rem;
+  font-weight: 650;
+}
+.application-list-panel > .form-actions label { display: inline-flex; align-items: center; gap: 8px; }
+.application-list-panel > .form-actions .danger-button { min-height: 36px; padding: 6px 11px; border: 1px solid #d7a7ab; border-radius: 8px; background: #fff7f7; color: #983e4c; }
+
+@media (max-width: 900px) {
+  .market-filters .filter-panel-fields,
+  .application-filters .filter-panel-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .filter-panel-heading { align-items: start; flex-direction: column; gap: 5px; padding: 19px 18px 14px; }
+  .filter-panel-heading p { font-size: .76rem; }
+  .market-filters .filter-panel-fields,
+  .application-filters .filter-panel-fields { padding: 0 18px 18px; gap: 12px; }
+  .filter-panel-footer { padding-inline: 18px; }
+  .application-form-section { padding: 20px 18px; }
+  .application-editor .editor-heading,
+  .application-form-footer,
+  .application-editor .application-operations { padding-inline: 18px; }
+  .application-form-grid-three { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .market-filters .filter-panel-fields,
+  .application-filters .filter-panel-fields,
+  .application-form-grid,
+  .application-form-grid-link,
+  .application-form-grid-three { grid-template-columns: minmax(0, 1fr); }
+  .filter-panel-footer { align-items: stretch; flex-direction: column; gap: 8px; }
+  .filter-panel-footer > span { min-height: 20px; }
+  .market-filters .market-filter-actions,
+  .application-filters .application-filter-actions { width: 100%; }
+  .market-filters .market-filter-actions button,
+  .application-filters .application-filter-actions button { flex: 1 1 0; }
+
+  .application-table-wrap { overflow: visible; }
+  .application-table,
+  .application-table tbody { display: block; width: 100%; min-width: 0; }
+  .application-table thead { display: none; }
+  .application-table tbody { padding: 10px; }
+  .application-table tbody tr { display: block; margin-bottom: 10px; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  .application-table tbody tr:last-child { margin-bottom: 0; }
+  .application-table tbody td,
+  .application-table tbody td:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 9px 14px;
+    border: 0;
+    border-bottom: 1px solid #edf3f0;
+    text-align: left;
+  }
+  .application-table tbody td::before { content: attr(data-label); flex: 0 0 72px; color: var(--muted); font-size: .72rem; font-weight: 700; }
+  .application-table tbody td:first-child { justify-content: flex-start; min-height: 42px; background: #f8fcfa; }
+  .application-table tbody td:first-child::before { content: '选择记录'; }
+  .application-table tbody td:nth-child(2) { display: block; padding-block: 13px; }
+  .application-table tbody td:nth-child(2)::before { display: none; }
+  .application-table tbody td:last-child { border-bottom: 0; }
+  .application-table .application-name-button :is(strong, span) { white-space: normal; }
+  .application-table .application-status-select { width: auto; min-width: 125px; margin: 0; }
+  .application-table .application-job-link { min-width: 0; }
+  .application-table .application-row-actions { justify-content: flex-end; }
+  .application-list-panel > .form-actions { padding-inline: 14px; }
+}

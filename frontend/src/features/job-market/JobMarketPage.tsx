@@ -24,13 +24,16 @@ function safeExternalUrl(value: string | null): string | null {
   try { const url = new URL(value); return url.protocol === 'https:' ? url.href : null }
   catch { return null }
 }
+function filtersFromSearch(search: string) {
+  const params = new URLSearchParams(search)
+  return { source: search, query: params.get('q') ?? '', location: params.get('location') ?? '', status: params.get('status') ?? '', postedFrom: params.get('postedFrom') ?? '' }
+}
 
 export default function JobMarketPage({ search, navigate, onExpired }: { search: string; navigate: (path: string) => void; onExpired: () => void }) {
   const params = new URLSearchParams(search)
-  const [query, setQuery] = useState(params.get('q') ?? '')
-  const [location, setLocation] = useState(params.get('location') ?? '')
-  const [status, setStatus] = useState(params.get('status') ?? '')
-  const [postedFrom, setPostedFrom] = useState(params.get('postedFrom') ?? '')
+  const [filterDraft, setFilterDraft] = useState(() => filtersFromSearch(search))
+  const draft = filterDraft.source === search ? filterDraft : filtersFromSearch(search)
+  const { query, location, status, postedFrom } = draft
   const [page, setPage] = useState<CampaignPage | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
@@ -68,6 +71,10 @@ export default function JobMarketPage({ search, navigate, onExpired }: { search:
     change(next)
     navigate(`/${next.size ? `?${next}` : ''}`)
   }
+  function clearFilters() {
+    setFilterDraft({ ...draft, query: '', location: '', status: '', postedFrom: '' })
+    navigate('/')
+  }
   async function favorite(item: Campaign) {
     if (busy) return
     setBusy(item.id); setError('')
@@ -91,9 +98,19 @@ export default function JobMarketPage({ search, navigate, onExpired }: { search:
   }
 
   const totalPages = page ? Math.max(1, Math.ceil(page.total / page.limit)) : 1
+  const activeFilters = ['q', 'location', 'status', 'postedFrom', 'favorite'].filter(key => Boolean(params.get(key))).length
   return <section className="job-market-page">
     <header className="market-hero"><div><p className="eyebrow">自动更新</p><h1>招聘广场</h1><p>集中查看企业岗位、招聘地点与官方投递入口。</p></div><div className="market-hero-actions"><span className="market-count">{page ? `共 ${page.total} 家招聘企业` : '正在统计招聘企业'}</span><button type="button" className={favoriteOnly ? 'market-favorite-filter is-active' : 'market-favorite-filter'} aria-pressed={favoriteOnly} onClick={() => withParams(next => { next.delete('page'); if (favoriteOnly) next.delete('favorite'); else next.set('favorite', 'true') })}>仅看收藏</button></div></header>
-    <form className="market-filters" role="search" onSubmit={filter}><label>关键词<input value={query} onChange={event => setQuery(event.target.value)} placeholder="公司或岗位" /></label><label>地点<input value={location} onChange={event => setLocation(event.target.value)} placeholder="城市或远程" /></label><label>状态<select value={status} onChange={event => setStatus(event.target.value)}><option value="">全部</option><option value="open">有效</option><option value="stale">待确认</option><option value="closed">已失效</option></select></label><label>发布时间<input type="date" value={postedFrom} onChange={event => setPostedFrom(event.target.value)} /></label><div className="market-filter-actions"><button type="button" className="quiet-button" onClick={() => navigate('/')}>清除筛选</button><button type="submit">筛选</button></div></form>
+    <form className="market-filters filter-panel" role="search" onSubmit={filter}>
+      <div className="filter-panel-heading"><div><span className="filter-panel-kicker">岗位检索</span><h2>筛选招聘机会</h2></div><p>从公司、岗位到地点，逐步缩小范围。</p></div>
+      <div className="filter-panel-fields">
+        <label className="filter-search-field">关键词<input value={query} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label>
+        <label>地点<input value={location} onChange={event => setFilterDraft({ ...draft, location: event.target.value })} placeholder="城市或远程" /></label>
+        <label>状态<select value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部状态</option><option value="open">有效</option><option value="stale">待确认</option><option value="closed">已失效</option></select></label>
+        <label>发布时间<input type="date" value={postedFrom} onChange={event => setFilterDraft({ ...draft, postedFrom: event.target.value })} /></label>
+      </div>
+      <div className="filter-panel-footer"><span>{activeFilters ? `已启用 ${activeFilters} 项筛选条件` : '可组合多个条件查找岗位'}</span><div className="market-filter-actions"><button type="button" className="quiet-button" onClick={clearFilters}>清除筛选</button><button type="submit">筛选</button></div></div>
+    </form>
     {error && <div className="content-card market-message"><p role="alert">{error}</p><button type="button" className="quiet-button" onClick={() => setReload(value => value + 1)}>重试加载</button></div>}
     {!page && !error && <p className="market-loading" role="status">正在加载招聘信息…</p>}
     {page && page.items.length === 0 && <div className="content-card market-message"><h2>没有找到符合条件的招聘信息</h2><p>试试调整关键词、地点或状态筛选。</p></div>}

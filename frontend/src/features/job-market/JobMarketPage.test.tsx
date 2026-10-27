@@ -67,6 +67,20 @@ it('keeps filters while paging and toggling the favorites view', async () => {
   expect(navigate).toHaveBeenCalledWith('/?q=Java&status=open&favorite=true')
   fireEvent.click(screen.getByRole('button', { name: '清除筛选' }))
   expect(navigate).toHaveBeenCalledWith('/')
+  expect(screen.getByLabelText('关键词')).toHaveValue('')
+  expect(screen.getByLabelText('状态')).toHaveValue('')
+})
+
+it('keeps the visible market fields in sync when the URL changes', async () => {
+  vi.stubGlobal('fetch', vi.fn(async () => json(page)))
+  const navigate = vi.fn()
+  const { rerender } = render(<JobMarketPage search="?q=Java&location=上海" navigate={navigate} onExpired={vi.fn()} />)
+  await screen.findByText('示例公司')
+  expect(screen.getByLabelText('关键词')).toHaveValue('Java')
+  rerender(<JobMarketPage search="?q=产品&status=open" navigate={navigate} onExpired={vi.fn()} />)
+  expect(screen.getByLabelText('关键词')).toHaveValue('产品')
+  expect(screen.getByLabelText('地点')).toHaveValue('')
+  expect(screen.getByLabelText('状态')).toHaveValue('open')
 })
 
 it('reloads the favorites view after removing a saved recruitment directory entry', async () => {

@@ -60,6 +60,25 @@ it('shows live Java results and applies search filters in the URL', async () => 
   expect(navigate).toHaveBeenCalledWith('/applications?q=%E5%B7%A5%E7%A8%8B%E5%B8%88')
 })
 
+it('clears draft filters and reflects later URL changes in the application form', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (path: string) => new Response(JSON.stringify(path === '/api/analytics/summary'
+    ? { total: 0, stageDistribution: {}, followUps: [] }
+    : { items: [], nextCursor: null, total: 0, page: 1, limit: 10 }))))
+  const navigate = vi.fn()
+  const onExpired = vi.fn()
+  const { rerender } = render(<ApplicationList search="?q=前端&status=offer" navigate={navigate} onExpired={onExpired} />)
+  await screen.findByRole('button', { name: '清空条件' })
+  expect(screen.getByLabelText('搜索投递')).toHaveValue('前端')
+  fireEvent.change(screen.getByLabelText('搜索投递'), { target: { value: '临时输入' } })
+  fireEvent.click(screen.getByRole('button', { name: '清空条件' }))
+  expect(navigate).toHaveBeenCalledWith('/applications')
+  expect(screen.getByLabelText('搜索投递')).toHaveValue('')
+  expect(screen.getByLabelText('状态')).toHaveValue('')
+  rerender(<ApplicationList search="?q=后端&type=campus_recruitment" navigate={navigate} onExpired={onExpired} />)
+  expect(screen.getByLabelText('搜索投递')).toHaveValue('后端')
+  expect(screen.getByLabelText('类型')).toHaveValue('campus_recruitment')
+})
+
 it('shows an empty state and a retryable failure', async () => {
   const applications = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(new Response(JSON.stringify({ items: [], nextCursor: null, total: 0, page: 1, limit: 10 }), { status: 200 }))
   const fetcher = vi.fn((path: string) => path === '/api/analytics/summary'

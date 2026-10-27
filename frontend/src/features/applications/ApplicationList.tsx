@@ -11,6 +11,10 @@ import ApplicationOverview from './ApplicationOverview'
 const types: Record<string, string> = { summer_internship: '暑期实习', daily_internship: '日常实习', spring_recruitment: '春招', early_campus_recruitment: '秋招提前批', campus_recruitment: '秋招', social_recruitment: '社招' }
 const stages: Record<string, string> = { screening: '简历筛选', assessment: '测评/AI测评', written_test: '笔试', interview_1: '一面/AI面', interview_2: '二面', interview_3: '三面', hr_interview: 'HR 面', final_interview: '终面' }
 const pageSizes = [10, 20, 50, 100]
+function filtersFromSearch(search: string) {
+  const params = new URLSearchParams(search)
+  return { source: search, query: params.get('q') ?? '', status: params.get('status') ?? '', type: params.get('type') ?? '', sort: params.get('sort') ?? '' }
+}
 
 function safeJobUrl(value: string | null) {
   if (!value) return null
@@ -23,10 +27,9 @@ function jobLinkLabel(value: string) {
 
 export default function ApplicationList({ search, navigate, onExpired, routeMode = false, initialEditingId }: { search: string; navigate: (path: string) => void; onExpired: () => void; routeMode?: boolean; initialEditingId?: string | null }) {
   const params = new URLSearchParams(search)
-  const [query, setQuery] = useState(params.get('q') ?? '')
-  const [status, setStatus] = useState(params.get('status') ?? '')
-  const [type, setType] = useState(params.get('type') ?? '')
-  const [sort, setSort] = useState(params.get('sort') ?? '')
+  const [filterDraft, setFilterDraft] = useState(() => filtersFromSearch(search))
+  const draft = filterDraft.source === search ? filterDraft : filtersFromSearch(search)
+  const { query, status, type, sort } = draft
   const [page, setPage] = useState<ApplicationPage | null>(null)
   const [summary, setSummary] = useState<AnalyticsSummary | null>(null)
   const [error, setError] = useState('')
@@ -79,6 +82,10 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
     }
     if (pageSize !== 10) next.set('limit', String(pageSize))
     goTo(next)
+  }
+  function clearFilters() {
+    setFilterDraft({ ...draft, query: '', status: '', type: '', sort: '' })
+    goTo(new URLSearchParams())
   }
 
   function showItem(item: ApplicationSummary) {
@@ -148,6 +155,7 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
   const totalPages = page ? Math.max(1, Math.ceil(page.total / page.limit)) : 1
   const currentPage = page?.page ?? 1
   const filtered = Boolean(params.get('q') || params.get('status') || params.get('type'))
+  const activeFilters = ['q', 'status', 'type', 'sort'].filter(key => Boolean(params.get(key))).length
   const exportQuery = new URLSearchParams(search)
   exportQuery.delete('cursor')
   exportQuery.delete('page')
@@ -162,12 +170,15 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
     {!routeMode && <div className="application-dashboard-actions"><button type="button" onClick={() => setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>当前筛选</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a><p>全部记录</p><a href="/api/exports/applications?scope=all&format=xlsx">全部导出 Excel</a>{selectedIds.size > 0 && <><p>所选 {selectedIds.size} 条</p><a href={`/api/exports/applications?${selectedExportQuery}&format=xlsx`}>所选导出 Excel</a><a href={`/api/exports/applications?${selectedExportQuery}&format=csv`}>所选导出 CSV</a></>}</div></details></div>}
     {editingId !== undefined && <ApplicationEditor key={editingId ?? 'new'} id={editingId} onClose={() => setEditingId(undefined)} onChanged={() => setReload(value => value + 1)} onExpired={onExpired} />}
     <ApplicationOverview summary={summary} onOpen={id => routeMode ? navigate(`/applications/${encodeURIComponent(id)}`) : setEditingId(id)} />
-    <form className="application-filters" aria-label="筛选投递记录" onSubmit={filter}>
-      <label>搜索投递<input value={query} maxLength={200} onChange={event => setQuery(event.target.value)} placeholder="例如：产品经理" /></label>
-      <label>状态<select value={status} onChange={event => setStatus(event.target.value)}><option value="">全部状态</option><option value="submitted">已投递</option><option value="offer">Offer</option><option value="refused">拒绝</option></select></label>
-      <label>类型<select value={type} onChange={event => setType(event.target.value)}><option value="">全部类型</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-      <label>排序<select value={sort} onChange={event => setSort(event.target.value)}><option value="">默认排序（已投递优先）</option><option value="latestDate">最新日期</option><option value="appliedDate">投递日期</option><option value="company">公司名称</option><option value="position">岗位名称</option></select></label>
-      <div className="application-filter-actions"><button type="submit">筛选</button><button type="button" onClick={() => goTo(new URLSearchParams())}>清空</button></div>
+    <form className="application-filters filter-panel" aria-label="筛选投递记录" onSubmit={filter}>
+      <div className="filter-panel-heading"><div><span className="filter-panel-kicker">记录检索</span><h2>找到一条投递</h2></div><p>按岗位、进度和招聘类型定位记录。</p></div>
+      <div className="filter-panel-fields">
+        <label className="filter-search-field">搜索投递<input value={query} maxLength={200} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label>
+        <label>状态<select value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部状态</option><option value="submitted">已投递</option><option value="offer">Offer</option><option value="refused">拒绝</option></select></label>
+        <label>类型<select value={type} onChange={event => setFilterDraft({ ...draft, type: event.target.value })}><option value="">全部类型</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label>排序<select value={sort} onChange={event => setFilterDraft({ ...draft, sort: event.target.value })}><option value="">默认排序（已投递优先）</option><option value="latestDate">最新日期</option><option value="appliedDate">投递日期</option><option value="company">公司名称</option><option value="position">岗位名称</option></select></label>
+      </div>
+      <div className="filter-panel-footer"><span>{activeFilters ? `已启用 ${activeFilters} 项查找条件` : '可组合多个条件查找投递'}</span><div className="application-filter-actions"><button type="button" onClick={clearFilters}>清空条件</button><button type="submit">筛选</button></div></div>
     </form>
     {actionError && <p className="error" role="alert">{actionError}</p>}
     {error ? <div className="content-card"><p role="alert">{error}</p><button onClick={() => { setPage(null); setReload(value => value + 1) }}>重试加载</button></div> :
