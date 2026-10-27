@@ -8,6 +8,7 @@ import './App.css'
 import './AppShell.css'
 import './Polish.css'
 import './ReferenceLayout.css'
+import './FormSurfaces.css'
 
 const AuthPage = lazy(() => import('./features/auth/AuthPage'))
 const ApplicationList = lazy(() => import('./features/applications/ApplicationList'))
