@@ -56,7 +56,7 @@ it('shows live Java results and applies search filters in the URL', async () => 
   expect(screen.getByRole('table')).toBeInTheDocument()
   expect(screen.getByText('投递记录 7 天未更新')).toBeInTheDocument()
   fireEvent.change(screen.getByLabelText('搜索投递'), { target: { value: '工程师' } })
-  fireEvent.click(screen.getByRole('button', { name: '筛选' }))
+  fireEvent.click(screen.getByRole('button', { name: '搜索' }))
   expect(navigate).toHaveBeenCalledWith('/applications?q=%E5%B7%A5%E7%A8%8B%E5%B8%88')
 })
 
@@ -181,7 +181,7 @@ it('opens a route detail and retains filter choices', async () => {
   expect(screen.queryByRole('link', { name: /javascript/ })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: /星河科技.*前端工程师/ }))
   expect(navigate).toHaveBeenCalledWith('/applications/a%2F1')
-  fireEvent.click(screen.getByRole('button', { name: '筛选' }))
+  fireEvent.click(screen.getByRole('button', { name: '搜索' }))
   expect(navigate).toHaveBeenCalledWith('/applications?q=%E6%98%9F%E6%B2%B3&status=submitted&sort=company&direction=desc')
 })
 

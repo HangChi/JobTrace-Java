@@ -35,13 +35,13 @@
 .admin-layout .admin-page-header h1+p {margin:0;font-size:.82rem;color:var(--admin-muted);line-height:1.6}
 .admin-workspace-badge {display:flex;flex-shrink:0;align-items:center;gap:6px;padding:8px 11px;border:1px solid #cfdfd4;border-radius:7px;background:#f0f6ed;color:#466749;font-size:.7rem}
 .admin-workspace-badge svg {width:15px;height:15px}
-.admin-layout .admin-summary-strip {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
-.admin-layout .admin-summary-strip article {display:block;min-width:0;min-height:122px;padding:18px;border:1px solid var(--admin-line);border-radius:12px;background:var(--admin-surface);box-shadow:0 2px 3px #203b3603}
+.admin-layout .admin-summary-strip {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;overflow:visible;border:0;border-radius:0;background:transparent;box-shadow:none}
+.admin-layout .admin-summary-strip article {display:block;min-width:0;min-height:110px;padding:16px;border:1px solid var(--admin-line);border-radius:12px;background:var(--admin-surface);box-shadow:0 2px 3px #203b3603}
 .admin-metric-top {display:flex;justify-content:space-between;align-items:center;gap:8px}
 .admin-metric-top>span:first-child {color:var(--admin-muted);font-size:.85rem;font-weight:500}
 .admin-metric-icon {display:grid;place-items:center;width:28px;height:28px;border-radius:8px;background:var(--admin-soft);color:var(--admin-accent)}
 .admin-metric-icon svg {width:15px;height:15px}
-.admin-layout .admin-summary-strip article>strong {display:block;margin:8px 0 0;color:var(--admin-ink);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,sans-serif;font-variant-numeric:tabular-nums;font-size:1.9rem;font-weight:650;letter-spacing:-.045em;line-height:1.2}
+.admin-layout .admin-summary-strip article>strong {display:block;margin:8px 0 0;color:var(--admin-ink);font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,sans-serif;font-variant-numeric:tabular-nums;font-size:1.8rem;font-weight:650;letter-spacing:-.045em;line-height:1.2}
 .admin-summary-strip article>small {color:var(--admin-muted);font-size:.7rem}
 .admin-overview-bottom {display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:20px;align-items:stretch}
 .admin-layout .content-card,.admin-user-detail-page .content-card {padding:23px;border:1px solid var(--admin-line);border-radius:12px;background:var(--admin-surface);box-shadow:0 2px 3px #203b3603}
@@ -60,10 +60,9 @@
 .admin-shortcuts>button>span:first-of-type {display:grid;gap:5px;font-size:.8rem;font-weight:600}
 .admin-shortcuts small {font-size:.7rem;font-weight:400;color:var(--admin-muted)}
 .admin-shortcuts>button>span:last-child {margin-left:auto;color:var(--admin-muted)}
-.admin-layout .admin-user-filter {margin:0;align-items:center;padding:19px 21px;border-color:var(--admin-line);border-radius:12px;box-shadow:none}
-.admin-user-filter label {display:grid;gap:9px;color:var(--admin-ink);font-size:.78rem;font-weight:600}
-.admin-user-filter input {width:100%;min-height:43px;padding:10px 13px;border:1px solid #cedbd3;border-radius:8px;background:#fcfdfc;font-size:.82rem;color:var(--admin-ink)}
-.admin-result-count {padding-top:23px;white-space:nowrap;font-size:.75rem;color:var(--admin-muted)}
+.admin-user-summary {display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;padding:0 2px;color:var(--admin-ink);font-size:.82rem}
+.admin-user-summary>strong {font-weight:600}
+.admin-result-count {white-space:nowrap;font-size:.75rem;color:var(--admin-muted)}
 .admin-result-count strong {color:var(--admin-ink);font-weight:650}
 .admin-layout .admin-user-table-wrap {min-width:0;border-color:var(--admin-line);border-radius:12px;box-shadow:none}
 .admin-layout .admin-user-table th {padding:12px;border-bottom:1px solid var(--admin-line);background:#f4f7f4;color:var(--admin-muted);font-size:.7rem;font-weight:600}
@@ -157,9 +156,6 @@
   .admin-layout .admin-summary-strip article>strong {font-size:1.75rem}
   .admin-summary-strip article>small {font-size:.65rem}
   .admin-overview-bottom {grid-template-columns:minmax(0,1fr);gap:18px}
-  .admin-layout .admin-user-filter {align-items:stretch;flex-direction:column;gap:12px;padding:18px}
-  .admin-layout .admin-user-filter label {min-width:0;width:100%}
-  .admin-result-count {padding:0}
   .admin-layout .admin-card-heading {gap:8px}
   .admin-layout .analytics-grid {grid-template-columns:minmax(0,1fr)}
   .admin-layout .admin-access-form {padding:20px}
@@ -188,11 +184,13 @@
 }
 
 /* Compact overview and complete, paginated account directory. */
-.admin-view-overview .admin-side {min-height:460px}
-.admin-view-overview .admin-content {gap:16px}
-.admin-view-overview .admin-page-header {min-height:98px}
-.admin-overview-bottom>.content-card {padding:18px}
-.admin-overview-bottom .admin-card-heading {margin-bottom:12px}
+.admin-view-overview {align-items:stretch}
+.admin-view-overview .admin-side {min-height:0;align-self:stretch}
+.admin-view-overview .admin-content {gap:12px}
+.admin-view-overview .admin-page-header {min-height:98px;padding-bottom:16px}
+.admin-view-overview .admin-page-header .admin-breadcrumb {margin-bottom:10px}
+.admin-overview-bottom>.content-card {padding:16px}
+.admin-overview-bottom .admin-card-heading {margin-bottom:8px}
 .admin-shortcuts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .admin-shortcuts .admin-card-heading {grid-column:1/-1;margin-bottom:4px}
 .admin-shortcuts small {display:none}

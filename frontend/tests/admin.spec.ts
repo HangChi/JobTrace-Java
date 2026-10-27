@@ -32,11 +32,18 @@ for (const width of [1440, 768, 375]) {
     await expect(metrics).toHaveCount(6)
     for (const metric of await metrics.all()) {
       const height = (await metric.boundingBox())!.height
-      expect(height).toBeGreaterThanOrEqual(width === 375 ? 104 : 116)
-      expect(height).toBeLessThanOrEqual(136)
+      expect(height).toBeGreaterThanOrEqual(104)
+      expect(height).toBeLessThanOrEqual(124)
     }
     expect(await page.locator('.admin-summary-strip').evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length)).toBe(width === 375 ? 2 : 3)
     await expect(page.getByRole('heading', { name: '常用操作' })).toBeVisible()
+    if (width > 800) {
+      const rail = (await page.locator('.admin-side').boundingBox())!
+      const content = (await page.locator('.admin-content').boundingBox())!
+      const bottom = (await page.locator('.admin-overview-bottom').boundingBox())!
+      expect(Math.abs(rail.y - content.y)).toBeLessThanOrEqual(1)
+      expect(Math.abs(rail.y + rail.height - bottom.y - bottom.height)).toBeLessThanOrEqual(1)
+    }
     await fitsPage(page)
     await page.screenshot({ path: `/private/tmp/jobtrace-admin-overview-${width}.png`, fullPage: true })
     await page.getByRole('button', { name: '前往用户管理' }).click()
@@ -107,8 +114,8 @@ for (const width of [1440, 375]) {
       const url = new URL(route.request().url())
       const current = Number(url.searchParams.get('page'))
       const limit = Number(url.searchParams.get('limit'))
-      const query = url.searchParams.get('q') || ''
-      const all = Array.from({ length: 125 }, (_, index) => ({ ...user, id: `u${index}`, username: `user-${String(index + 1).padStart(3, '0')}`, email: `user${index + 1}@example.com` })).filter(item => item.username.includes(query))
+      expect(url.searchParams.has('q')).toBe(false)
+      const all = Array.from({ length: 125 }, (_, index) => ({ ...user, id: `u${index}`, username: `user-${String(index + 1).padStart(3, '0')}`, email: `user${index + 1}@example.com` }))
       return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: all.slice((current - 1) * limit, current * limit), total: all.length, page: current, limit, totalPages: Math.ceil(all.length / limit) }) })
     })
     await page.setViewportSize({ width, height: 1000 })
@@ -122,9 +129,9 @@ for (const width of [1440, 375]) {
     await expect(page.getByText('user-001', { exact: true })).toBeVisible()
     await page.getByRole('button', { name: '第 3 页', exact: true }).click()
     await expect(page.getByText('user-125', { exact: true })).toBeAttached()
-    await page.getByLabel('搜索用户').fill('user-125')
+    await expect(page.getByLabel('搜索用户')).toHaveCount(0)
     const row = page.getByRole('row').filter({ hasText: 'user-125' })
-    await expect(page.getByText('第 1 / 1 页')).toBeVisible()
+    await expect(page.getByText('第 3 / 3 页')).toBeVisible()
     await row.scrollIntoViewIfNeeded()
     await expect(row.getByRole('button', { name: '查看档案' })).toBeInViewport()
     await expect(row.getByRole('button', { name: '管理访问' })).toBeInViewport()

@@ -1,0 +1,55 @@
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, expect, it, vi } from 'vitest'
+import QueryFilterPanel from './QueryFilterPanel'
+
+afterEach(cleanup)
+
+it('opens a named panel, preserves fields and supports Escape, close and outside clicks', () => {
+  render(<><QueryFilterPanel count={2} onReset={vi.fn()}><label>状态<input defaultValue="offer" /></label></QueryFilterPanel><button>外部</button></>)
+  const trigger = screen.getByRole('button', { name: '筛选条件' })
+  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.getByLabelText('已选 2 项')).toBeInTheDocument()
+  fireEvent.click(trigger)
+  expect(screen.getByRole('region', { name: '筛选面板' })).toBeVisible()
+  fireEvent.change(screen.getByLabelText('状态'), { target: { value: 'submitted' } })
+  fireEvent.pointerDown(screen.getByLabelText('状态'))
+  fireEvent.keyDown(document, { key: 'ArrowDown' })
+  expect(trigger).toHaveAttribute('aria-expanded', 'true')
+  fireEvent.keyDown(document, { key: 'Escape' })
+  expect(trigger).toHaveFocus()
+  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  fireEvent.click(trigger)
+  expect(screen.getByLabelText('状态')).toHaveValue('submitted')
+  fireEvent.click(screen.getByRole('button', { name: '关闭筛选面板' }))
+  expect(trigger).toHaveFocus()
+  fireEvent.click(trigger)
+  fireEvent.pointerDown(screen.getByRole('button', { name: '外部' }))
+  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+  fireEvent.click(trigger)
+  fireEvent.click(trigger)
+  expect(trigger).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('submits the parent search form when applying and closes the panel', () => {
+  const submit = vi.fn(event => event.preventDefault())
+  render(<form aria-label="查询" onSubmit={submit}><QueryFilterPanel count={0} onReset={vi.fn()}><label>类型<input defaultValue="campus" /></label></QueryFilterPanel></form>)
+  expect(screen.queryByLabelText(/已选/)).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: '筛选条件' }))
+  fireEvent.click(screen.getByRole('button', { name: '应用筛选' }))
+  expect(submit).toHaveBeenCalledOnce()
+  expect(screen.getByRole('button', { name: '筛选条件' })).toHaveAttribute('aria-expanded', 'false')
+})
+
+it('resets conditions and supports an instant-update done action without form submission', () => {
+  const reset = vi.fn()
+  const submit = vi.fn(event => event.preventDefault())
+  render(<form onSubmit={submit}><QueryFilterPanel instant count={1} onReset={reset}><input aria-label="城市" /></QueryFilterPanel></form>)
+  fireEvent.click(screen.getByRole('button', { name: '筛选条件' }))
+  expect(screen.getByText('选择后自动更新结果')).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: '完成' }))
+  expect(submit).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: '筛选条件' }))
+  fireEvent.click(screen.getByRole('button', { name: '清除全部条件' }))
+  expect(reset).toHaveBeenCalledOnce()
+  expect(screen.getByRole('button', { name: '筛选条件' })).toHaveAttribute('aria-expanded', 'false')
+})

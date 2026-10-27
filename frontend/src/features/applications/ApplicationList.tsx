@@ -1,3 +1,5 @@
+import QueryFilterPanel from '../../shared/ui/QueryFilterPanel'
+import '../../shared/ui/QueryToolbar.css'
 import Pagination from '../../shared/ui/Pagination'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -156,7 +158,6 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
   const totalPages = page ? Math.max(1, Math.ceil(page.total / page.limit)) : 1
   const currentPage = page?.page ?? 1
   const filtered = Boolean(params.get('q') || params.get('status') || params.get('type'))
-  const activeFilters = ['q', 'status', 'type', 'sort'].filter(key => Boolean(params.get(key))).length
   const exportQuery = new URLSearchParams(search)
   exportQuery.delete('cursor')
   exportQuery.delete('page')
@@ -171,15 +172,9 @@ export default function ApplicationList({ search, navigate, onExpired, routeMode
     {!routeMode && <div className="application-dashboard-actions"><button type="button" onClick={() => setEditingId(null)}>新建投递</button><details className="application-export-menu"><summary><span>导出</span><svg className="export-menu-chevron" aria-hidden="true" viewBox="0 0 20 20"><path d="m6 8 4 4 4-4" /></svg></summary><div><p>当前筛选</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a><p>全部记录</p><a href="/api/exports/applications?scope=all&format=xlsx">全部导出 Excel</a>{selectedIds.size > 0 && <><p>所选 {selectedIds.size} 条</p><a href={`/api/exports/applications?${selectedExportQuery}&format=xlsx`}>所选导出 Excel</a><a href={`/api/exports/applications?${selectedExportQuery}&format=csv`}>所选导出 CSV</a></>}</div></details></div>}
     {editingId !== undefined && <ApplicationEditor key={editingId ?? 'new'} id={editingId} onClose={() => setEditingId(undefined)} onChanged={() => setReload(value => value + 1)} onExpired={onExpired} />}
     <ApplicationOverview summary={summary} onOpen={id => routeMode ? navigate(`/applications/${encodeURIComponent(id)}`) : setEditingId(id)} />
-    <form className="application-filters filter-panel" aria-label="筛选投递记录" onSubmit={filter}>
-      <div className="filter-panel-heading"><div><span className="filter-panel-kicker">记录检索</span><h2>找到一条投递</h2></div><p>按岗位、进度和招聘类型定位记录。</p></div>
-      <div className="filter-panel-fields">
-        <label className="filter-search-field">搜索投递<input value={query} maxLength={200} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label>
-        <label>状态<select className={`status-control status-${status || "all"}`} value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部状态</option><option value="submitted">已投递</option><option value="offer">Offer</option><option value="refused">拒绝</option></select></label>
-        <label>类型<select value={type} onChange={event => setFilterDraft({ ...draft, type: event.target.value })}><option value="">全部类型</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <label>排序<select value={sort} onChange={event => setFilterDraft({ ...draft, sort: event.target.value })}><option value="">默认排序（已投递优先）</option><option value="latestDate">最新日期</option><option value="appliedDate">投递日期</option><option value="company">公司名称</option><option value="position">岗位名称</option></select></label>
-      </div>
-      <div className="filter-panel-footer"><span>{activeFilters ? `已启用 ${activeFilters} 项查找条件` : '可组合多个条件查找投递'}</span><div className="application-filter-actions"><button type="button" onClick={clearFilters}>清空条件</button><button type="submit">筛选</button></div></div>
+    <form className="application-filters filter-panel list-query" aria-label="筛选投递记录" onSubmit={filter}>
+      <div className="query-search-box"><label className="query-search"><span className="sr-only">搜索投递</span><input value={query} maxLength={200} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label><button type="submit" className="query-search-button">搜索</button></div>
+      <div className="query-toolbar-right"><label className="query-control"><span>排序</span><select value={sort} onChange={event => setFilterDraft({ ...draft, sort: event.target.value })}><option value="">默认排序</option><option value="latestDate">最新日期</option><option value="appliedDate">投递日期</option><option value="company">公司名称</option><option value="position">岗位名称</option></select></label><QueryFilterPanel count={Number(Boolean(status)) + Number(Boolean(type))} onReset={clearFilters}><label className="query-control"><span>状态</span><select className={`status-control status-${status || "all"}`} value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部</option><option value="submitted">已投递</option><option value="offer">Offer</option><option value="refused">拒绝</option></select></label><label className="query-control"><span>类型</span><select value={type} onChange={event => setFilterDraft({ ...draft, type: event.target.value })}><option value="">全部</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></QueryFilterPanel><button type="button" className="query-reset" aria-label="清空条件" title="清空条件" onClick={clearFilters}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.2 5M4 3v4h4" strokeLinecap="round" strokeLinejoin="round" /></svg><span>重置</span></button></div>
     </form>
     {actionError && <p className="error" role="alert">{actionError}</p>}
     {error ? <div className="content-card"><p role="alert">{error}</p><button onClick={() => { setPage(null); setReload(value => value + 1) }}>重试加载</button></div> :

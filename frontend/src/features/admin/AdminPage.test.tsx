@@ -41,14 +41,14 @@ it('shows marketplace read data without offering Java ingestion', async () => {
   expect(fetcher).not.toHaveBeenCalledWith(expect.stringContaining('/sync'), expect.objectContaining({ method: 'POST' }))
 })
 
-it('filters managed users and rejects a short access-change reason without writing', async () => {
+it('shows the unfiltered directory and rejects a short access-change reason without writing', async () => {
   const fetcher = vi.fn(async (path: string) => path.startsWith('/api/admin/users')
     ? json({ items: [user], total: 1, page: 1, limit: 50 })
     : json({ counts: { status: 'unavailable', value: null }, activity: { status: 'unavailable', windows: null } }))
   vi.stubGlobal('fetch', fetcher)
   render(<AdminPage currentUserId="u1" onExpired={vi.fn()} initialTab="users" />)
-  fireEvent.change(screen.getByLabelText('搜索用户'), { target: { value: 'tester' } })
-  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/admin/users?limit=20&page=1&q=tester', expect.anything()))
+  expect(screen.queryByLabelText('搜索用户')).not.toBeInTheDocument()
+  await waitFor(() => expect(fetcher).toHaveBeenCalledWith('/api/admin/users?limit=20&page=1', expect.anything()))
   fireEvent.click(await screen.findByRole('button', { name: '管理访问' }))
   fireEvent.change(screen.getByLabelText('原因（至少 10 字）'), { target: { value: 'too short' } })
   fireEvent.submit(screen.getByRole('button', { name: '确认变更' }).closest('form')!)
@@ -145,7 +145,7 @@ it('reports an admin request failure and expires an unauthorized request', async
   vi.stubGlobal('fetch', fetcher)
   render(<AdminPage currentUserId="u1" initialTab="users" onExpired={onExpired} />)
   expect(await screen.findByRole('alert')).toHaveTextContent('管理服务暂不可用')
-  fireEvent.change(screen.getByLabelText('搜索用户'), { target: { value: 'tester' } })
+  fireEvent.click(screen.getByRole('button', { name: '操作审计' }))
   await waitFor(() => expect(onExpired).toHaveBeenCalledOnce())
 })
 
@@ -166,13 +166,13 @@ it('opens management sections through overview shortcuts', async () => {
   expect(screen.getByRole('heading', { name: '账号目录' })).toBeInTheDocument()
 })
 
-it('pages through all managed users and resets the page for search and page size', async () => {
+it('pages through all managed users without search and resets the page for page size', async () => {
   const fetcher = vi.fn(async (path: string) => {
     const url = new URL(path, 'https://jobtrace.test')
     const page = Number(url.searchParams.get('page'))
     const limit = Number(url.searchParams.get('limit'))
-    const q = url.searchParams.get('q')
-    return json({ items: [{ ...user, id: `p${page}`, username: q || `第${page}页用户` }], total: q ? 1 : 65, page, limit, totalPages: Math.ceil((q ? 1 : 65) / limit) })
+    expect(url.searchParams.has('q')).toBe(false)
+    return json({ items: [{ ...user, id: `p${page}`, username: `第${page}页用户` }], total: 65, page, limit, totalPages: Math.ceil(65 / limit) })
   })
   vi.stubGlobal('fetch', fetcher)
   render(<AdminPage currentUserId="u1" initialTab="users" onExpired={vi.fn()} />)
@@ -181,14 +181,7 @@ it('pages through all managed users and resets the page for search and page size
   fireEvent.click(screen.getByRole('button', { name: '第 4 页' }))
   expect(await screen.findByText('第4页用户')).toBeInTheDocument()
   expect(fetcher).toHaveBeenCalledWith('/api/admin/users?limit=20&page=4', expect.anything())
-  fireEvent.change(screen.getByLabelText('搜索用户'), { target: { value: 'alice' } })
-  expect(await screen.findByText('alice')).toBeInTheDocument()
-  expect(fetcher).toHaveBeenCalledWith('/api/admin/users?limit=20&page=1&q=alice', expect.anything())
-  expect(screen.getByRole('button', { name: '下一页' })).toBeDisabled()
-  fireEvent.change(screen.getByLabelText('搜索用户'), { target: { value: '' } })
-  await screen.findByText('第1页用户')
-  fireEvent.click(screen.getByRole('button', { name: '第 4 页' }))
-  await screen.findByText('第4页用户')
+  expect(screen.queryByLabelText('搜索用户')).not.toBeInTheDocument()
   fireEvent.change(screen.getByLabelText('每页用户数'), { target: { value: '50' } })
   expect(await screen.findByText('第1页用户')).toBeInTheDocument()
   expect(fetcher).toHaveBeenCalledWith('/api/admin/users?limit=50&page=1', expect.anything())

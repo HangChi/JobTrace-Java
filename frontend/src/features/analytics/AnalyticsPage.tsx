@@ -1,3 +1,5 @@
+import QueryFilterPanel from '../../shared/ui/QueryFilterPanel'
+import '../../shared/ui/QueryToolbar.css'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError } from '../../shared/api/client'
@@ -67,17 +69,10 @@ export default function AnalyticsPage({ onExpired, onOverview }: { onExpired: ()
   const maxTrend = Math.max(1, ...(report?.trend.map(point => point.applications) ?? []))
   return <section className="analytics-content">
     <div className="feature-toolbar"><p>按时间、类型和城市查看投递趋势与转化。</p><a className="quiet-button" href="/api/exports/applications?scope=all&format=csv">导出投递 CSV</a></div>
-    <form className="content-card analytics-filters" onSubmit={applyFilters}>
-      <div className="analytics-filter-heading"><div><h2>分析范围</h2><p className="analytics-section-note">选择你想回顾的求职记录</p></div><button type="button" className="quiet-button" onClick={resetFilters}>恢复默认</button></div>
-      <div className="analytics-filter-grid">
-        <label>周期<select value={period} onChange={event => setPeriod(event.target.value)}>{Object.entries(periods).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <label>开始日期<input type="date" value={from} onChange={event => setFrom(event.target.value)} disabled={period !== 'custom'} /></label>
-        <label>结束日期<input type="date" value={to} onChange={event => setTo(event.target.value)} disabled={period !== 'custom'} /></label>
-        <label>求职类型<select value={type} onChange={event => setType(event.target.value)}><option value="__all__">全部类型</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <label>城市<select value={city} onChange={event => setCity(event.target.value)}><option value="__all__">全部城市</option><option value="">未填写</option>{(report?.availableCities ?? []).map(value => <option key={value} value={value}>{value}</option>)}</select></label>
-        <button type="submit">应用筛选</button>
-      </div>
-      <p className="muted-note">以投递日期确定分析范围；后续阶段、面经和结果仍会计入。</p>
+    <form className={`content-card analytics-filters list-query analytics-query ${period === 'custom' ? 'is-custom' : ''}`} aria-label="分析范围" onSubmit={applyFilters}>
+      <div className="query-primary-fields"><label className="query-control"><span>周期</span><select value={period} onChange={event => setPeriod(event.target.value)}>{Object.entries(periods).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label></div>
+      <div className="query-toolbar-right"><QueryFilterPanel count={Number(type !== '__all__') + Number(city !== '__all__')} onReset={resetFilters}><label className="query-control"><span>求职类型</span><select value={type} onChange={event => setType(event.target.value)}><option value="__all__">全部</option>{Object.entries(types).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label className="query-control"><span>城市</span><select value={city} onChange={event => setCity(event.target.value)}><option value="__all__">全部</option><option value="">未填写</option>{(report?.availableCities ?? []).map(value => <option key={value} value={value}>{value}</option>)}</select></label></QueryFilterPanel><button type="button" className="query-reset" aria-label="恢复默认" title="恢复默认" onClick={resetFilters}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.2 5M4 3v4h4" strokeLinecap="round" strokeLinejoin="round" /></svg><span>重置</span></button><button type="submit" className="query-submit">查看分析</button></div>
+      {period === 'custom' && <div className="query-date-range" role="group" aria-label="自定义日期范围"><label className="query-control"><span>开始日期</span><input type="date" value={from} onChange={event => setFrom(event.target.value)} /></label><label className="query-control"><span>结束日期</span><input type="date" value={to} onChange={event => setTo(event.target.value)} /></label><span>按投递日期统计，后续面试进展与结果仍计入报告。</span></div>}
     </form>
     {error && <p className="error" role="alert">{error} <button className="quiet-button" onClick={() => setReload(value => value + 1)}>重试</button></p>}
     {!summary || !report ? !error && <p role="status">正在加载分析…</p> : <>
