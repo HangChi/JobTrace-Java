@@ -16,7 +16,7 @@ export type CatalogPage = { items: { identityKey: string; companyName: string; a
 export type RunPage = { items: { id: string; sourceId: string; status: string; startedAt: string; finishedAt: string | null; counts: { created: number; updated: number; rejected: number } | null; errorSummary: string | null }[]; total: number; page: number; limit: number }
 
 export const getAdminSummary = () => apiRequest<AdminSummary>('/api/admin/summary')
-export const listAdminUsers = (query = '') => apiRequest<Page<AdminUser>>(`/api/admin/users?limit=50${query ? `&q=${encodeURIComponent(query)}` : ''}`)
+export const listAdminUsers = (query = '', page = 1, limit = 20) => apiRequest<Page<AdminUser>>(`/api/admin/users?limit=${limit}&page=${page}${query ? `&q=${encodeURIComponent(query)}` : ''}`)
 export const getAdminUser = (id: string) => apiRequest<AdminUserDetail>(`/api/admin/users/${encodeURIComponent(id)}`)
 export const listAdminAudit = () => apiRequest<Page<AdminAudit>>('/api/admin/audit-events?limit=30')
 export const changeAdminAccess = (user: AdminUser, action: string, reason: string, confirmSelf: boolean) =>

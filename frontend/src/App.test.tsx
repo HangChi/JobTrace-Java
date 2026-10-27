@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
-const session = { session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '小李', image: null, role: 'USER' } }
+const session = { session: { id: 's1', expiresAt: '2027-01-01T00:00:00Z' }, user: { id: 'u1', displayName: '小李', image: null, role: 'user' } }
 const emptyApplications = { items: [], nextCursor: null, total: 0, page: 1, limit: 50 }
 
 describe('App authentication', () => {
@@ -88,18 +88,49 @@ describe('App authentication', () => {
 
   it('allows admins to navigate to the live Java management view', async () => {
     window.history.replaceState(null, '', '/applications')
-    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : path === '/api/admin/summary' ? json({ counts: { status: 'available', value: { users: 3, activeUsers: 2, applications: 8, interviews: 4 } }, activity: { status: 'unavailable', windows: null } }) : json(emptyApplications)))
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'admin' } }) : path === '/api/admin/summary' ? json({ counts: { status: 'available', value: { users: 3, activeUsers: 2, applications: 8, interviews: 4 } }, activity: { status: 'unavailable', windows: null } }) : json(emptyApplications)))
     render(<App />)
-    const adminLink = await screen.findByRole('link', { name: '管理后台' })
+    const [adminLink] = await screen.findAllByRole('link', { name: '管理后台' })
     fireEvent.click(adminLink)
     expect(window.location.pathname).toBe('/admin')
     expect(await screen.findByRole('heading', { name: '运营概览' })).toBeInTheDocument()
     expect(await screen.findByText('活跃数据暂不可用。')).toBeInTheDocument()
   })
 
+
+  it('restores an administrator on the login page directly into the management overview', async () => {
+    window.history.replaceState(null, '', '/login')
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session'
+      ? json({ ...session, user: { ...session.user, role: 'admin' } })
+      : json({ counts: { status: 'unavailable', value: null }, activity: { status: 'unavailable', windows: null } })))
+    render(<App />)
+    expect(await screen.findByRole('heading', { name: '运营概览' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/admin')
+    expect(screen.getByLabelText('打开用户菜单')).toHaveTextContent('管理员')
+    expect(screen.getByRole('navigation', { name: '主要功能' })).toHaveTextContent('管理后台')
+    expect(screen.queryByText('普通用户')).not.toBeInTheDocument()
+  })
+
+  it('signs an administrator in and opens the backend-selected management overview', async () => {
+    window.history.replaceState(null, '', '/login')
+    const fetcher = vi.fn().mockResolvedValueOnce(json({}, 401))
+      .mockResolvedValueOnce(json({ redirectTarget: '/admin' }))
+      .mockResolvedValueOnce(json({ ...session, user: { ...session.user, role: 'admin' } }))
+      .mockResolvedValue(json({ counts: { status: 'unavailable', value: null }, activity: { status: 'unavailable', windows: null } }))
+    vi.stubGlobal('fetch', fetcher)
+    render(<App />)
+    fireEvent.change(await screen.findByLabelText('邮箱或用户名'), { target: { value: 'admin' } })
+    fireEvent.change(screen.getByLabelText('密码'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: '登录' }))
+    expect(await screen.findByRole('heading', { name: '运营概览' })).toBeInTheDocument()
+    const loginRequest = fetcher.mock.calls.find(([path]) => path === '/api/auth/login')
+    expect(JSON.parse(loginRequest![1].body)).toEqual({ identifier: 'admin', password: 'secret123' })
+    expect(screen.getByLabelText('打开用户菜单')).toHaveTextContent('管理员')
+  })
+
   it('opens an administrator deep link at the matching legacy section', async () => {
     window.history.replaceState(null, '', '/admin/users')
-    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : json({ items: [], total: 0, page: 1, limit: 50 })))
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'admin' } }) : json({ items: [], total: 0, page: 1, limit: 50 })))
     render(<App />)
     expect(await screen.findByRole('heading', { name: '账号目录' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '用户管理', pressed: true })).toBeInTheDocument()
@@ -140,8 +171,8 @@ describe('App authentication', () => {
 
   it('opens the administrator user archive on its legacy URL', async () => {
     window.history.replaceState(null, '', '/admin/users/u2')
-    const user = { id: 'u2', username: 'candidate', email: 'candidate@example.com', internalEmail: null, role: 'USER', disabled: false, accessVersion: 1, createdAt: '2026-01-01', lastSignInAt: null, applicationCount: 0, interviewCount: 0, recentAuditEvents: [], applications: { items: [], total: 0, page: 1, limit: 20, totalPages: 0 }, interviews: { items: [], total: 0, page: 1, limit: 20, totalPages: 0 } }
-    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'ADMIN' } }) : json(user)))
+    const user = { id: 'u2', username: 'candidate', email: 'candidate@example.com', internalEmail: null, role: 'user', disabled: false, accessVersion: 1, createdAt: '2026-01-01', lastSignInAt: null, applicationCount: 0, interviewCount: 0, recentAuditEvents: [], applications: { items: [], total: 0, page: 1, limit: 20, totalPages: 0 }, interviews: { items: [], total: 0, page: 1, limit: 20, totalPages: 0 } }
+    vi.stubGlobal('fetch', vi.fn(async (path: string) => path === '/api/auth/session' ? json({ ...session, user: { ...session.user, role: 'admin' } }) : json(user)))
     render(<App />)
     expect(await screen.findByRole('heading', { name: 'candidate', level: 1 })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /返回用户目录/ })).toBeInTheDocument()

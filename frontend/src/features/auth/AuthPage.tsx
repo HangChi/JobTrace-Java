@@ -46,11 +46,11 @@ export default function AuthPage({ path, query, navigate, onLogin, onLink }: Pro
     setError(''); setNotice(''); setBusy(true)
     try {
       if (path === '/login') {
-        const returnTo = safePath(query.get('returnTo'))
+        const returnTo = safePath(query.get('returnTo'), '') || undefined
         const result = await login(value('identifier'), String(data.get('password') ?? ''), returnTo)
         const session = await getSession()
         onLogin(session)
-        navigate(safePath(result.redirectTarget, returnTo), true)
+        navigate(safePath(result.redirectTarget, returnTo ?? (session.user.role === 'ADMIN' ? '/admin' : '/')), true)
       } else if (path === '/register') {
         const password = String(data.get('password') ?? '')
         if (password !== String(data.get('confirmPassword') ?? '')) {

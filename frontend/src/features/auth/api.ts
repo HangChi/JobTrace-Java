@@ -5,8 +5,12 @@ export type CurrentSession = {
   user: { id: string; displayName: string; image: string | null; role: string }
 }
 
-export const getSession = () => apiRequest<CurrentSession>('/api/auth/session')
-export const login = (identifier: string, password: string, returnTo: string) =>
+// The browser API uses legacy lowercase roles; UI projections use uppercase roles.
+export const getSession = async (): Promise<CurrentSession> => {
+  const current = await apiRequest<CurrentSession>('/api/auth/session')
+  return { ...current, user: { ...current.user, role: current.user.role === 'admin' || current.user.role === 'ADMIN' ? 'ADMIN' : 'USER' } }
+}
+export const login = (identifier: string, password: string, returnTo: string | undefined) =>
   apiRequest<{ redirectTarget: string }>('/api/auth/login', { method: 'POST', body: { identifier, password, returnTo } })
 export const logout = () => apiRequest<void>('/api/auth/logout', { method: 'POST' })
 export const requestEmailCode = (email: string) =>

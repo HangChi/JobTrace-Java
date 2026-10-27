@@ -64,7 +64,7 @@ function App() {
     getSession().then(session => {
       if (!active) return
       setAuth({ kind: 'ready', session })
-      if (guestRoutes.has(window.location.pathname)) navigate('/', true)
+      if (guestRoutes.has(window.location.pathname)) navigate(session.user.role === 'ADMIN' ? '/admin' : '/', true)
     }).catch(error => {
       if (!active) return
       if (error instanceof ApiError && error.status === 401) {
@@ -81,7 +81,7 @@ function App() {
     const destination = auth.kind === 'guest' && !guestRoutes.has(pathname)
       ? `/login?returnTo=${encodeURIComponent(path)}`
       : auth.kind === 'ready' && guestRoutes.has(pathname)
-        ? '/' : null
+        ? auth.session.user.role === 'ADMIN' ? '/admin' : '/' : null
     if (destination) queueMicrotask(() => navigate(destination, true))
   }, [auth, path])
 
@@ -144,7 +144,7 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
         <img className="app-brand-mark" src="/jobtrace-icon.svg" alt="" width="38" height="38" />
         <span><strong>JobTrace</strong><small>投递与面试</small></span>
       </a>
-      <nav className="app-primary-nav" aria-label="主要功能">{navigation.map(item => <a key={item.path} href={item.path} aria-current={current?.path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}</nav>
+      <nav className="app-primary-nav" aria-label="主要功能">{navigation.map(item => <a key={item.path} href={item.path} aria-current={current?.path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}{session.user.role === 'ADMIN' && <a href="/admin" aria-current={path.startsWith('/admin') ? 'page' : undefined} onClick={event => onLink(event, '/admin')}>管理后台</a>}</nav>
       <details className="account-menu">
         <summary aria-label="打开用户菜单"><AccountAvatar name={accountUser.displayName} image={accountUser.image} /><span className="user-summary"><strong>{accountUser.displayName}</strong><small>{session.user.role === 'ADMIN' ? '管理员' : '普通用户'}</small></span><svg className="menu-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></summary>
         <div className="account-popover">
