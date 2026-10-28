@@ -603,3 +603,29 @@ test('numbered pagination preserves filters and fits desktop and mobile', async 
     await page.screenshot({ path: test.info().outputPath(`pagination-market-${width}.png`), fullPage: true })
   }
 })
+
+test('public interview sidebar stays compact without clipping its content', async ({ page }) => {
+  await page.route('**/api/auth/session', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }) }))
+  await page.route('**/api/interviews/public**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], total: 12345, nextCursor: null, facets: { cities: [], positions: [] } }) }))
+  await page.route('**/api/interviews?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], total: 0, nextCursor: null }) }))
+  for (const width of [1440, 1024, 390, 320]) {
+    await page.setViewportSize({ width, height: 1000 })
+    await page.goto('/interviews')
+    const sidebar = page.getByRole('complementary', { name: '面经广场辅助信息' })
+    await expect(sidebar.getByText('12345')).toBeVisible()
+    const cards = sidebar.locator(':scope > button, :scope > section')
+    await expect(cards).toHaveCount(3)
+    const maxHeights = [72, 72, 170]
+    for (let index = 0; index < 3; index++) {
+      const card = cards.nth(index)
+      expect((await card.boundingBox())!.height).toBeLessThanOrEqual(maxHeights[index])
+      expect(await card.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight)).toBe(true)
+    }
+    if (width >= 1024) expect((await sidebar.boundingBox())!.height).toBeLessThanOrEqual(300)
+    await expect(sidebar.getByText('可随时切回私有状态')).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await sidebar.screenshot({ path: `/private/tmp/jobtrace-compact-sidebar-${width}.png` })
+    await sidebar.getByRole('button', { name: '个人空间 我的面经 →' }).click()
+    await expect(page).toHaveURL(/\/interviews\/mine$/)
+  }
+})

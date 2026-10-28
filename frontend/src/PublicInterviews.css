@@ -16,7 +16,15 @@
 .interview-square-page .public-feed-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 22px 0; padding: 10px 0; border-top: 1px solid var(--line); }
 .interview-square-page .public-feed-card-footer .public-feed-engagement { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; border: 0; color: var(--muted); font-size: .73rem; }
 .interview-square-page .public-feed-card-footer button { min-height: 36px; padding: 6px 0 6px 8px; white-space: nowrap; font-size: .77rem; }
-.interview-square-page .public-feed-sidebar .content-card { padding: 18px; }
+/* Compact supporting cards keep the feed as the main reading surface. */
+.interview-square-page .public-feed-sidebar { gap: 12px; }
+.interview-square-page .public-feed-sidebar :is(.content-card, .public-mine-link) { padding: 14px 16px; border-radius: 10px; }
+.interview-square-page .public-feed-sidebar .public-mine-link { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; min-height: 56px; }
+.interview-square-page .public-feed-activity { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+.interview-square-page .public-feed-sidebar .public-feed-activity>p { margin: 0; font-size: .8rem; line-height: 1.4; }
+.interview-square-page .public-feed-sidebar .public-feed-activity strong { font-size: 1.35rem; line-height: 1.3; font-variant-numeric: tabular-nums; }
+.interview-square-page .public-feed-sidebar .public-feed-guide h2 { margin: 0 0 10px; font-size: .9rem; line-height: 1.5; }
+.interview-square-page .public-feed-guide ul { gap: 5px; font-size: .78rem; line-height: 1.65; }
 .interview-square-page.interview-reading-page { max-width: 920px; margin-inline: auto; gap: 14px; }
 .interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); }
 .interview-reading-page .public-feed-sidebar { display: none; }
