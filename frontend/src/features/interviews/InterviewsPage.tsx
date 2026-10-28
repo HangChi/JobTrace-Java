@@ -241,7 +241,7 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
         </div>
       </div>}
 
-      <div className="public-square-layout">{!initialPublicId && <header className="public-feed-heading"><div><h1>面经分享</h1><p>从真实面试记录中找到准备方向。</p></div><span>共 {publicPage?.total ?? 0} 篇</span></header>}<div className="public-main">
+      <div className="public-square-layout">{!initialPublicId && <header className="public-feed-heading"><div><h1>面经分享</h1><p>从真实面试记录中找到准备方向。</p></div><span className="public-feed-total">公开面经 <strong>{publicPage?.total ?? 0}</strong> 篇</span></header>}<div className="public-main">
       {!initialPublicId && (!publicPage ? <p role="status">正在加载公开面经…</p> : <section className="public-feed" aria-label="公开面经列表">{publicPage.items.length === 0 ? <div className="content-card interview-empty-state"><h2>暂时没有公开面经</h2><p>换个筛选条件，或者先完成并分享你的第一篇面经。</p>{navigate && <button className="quiet-button" onClick={() => navigate('/interviews/mine')}>查看个人面经</button>}</div> : <ol className="public-feed-list">{publicPage.items.map(item => <li key={item.id}><PublicInterviewCard item={item} onOpen={() => navigate ? navigate(`/interviews/shared/${encodeURIComponent(item.id)}`) : openPublic(item.id)} /></li>)}</ol>}{publicPage.nextCursor && <button className="quiet-button public-feed-more" disabled={busy} onClick={morePublic}>加载更多公开面经</button>}</section>)}
       {initialPublicId && !publicDetail && !error && <p role="status">正在加载面经详情…</p>}
       {publicDetail && <article className="content-card public-interview">
@@ -257,7 +257,7 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
           <form className="comment-form" onSubmit={event => { event.preventDefault(); if (!comment.trim()) return; void execute(async () => { const value = await addPublicComment(publicDetail.id, comment.trim()); setComments([...comments, value.comment]); setPublicDetail({ ...publicDetail, engagement: value.engagement }); setComment('') }) }}><label>发表评论<textarea rows={3} value={comment} maxLength={2000} placeholder="交流面试体验，分享准备建议…" onChange={event => setComment(event.target.value)} required /></label><button disabled={busy} type="submit">提交评论</button></form>
         </section>
       </article>}
-      </div><aside className="public-feed-sidebar" aria-label="面经广场辅助信息"><div className="public-feed-panel">{navigate && !initialPublicId && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}<section className="public-feed-activity"><span>公开动态</span><p><strong>{publicPage?.total ?? '—'}</strong> 篇面经</p></section><section className="public-feed-guide"><h2>分享说明</h2><ul><li>完成复盘后才可公开</li><li>公开时默认匿名分享</li><li>可随时切回私有状态</li></ul></section></div></aside></div>
+      </div><aside className="public-feed-sidebar" aria-label="面经广场辅助信息"><div className="public-feed-panel">{navigate && !initialPublicId && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}<section className="public-feed-guide"><h2>分享说明</h2><ul><li>完成复盘后才可公开</li><li>公开时默认匿名分享</li><li>可随时切回私有状态</li></ul></section></div></aside></div>
     </>}
   </section>
 }

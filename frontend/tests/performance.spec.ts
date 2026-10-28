@@ -615,14 +615,16 @@ test('public interview sidebar aligns with the feed as one balanced panel', asyn
     const sidebar = page.getByRole('complementary', { name: '面经广场辅助信息' })
     const panel = sidebar.locator('.public-feed-panel')
     const feed = page.getByRole('region', { name: '公开面经列表' })
-    await expect(sidebar.getByText('12345')).toBeVisible()
+    await expect(page.locator('.public-feed-total')).toHaveText('公开面经 12345 篇')
+    await expect(sidebar.getByText('12345')).toHaveCount(0)
+    await expect(sidebar.getByText('公开动态')).toHaveCount(0)
     await expect(sidebar.locator(':scope > div')).toHaveCount(1)
     const panelBounds = (await panel.boundingBox())!
     const feedBounds = (await feed.boundingBox())!
     if (width >= 1024) {
       expect(Math.abs(panelBounds.y - feedBounds.y)).toBeLessThanOrEqual(1)
-      expect(panelBounds.height).toBeGreaterThanOrEqual(300)
-      expect(panelBounds.height).toBeLessThanOrEqual(340)
+      expect(panelBounds.height).toBeGreaterThanOrEqual(200)
+      expect(panelBounds.height).toBeLessThanOrEqual(270)
       expect((await feed.locator('article').first().boundingBox())!.height).toBeLessThanOrEqual(340)
     } else {
       expect(panelBounds.y).toBeGreaterThanOrEqual(feedBounds.y + feedBounds.height)

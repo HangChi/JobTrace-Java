@@ -5,7 +5,8 @@
 .interview-square-page .public-feed-sidebar { grid-area: sidebar; }
 .interview-square-page .public-feed-heading h1 { font-size: 1.15rem; }
 .interview-square-page .public-feed-heading p { display: block; margin: 5px 0 0; color: var(--muted); font-size: .78rem; font-weight: 400; line-height: 1.6; }
-.interview-square-page .public-feed-heading>span { flex: none; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.interview-square-page .public-feed-heading>.public-feed-total { flex: none; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.public-feed-total strong { margin-inline: 4px; color: var(--ink); font-size: .9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .interview-square-page .public-feed-card { border-radius: 12px; background: #fff; }
 .interview-square-page .public-feed-card-header { min-height: 0; padding: 14px 20px 10px; }
 .interview-square-page .public-feed-card-body { padding: 0 20px; }
@@ -21,16 +22,13 @@
 .interview-square-page .public-feed-card-footer button { min-height: 36px; padding: 6px 0 6px 8px; white-space: nowrap; font-size: .77rem; }
 /* One supporting panel aligns with the first feed card through the page grid. */
 .interview-square-page .public-feed-sidebar { display: block; min-width: 0; }
-.public-feed-panel { display: grid; align-content: start; gap: 18px; min-height: 320px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.public-feed-panel { display: grid; align-content: start; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .interview-square-page .public-feed-panel .public-mine-link { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; width: 100%; min-width: 0; min-height: 56px; padding: 12px; border: 0; border-radius: 8px; }
-.public-feed-activity { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; padding-bottom: 18px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
-.public-feed-activity>p { margin: 0; font-size: .8rem; line-height: 1.5; }
-.public-feed-activity strong { color: var(--brand-dark); font-size: 1.5rem; line-height: 1.4; font-variant-numeric: tabular-nums; }
+.interview-square-page .public-feed-guide { padding-top: 18px; border-top: 1px solid var(--line); }
 .interview-square-page .public-feed-guide h2 { margin: 0 0 12px; font-size: .9rem; line-height: 1.5; }
 .interview-square-page .public-feed-guide ul { gap: 8px; font-size: .78rem; line-height: 1.7; }
 @media (max-width: 900px) {
   .interview-square-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "feed" "sidebar"; }
-  .public-feed-panel { min-height: 0; }
 }
 .interview-square-page.interview-reading-page { max-width: 920px; margin-inline: auto; gap: 14px; }
 .interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "feed"; }
