@@ -1,6 +1,6 @@
 import QueryFilterPanel from '../../shared/ui/QueryFilterPanel'
 import '../../shared/ui/QueryToolbar.css'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { listApplications } from '../applications/api'
 import type { ApplicationSummary } from '../applications/api'
@@ -11,6 +11,7 @@ import InterviewDocumentEditor from './InterviewDocumentEditor'
 import { consolidateInterview } from './interviewDocument'
 import { MarkdownPreview } from './MarkdownPreview'
 import PublicInterviewCard from './PublicInterviewCard'
+import PublicInterviewSidebar from './PublicInterviewSidebar'
 
 const stages = [['assessment', '测评'], ['interview_1', '一面'], ['interview_2', '二面'], ['interview_3', '三面'], ['hr_interview', 'HR 面'], ['final_interview', '终面']]
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' })
@@ -56,6 +57,12 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
   const savedDraftRef = useRef<string | null>(null)
   const failedDraftRef = useRef<string | null>(null)
   const versionRef = useRef(0)
+  const publicExpiredRef = useRef(false)
+  const reportPublicExpired = useCallback(() => {
+    if (publicExpiredRef.current) return
+    publicExpiredRef.current = true
+    onExpired()
+  }, [onExpired])
 
   useEffect(() => {
     let active = true
@@ -74,9 +81,9 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     if (city) params.set('city', city)
     if (position) params.set('position', position)
     listPublicInterviews(params).then(value => { if (active) setPublicPage(value) })
-      .catch(caught => { if (active) { if (caught instanceof ApiError && caught.status === 401) onExpired(); else setError(message(caught)) } })
+      .catch(caught => { if (active) { if (caught instanceof ApiError && caught.status === 401) reportPublicExpired(); else setError(message(caught)) } })
     return () => { active = false }
-  }, [tab, sort, search, city, position, reload, onExpired])
+  }, [tab, sort, search, city, position, reload, reportPublicExpired])
 
   async function execute(work: () => Promise<void>) {
     if (busy) return
@@ -257,7 +264,7 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
           <form className="comment-form" onSubmit={event => { event.preventDefault(); if (!comment.trim()) return; void execute(async () => { const value = await addPublicComment(publicDetail.id, comment.trim()); setComments([...comments, value.comment]); setPublicDetail({ ...publicDetail, engagement: value.engagement }); setComment('') }) }}><label>发表评论<textarea rows={3} value={comment} maxLength={2000} placeholder="交流面试体验，分享准备建议…" onChange={event => setComment(event.target.value)} required /></label><button disabled={busy} type="submit">提交评论</button></form>
         </section>
       </article>}
-      </div><aside className="public-feed-sidebar" aria-label="面经广场辅助信息"><div className="public-feed-panel">{navigate && !initialPublicId && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}<section className="public-feed-guide"><h2>分享说明</h2><ul><li>完成复盘后才可公开</li><li>公开时默认匿名分享</li><li>可随时切回私有状态</li></ul></section></div></aside></div>
+      </div>{!initialPublicId && <PublicInterviewSidebar onExpired={reportPublicExpired} onMine={navigate ? () => navigate('/interviews/mine') : undefined} onOpen={id => navigate ? navigate(`/interviews/shared/${encodeURIComponent(id)}`) : openPublic(id)} />}</div>
     </>}
   </section>
 }

@@ -24,9 +24,24 @@
 .interview-square-page .public-feed-sidebar { display: block; min-width: 0; }
 .public-feed-panel { display: grid; align-content: start; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
 .interview-square-page .public-feed-panel .public-mine-link { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; width: 100%; min-width: 0; min-height: 56px; padding: 12px; border: 0; border-radius: 8px; }
-.interview-square-page .public-feed-guide { padding-top: 18px; border-top: 1px solid var(--line); }
-.interview-square-page .public-feed-guide h2 { margin: 0 0 12px; font-size: .9rem; line-height: 1.5; }
-.interview-square-page .public-feed-guide ul { gap: 8px; font-size: .78rem; line-height: 1.7; }
+.public-popular>header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.interview-square-page .public-popular h2 { margin: 0; font-size: .9rem; line-height: 1.5; }
+.public-popular>header>span { color: var(--muted); font-size: .68rem; }
+.public-popular ol { margin: 10px 0 0; padding: 0; list-style: none; }
+.public-popular li+li { border-top: 1px solid var(--line); }
+.public-popular button { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 14px 0; border: 0; border-radius: 4px; background: transparent; color: var(--ink); text-align: left; font: inherit; }
+.public-popular button:hover { color: var(--brand-dark); background: var(--surface-soft); }
+.public-popular button:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.public-popular-rank { flex: 0 0 18px; padding-top: 1px; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.public-popular li:first-child .public-popular-rank { color: var(--brand-dark); font-weight: 700; }
+.public-popular-entry { display: grid; min-width: 0; gap: 6px; }
+.public-popular-entry strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: .82rem; font-weight: 600; line-height: 1.6; }
+.public-popular-entry small { color: var(--muted); font-size: .72rem; line-height: 1.5; overflow-wrap: anywhere; }
+.public-popular-note { margin: 14px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.7; }
+.public-sharing-note { margin: 0; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .72rem; line-height: 1.8; }
+@media (min-width: 901px) {
+  .interview-square-page .public-feed-sidebar { position: sticky; top: 24px; max-height: calc(100dvh - 48px); overflow-y: auto; }
+}
 @media (max-width: 900px) {
   .interview-square-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "feed" "sidebar"; }
 }

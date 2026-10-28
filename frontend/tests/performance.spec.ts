@@ -607,7 +607,11 @@ test('numbered pagination preserves filters and fits desktop and mobile', async 
 test('public interview sidebar aligns with the feed as one balanced panel', async ({ page }) => {
   const post = { id: 'p1', companyName: '星河科技', positionName: '前端开发工程师', city: '上海', stage: 'interview_2', interviewedOn: '2026-10-08', publishedAt: '2026-10-09T00:00:00Z', questionCount: 1, author: null, engagement: { likeCount: 0, commentCount: 0, viewCount: 4, likedByViewer: false }, highlights: null, questions: [{ question: '如何理解 React 从状态更新到页面提交的过程？'.repeat(30), originalAnswer: null, followUpNotes: null, improvedAnswer: null }] }
   await page.route('**/api/auth/session', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }) }))
-  await page.route('**/api/interviews/public**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [post, { ...post, id: 'p2' }], total: 12345, nextCursor: null, facets: { cities: [], positions: [] } }) }))
+  await page.route('**/api/interviews/public**', route => {
+    const hot = new URL(route.request().url()).searchParams.get('sort') === 'hot'
+    const items = hot ? [post, { ...post, id: 'p2', companyName: '远山科技', positionName: '全栈开发工程师与平台研发方向'.repeat(5) }, { ...post, id: 'p3', companyName: '长河科技' }] : [post, { ...post, id: 'p2' }]
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items, total: 12345, nextCursor: null, facets: { cities: [], positions: [] } }) })
+  })
   await page.route('**/api/interviews?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], total: 0, nextCursor: null }) }))
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 })
@@ -619,22 +623,26 @@ test('public interview sidebar aligns with the feed as one balanced panel', asyn
     await expect(sidebar.getByText('12345')).toHaveCount(0)
     await expect(sidebar.getByText('公开动态')).toHaveCount(0)
     await expect(sidebar.locator(':scope > div')).toHaveCount(1)
+    await expect(sidebar.getByRole('listitem')).toHaveCount(3)
     const panelBounds = (await panel.boundingBox())!
     const feedBounds = (await feed.boundingBox())!
     if (width >= 1024) {
       expect(Math.abs(panelBounds.y - feedBounds.y)).toBeLessThanOrEqual(1)
-      expect(panelBounds.height).toBeGreaterThanOrEqual(200)
-      expect(panelBounds.height).toBeLessThanOrEqual(270)
+      expect(panelBounds.height).toBeGreaterThanOrEqual(300)
+      expect(panelBounds.height).toBeLessThanOrEqual(520)
       expect((await feed.locator('article').first().boundingBox())!.height).toBeLessThanOrEqual(340)
     } else {
       expect(panelBounds.y).toBeGreaterThanOrEqual(feedBounds.y + feedBounds.height)
     }
     expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight)).toBe(true)
-    await expect(sidebar.getByText('可随时切回私有状态')).toBeVisible()
+    await expect(sidebar.getByText('完成复盘后可公开，默认匿名，可随时转为私有。')).toBeVisible()
     const excerpt = feed.locator('.public-feed-excerpt').first()
     expect(await excerpt.evaluate(element => element.getBoundingClientRect().height <= parseFloat(getComputedStyle(element).lineHeight) * 3 + 1)).toBe(true)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: `/private/tmp/jobtrace-balanced-feed-${width}.png`, fullPage: true })
+    await sidebar.getByRole('button', { name: '阅读热门面经：星河科技 · 前端开发工程师' }).click()
+    await expect(page).toHaveURL(/\/interviews\/shared\/p1$/)
+    await page.goto('/interviews')
     await sidebar.getByRole('button', { name: '个人空间 我的面经 →' }).click()
     await expect(page).toHaveURL(/\/interviews\/mine$/)
   }
