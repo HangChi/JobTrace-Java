@@ -514,13 +514,24 @@ test('full public interviews keep a readable document and separate discussion on
     if (url.pathname.endsWith('/public/p1')) return route.fulfill(fulfill(post))
     return route.fulfill(fulfill({ items: [post], total: 1, nextCursor: null, limit: 20, facets: { cities: ['上海'], positions: [] } }))
   })
-  for (const width of [1440, 375]) {
+  for (const width of [1920, 1440, 1024, 768, 375, 320]) {
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/interviews')
+    const squareBounds = (await page.locator('.interview-square-page').boundingBox())!
     await page.getByRole('button', { name: '查看完整面经' }).click()
     await expect(page).toHaveURL(/shared\/p1$/)
     await expect(page.getByRole('heading', { name: '星河科技 · AI 应用与平台研发工程师', level: 1 })).toBeVisible()
+    const readingBounds = (await page.locator('.interview-reading-page').boundingBox())!
+    const cardBounds = (await page.locator('.public-interview').boundingBox())!
+    expect(Math.abs(readingBounds.x - squareBounds.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(readingBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
+    expect(Math.abs(cardBounds.x - squareBounds.x)).toBeLessThanOrEqual(1)
+    expect(Math.abs(cardBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
     const body = page.getByRole('region', { name: '面经正文' })
+    expect((await body.boundingBox())!.width).toBeLessThanOrEqual(920)
+    const headerBounds = (await page.locator('.public-reading-header').boundingBox())!
+    const commentBounds = (await page.locator('.public-comments').boundingBox())!
+    expect(Math.abs(headerBounds.x - commentBounds.x)).toBeLessThanOrEqual(1)
     await expect(body.getByRole('heading', { name: '面试记录', level: 2 })).toBeVisible()
     await expect(body.getByRole('list')).toBeVisible()
     await expect(page.locator('.public-feed-sidebar')).toBeHidden()
@@ -531,7 +542,7 @@ test('full public interviews keep a readable document and separate discussion on
     await page.getByLabel('发表评论').fill('感谢分享，准备方向很清晰。')
     await page.getByRole('button', { name: '提交评论' }).click()
     await expect(page.locator('.public-comment-list')).toContainText('感谢分享，准备方向很清晰。')
-    await page.screenshot({ path: test.info().outputPath(`public-reading-${width}.png`), fullPage: true })
+    await page.screenshot({ path: `/private/tmp/jobtrace-reading-width-${width}.png`, fullPage: true })
     await page.getByRole('button', { name: '返回面经广场' }).click()
     await expect(page).toHaveURL(/\/interviews$/)
   }

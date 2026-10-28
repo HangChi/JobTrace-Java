@@ -45,7 +45,9 @@
 @media (max-width: 900px) {
   .interview-square-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "feed" "sidebar"; }
 }
-.interview-square-page.interview-reading-page { max-width: 920px; margin-inline: auto; gap: 14px; }
+.interview-square-page.interview-reading-page { width: 100%; max-width: none; margin-inline: 0; gap: 16px; }
+.interview-reading-page .public-interview { width: 100%; min-width: 0; }
+.interview-reading-page .public-interview>:is(.public-reading-header, .public-reading-body, .public-reading-actions, .public-comments) { width: 100%; max-width: 920px; margin-inline: auto; }
 .interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "feed"; }
 .interview-reading-page .public-feed-sidebar { display: none; }
 .interview-reading-page>.interview-switch { min-height: 36px; padding: 6px 0; border: 0; background: transparent; font-size: .82rem; }
