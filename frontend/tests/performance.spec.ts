@@ -604,27 +604,35 @@ test('numbered pagination preserves filters and fits desktop and mobile', async 
   }
 })
 
-test('public interview sidebar stays compact without clipping its content', async ({ page }) => {
+test('public interview sidebar aligns with the feed as one balanced panel', async ({ page }) => {
+  const post = { id: 'p1', companyName: '星河科技', positionName: '前端开发工程师', city: '上海', stage: 'interview_2', interviewedOn: '2026-10-08', publishedAt: '2026-10-09T00:00:00Z', questionCount: 1, author: null, engagement: { likeCount: 0, commentCount: 0, viewCount: 4, likedByViewer: false }, highlights: null, questions: [{ question: '如何理解 React 从状态更新到页面提交的过程？'.repeat(30), originalAnswer: null, followUpNotes: null, improvedAnswer: null }] }
   await page.route('**/api/auth/session', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ session: { id: 's1', expiresAt: '2027-01-01' }, user: { id: 'u1', displayName: '测试用户', image: null, role: 'USER' } }) }))
-  await page.route('**/api/interviews/public**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], total: 12345, nextCursor: null, facets: { cities: [], positions: [] } }) }))
+  await page.route('**/api/interviews/public**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [post, { ...post, id: 'p2' }], total: 12345, nextCursor: null, facets: { cities: [], positions: [] } }) }))
   await page.route('**/api/interviews?**', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ items: [], total: 0, nextCursor: null }) }))
-  for (const width of [1440, 1024, 390, 320]) {
+  for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 1000 })
     await page.goto('/interviews')
     const sidebar = page.getByRole('complementary', { name: '面经广场辅助信息' })
+    const panel = sidebar.locator('.public-feed-panel')
+    const feed = page.getByRole('region', { name: '公开面经列表' })
     await expect(sidebar.getByText('12345')).toBeVisible()
-    const cards = sidebar.locator(':scope > button, :scope > section')
-    await expect(cards).toHaveCount(3)
-    const maxHeights = [72, 72, 170]
-    for (let index = 0; index < 3; index++) {
-      const card = cards.nth(index)
-      expect((await card.boundingBox())!.height).toBeLessThanOrEqual(maxHeights[index])
-      expect(await card.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight)).toBe(true)
+    await expect(sidebar.locator(':scope > div')).toHaveCount(1)
+    const panelBounds = (await panel.boundingBox())!
+    const feedBounds = (await feed.boundingBox())!
+    if (width >= 1024) {
+      expect(Math.abs(panelBounds.y - feedBounds.y)).toBeLessThanOrEqual(1)
+      expect(panelBounds.height).toBeGreaterThanOrEqual(300)
+      expect(panelBounds.height).toBeLessThanOrEqual(340)
+      expect((await feed.locator('article').first().boundingBox())!.height).toBeLessThanOrEqual(340)
+    } else {
+      expect(panelBounds.y).toBeGreaterThanOrEqual(feedBounds.y + feedBounds.height)
     }
-    if (width >= 1024) expect((await sidebar.boundingBox())!.height).toBeLessThanOrEqual(300)
+    expect(await panel.evaluate(element => element.scrollWidth <= element.clientWidth && element.scrollHeight <= element.clientHeight)).toBe(true)
     await expect(sidebar.getByText('可随时切回私有状态')).toBeVisible()
+    const excerpt = feed.locator('.public-feed-excerpt').first()
+    expect(await excerpt.evaluate(element => element.getBoundingClientRect().height <= parseFloat(getComputedStyle(element).lineHeight) * 3 + 1)).toBe(true)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-    await sidebar.screenshot({ path: `/private/tmp/jobtrace-compact-sidebar-${width}.png` })
+    await page.screenshot({ path: `/private/tmp/jobtrace-balanced-feed-${width}.png`, fullPage: true })
     await sidebar.getByRole('button', { name: '个人空间 我的面经 →' }).click()
     await expect(page).toHaveURL(/\/interviews\/mine$/)
   }
