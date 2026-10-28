@@ -451,3 +451,11 @@
   .campaign-table td[data-label] > strong { min-width: 0; }
   .application-table select.application-status-select { min-width: 104px; }
 }
+/* Keep the status itself centered; follow-up text does not move its baseline. */
+.application-table .application-status-stack { position: relative; display: flex; align-items: center; justify-content: center; min-height: 64px; }
+.application-table .application-status-stack select.application-status-select { display: flex; align-items: center; justify-content: center; flex: 0 0 88px; width: 88px; min-width: 88px; min-height: 32px; margin: 0; padding: 4px 18px; border-radius: 8px; background-position: right 6px center; background-size: 12px 12px; text-align: center; text-align-last: center; font-size: .78rem; font-weight: 600; }
+.application-table .application-status-stack>.follow-up { position: absolute; top: calc(50% + 22px); left: 50%; transform: translateX(-50%); width: max-content; max-width: 160px; margin: 0; color: #96612e; font-size: .72rem; font-weight: 400; line-height: 1.35; text-align: center; }
+@media (max-width: 700px) {
+  .application-table .application-status-stack { grid-column: 2; justify-content: flex-start; min-height: 64px; }
+  .application-table .application-status-stack>.follow-up { left: 0; transform: none; text-align: left; }
+}

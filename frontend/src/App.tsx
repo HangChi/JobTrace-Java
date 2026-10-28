@@ -1,3 +1,4 @@
+import AccountAvatar from './shared/ui/AccountAvatar'
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import type { MouseEvent } from 'react'
 import { currentPath, guestRoutes, navigation, safePath } from './app/routes'
@@ -9,6 +10,12 @@ import './AppShell.css'
 import './Polish.css'
 import './ReferenceLayout.css'
 import './FormSurfaces.css'
+import './Insights.css'
+import './PrivateInterviews.css'
+import './ProfileSurfaces.css'
+import './ColorBalance.css'
+import './PublicInterviews.css'
+import './Pagination.css'
 
 const AuthPage = lazy(() => import('./features/auth/AuthPage'))
 const ApplicationList = lazy(() => import('./features/applications/ApplicationList'))
@@ -57,7 +64,7 @@ function App() {
     getSession().then(session => {
       if (!active) return
       setAuth({ kind: 'ready', session })
-      if (guestRoutes.has(window.location.pathname)) navigate('/', true)
+      if (guestRoutes.has(window.location.pathname)) navigate(session.user.role === 'ADMIN' ? '/admin' : '/', true)
     }).catch(error => {
       if (!active) return
       if (error instanceof ApiError && error.status === 401) {
@@ -74,7 +81,7 @@ function App() {
     const destination = auth.kind === 'guest' && !guestRoutes.has(pathname)
       ? `/login?returnTo=${encodeURIComponent(path)}`
       : auth.kind === 'ready' && guestRoutes.has(pathname)
-        ? '/' : null
+        ? auth.session.user.role === 'ADMIN' ? '/admin' : '/' : null
     if (destination) queueMicrotask(() => navigate(destination, true))
   }, [auth, path])
 
@@ -106,6 +113,9 @@ function App() {
 }
 
 function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpired }: { path: string; search: string; session: CurrentSession; onLink: (event: MouseEvent<HTMLAnchorElement>, target: string) => void; onSignOut: () => Promise<void>; navigate: (path: string) => void; onExpired: () => void }) {
+  const [accountProfile, setAccountProfile] = useState<{ id: string; displayName: string; image: string | null } | null>(null)
+  const accountUser = accountProfile?.id === session.user.id ? { ...session.user, ...accountProfile } : session.user
+  const receiveProfile = useCallback((value: { displayName: string; image: string | null }) => setAccountProfile({ id: session.user.id, displayName: value.displayName, image: value.image }), [session.user.id])
   const [analyticsOverview, setAnalyticsOverview] = useState<{ period: string; applications: number; interviews: number } | null>(null)
   const receiveAnalyticsOverview = useCallback((value: { period: string; applications: number; interviews: number }) => setAnalyticsOverview(value), [])
   const current = navigation.find(item => item.path === path || (item.path === '/applications' && path.startsWith('/applications/')) || (item.path === '/interviews' && path.startsWith('/interviews/shared/')) || (item.path === '/analytics' && path.startsWith('/analytics/')))
@@ -134,11 +144,11 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
         <img className="app-brand-mark" src="/jobtrace-icon.svg" alt="" width="38" height="38" />
         <span><strong>JobTrace</strong><small>投递与面试</small></span>
       </a>
-      <nav className="app-primary-nav" aria-label="主要功能">{navigation.map(item => <a key={item.path} href={item.path} aria-current={current?.path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}</nav>
+      <nav className="app-primary-nav" aria-label="主要功能">{navigation.map(item => <a key={item.path} href={item.path} aria-current={current?.path === item.path ? 'page' : undefined} onClick={event => onLink(event, item.path)}>{item.label}</a>)}{session.user.role === 'ADMIN' && <a href="/admin" aria-current={path.startsWith('/admin') ? 'page' : undefined} onClick={event => onLink(event, '/admin')}>管理后台</a>}</nav>
       <details className="account-menu">
-        <summary aria-label="打开用户菜单"><span className="avatar" aria-hidden="true">{session.user.displayName.slice(0, 1)}</span><span className="user-summary"><strong>{session.user.displayName}</strong><small>{session.user.role === 'ADMIN' ? '管理员' : '普通用户'}</small></span><span className="menu-chevron" aria-hidden="true">⌄</span></summary>
+        <summary aria-label="打开用户菜单"><AccountAvatar name={accountUser.displayName} image={accountUser.image} /><span className="user-summary"><strong>{accountUser.displayName}</strong><small>{session.user.role === 'ADMIN' ? '管理员' : '普通用户'}</small></span><svg className="menu-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg></summary>
         <div className="account-popover">
-          <div className="account-identity"><strong>{session.user.displayName}</strong><small>{session.user.role === 'ADMIN' ? '管理员账号' : '个人账号'}</small></div>
+          <div className="account-identity"><strong>{accountUser.displayName}</strong><small>{session.user.role === 'ADMIN' ? '管理员账号' : '个人账号'}</small></div>
           <a href="/profile" onClick={event => accountLink(event, '/profile')}>个人中心</a>
           <a href="/interviews/mine" onClick={event => accountLink(event, '/interviews/mine')}>个人面经</a>
           <a href="/import" onClick={event => accountLink(event, '/import')}>导入投递记录</a>
@@ -148,8 +158,8 @@ function Workspace({ path, search, session, onLink, onSignOut, navigate, onExpir
       </details>
     </header>
     <main id="main-content" className="workspace-main">
-      {pageHeader[path] && <header className={`workspace-header ${path === '/analytics' ? 'tone-analytics' : path === '/interviews/mine' ? 'tone-interviews' : ''}`}><div><p className="eyebrow">{pageHeader[path].kicker}</p><h1>{pageHeader[path].title}</h1><p className="workspace-description">{pageHeader[path].description}</p></div>{path === '/applications' && <div className="workspace-header-actions"><button type="button" onClick={() => navigate('/applications/new')}>＋ 新增投递</button><details className="application-export-menu"><summary>导出⌄</summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}{path === '/analytics' && analyticsOverview && <div className="analytics-hero-pills"><span>{analyticsOverview.period}</span><span>{analyticsOverview.applications} 次投递</span><span>{analyticsOverview.interviews} 次进入面试</span></div>}{path === '/interviews/mine' && <button className="workspace-header-cta interview-hero-create" type="button" onClick={() => navigate('/interviews/new')}>＋ 新增复盘</button>}</header>}
-      <Suspense fallback={<p role="status">正在加载页面…</p>}>{path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} onOverview={receiveAnalyticsOverview} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
+      {pageHeader[path] && <header className={`workspace-header ${path === '/analytics' ? 'tone-analytics' : path === '/interviews/mine' ? 'tone-interviews' : ''}`}><div><p className="eyebrow">{pageHeader[path].kicker}</p><h1>{pageHeader[path].title}</h1><p className="workspace-description">{pageHeader[path].description}</p></div>{path === '/applications' && <div className="workspace-header-actions"><button type="button" onClick={() => navigate('/applications/new')}>＋ 新增投递</button><details className="application-export-menu"><summary><span>导出</span><svg className="export-menu-chevron" aria-hidden="true" viewBox="0 0 20 20"><path d="m6 8 4 4 4-4" /></svg></summary><div><p>选择导出格式</p><a href={`/api/exports/applications?${exportQuery}&format=xlsx`}>Excel 工作簿 <small>.xlsx</small></a><a href={`/api/exports/applications?${exportQuery}&format=csv`}>CSV 文件 <small>.csv</small></a></div></details></div>}{path === '/analytics' && analyticsOverview && <div className="analytics-hero-pills"><span>{analyticsOverview.period}</span><span>{analyticsOverview.applications} 次投递</span><span>{analyticsOverview.interviews} 次进入面试</span></div>}{path === '/interviews/mine' && <button className="workspace-header-cta interview-hero-create" type="button" onClick={() => navigate('/interviews/new')}>＋ 新增复盘</button>}</header>}
+      <Suspense fallback={<p role="status">正在加载页面…</p>}>{path === '/' ? <JobMarketPage key={search} search={search} navigate={navigate} onExpired={onExpired} /> : path === '/applications' || applicationDetail ? <ApplicationList key={`${path}${search}`} search={search} navigate={navigate} onExpired={onExpired} routeMode initialEditingId={applicationDetail === 'new' ? null : applicationDetail} /> : path === '/reminders' ? <ReminderPage onExpired={onExpired} /> : path === '/analytics' ? <AnalyticsPage onExpired={onExpired} onOverview={receiveAnalyticsOverview} /> : path === '/import' ? <ImportPage onExpired={onExpired} /> : path === '/profile' ? <ProfilePage onExpired={onExpired} role={session.user.role} onProfileChange={receiveProfile} /> : path === '/interviews' || path === '/interviews/public' || path === '/interviews/mine' || path === '/interviews/new' || publicInterviewId || privateInterviewId ? <InterviewsPage key={path} initialTab={path === '/interviews/mine' || path === '/interviews/new' || Boolean(privateInterviewId) ? 'private' : 'public'} initialPrivateId={privateInterviewId} initialPublicId={publicInterviewId} startCreating={path === '/interviews/new'} navigate={navigate} onExpired={onExpired} /> : path.startsWith('/admin') && session.user.role !== 'ADMIN' ? <section className="content-card"><h1>无权访问</h1><p>此页面仅供管理员使用。</p></section> : adminUserId ? <AdminUserDetailPage key={adminUserId} id={adminUserId} navigate={navigate} onExpired={onExpired} /> : (path === '/admin' || path === '/admin/users' || path === '/admin/audit' || path === '/admin/job-market') ? <AdminPage key={path} currentUserId={session.user.id} onExpired={onExpired} initialTab={adminTab} onTabChange={tab => navigate(tab === 'overview' ? '/admin' : tab === 'market' ? '/admin/job-market' : `/admin/${tab}`)} navigate={navigate} /> :
         <section className="content-card"><h1>页面未找到</h1><p>这个地址不存在，请从顶部导航选择要访问的页面。</p></section>}
       </Suspense>
     </main>

@@ -1,0 +1,110 @@
+/* Preserve the existing brand greens; separate neutral surfaces from semantic accents. */
+:root {
+  --ink: #243734;
+  --muted: #66746e;
+  --paper: #f6f7f5;
+  --surface: #fff;
+  --surface-soft: #f3f5f2;
+  --line: #dce3df;
+  --line-strong: #b8c9c1;
+  --accent-info: #526f89;
+  --accent-info-soft: #edf2f7;
+  --accent-warm: #84653c;
+  --accent-warm-soft: #faf4e8;
+  --accent-review: #6d638c;
+  --accent-review-soft: #f2eff7;
+  --accent-danger: #9b505e;
+  --accent-danger-soft: #fbf0f2;
+  --shadow: 0 5px 22px rgb(34 49 42 / 5%);
+}
+body { color: var(--ink); background: linear-gradient(180deg, #eef5f1 0, var(--paper) 360px); }
+.app-header { border-bottom-color: var(--line); }
+.app-primary-nav a:not([aria-current=page]) { color: #53655e; }
+.app-primary-nav a:not([aria-current=page]):hover { background-color: #eaf1ec; color: var(--brand-dark); }
+.workspace-header, .market-hero { background: linear-gradient(110deg, #fff 25%, #edf5ef 100%); border-color: var(--line); box-shadow: 0 4px 20px rgb(34 49 42 / 4%); }
+.workspace-header.tone-analytics { background: linear-gradient(110deg, #fff 25%, var(--accent-review-soft) 100%); border-color: #e0dce9; }
+.workspace-header.tone-analytics .eyebrow { color: var(--accent-review); }
+.workspace-header.tone-interviews { background: linear-gradient(110deg, #fff 25%, var(--accent-info-soft) 100%); border-color: #d9e1e9; }
+.workspace-header.tone-interviews .eyebrow { color: var(--accent-info); }
+.content-card, .campaign-table-shell, .application-list-panel, .application-summary-grid,
+.profile-page .profile-content, .public-feed-card, .auth-surface { border-color: var(--line); box-shadow: var(--shadow); }
+.application-table thead th, .campaign-table thead th, .import-table-wrap th { background-color: #f0f3f1; color: #55655d; border-color: var(--line); }
+.application-table tbody tr:nth-child(even), .campaign-table tbody tr:nth-child(even) { background-color: #fbfcfa; }
+.application-table tbody tr:hover, .campaign-table tbody tr:hover { background-color: #f0f6f2; }
+.application-list-heading, .interview-list-panel>header { border-bottom-color: var(--line); }
+.filter-panel-footer, .application-form-footer { background-color: #f6f8f5; }
+.application-type-pill { background-color: #f5f1e8; color: var(--accent-warm); border-color: #e8dfd0; }
+.application-stage-pill { background-color: var(--accent-info-soft); color: var(--accent-info); border-color: #d6e0eb; }
+.application-stage-pill i { background-color: var(--accent-info); }
+.application-summary-card.summary-offer { border-top-color: #b89a65; }
+.application-summary-card.summary-week { border-top-color: #8ba4b8; }
+.application-summary-card.summary-rejected { border-top-color: #c49a9e; }
+.application-summary-card.summary-active { border-top-color: #80ac99; }
+.application-summary-card.summary-offer strong { color: var(--accent-warm); }
+.application-summary-card.summary-week strong { color: var(--accent-info); }
+.application-table .application-status-stack>.follow-up { color: var(--accent-warm); }
+.analytics-content .analytics-summary-strip article:nth-child(2)>strong { color: var(--accent-info); }
+.analytics-content .analytics-summary-strip article:nth-child(3)>strong { color: var(--accent-warm); }
+.analytics-content .milestone-list article { border-color: var(--line); background-color: #fbfcfa; }
+.analytics-content .stage-reach-track, .analytics-content .trend-track { background-color: #e9eeea; }
+.interview-square-page .public-feed-preview-answer { background-color: #f2f5f8; border-left: 2px solid #d6e0eb; }
+.interview-square-page .public-feed-preview-answer>strong { color: var(--accent-info); }
+.interview-square-page .public-feed-preview-answer p { color: #536676; }
+.interview-square-page .public-feed-preview-heading>span:not(.public-feed-status-dot) { background-color: var(--accent-info-soft); color: var(--accent-info); }
+.interview-square-page .public-feed-sidebar .content-card { background-color: #fdfdfb; }
+.interview-private-page .interview-record-status .review-state-pending_review { background-color: var(--accent-warm-soft); color: var(--accent-warm); }
+.interview-private-page .interview-record-status .review-result-failed { background-color: var(--accent-danger-soft); color: var(--accent-danger); }
+.interview-document .interview-sharing-note { background-color: #f5f7f3; border-color: var(--line); }
+.profile-page .profile-account-facts dt, .profile-page .profile-form-hint { color: var(--muted); }
+.profile-page .profile-role-card { background-color: #fdfdfb; border-color: var(--line); }
+.profile-page .profile-index nav a:not([aria-current]) { color: var(--muted); }
+.profile-page .profile-security-block>p { color: var(--muted); }
+.notice { background-color: #edf6ef; border-color: #c9dfd0; color: #35674a; }
+.error { background-color: var(--accent-danger-soft); border-color: #ead2d8; color: #914455; }
+.auth-field-label, .auth-field-hint, .auth-top-switch, .auth-terms { color: var(--muted); }
+/* Status controls share a capsule shape and restrained semantic colors. */
+select.status-control {
+  --status-surface: #f1f4f3;
+  --status-border: #d7e0dc;
+  --status-ink: #53665d;
+}
+select.status-control:is(.status-submitted, .status-open) {
+  --status-surface: #edf7f1;
+  --status-border: #c5dfd1;
+  --status-ink: #276d5b;
+}
+select.status-control:is(.status-offer, .status-stale) {
+  --status-surface: #fbf4e6;
+  --status-border: #e7d5ad;
+  --status-ink: #866322;
+}
+select.status-control.status-refused {
+  --status-surface: #fcf0f2;
+  --status-border: #e8cbd2;
+  --status-ink: #9b455a;
+}
+select.status-control.status-closed {
+  --status-surface: #eef1f4;
+  --status-border: #d4dce3;
+  --status-ink: #586b7b;
+}
+:is(.application-table, .application-filters, .market-filters, .application-form-section) select.status-control[class*="status-"] {
+  border-radius: 999px;
+  background-color: var(--status-surface);
+  border-color: var(--status-border);
+  color: var(--status-ink);
+  font-weight: 600;
+  box-shadow: none;
+}
+:is(.application-table, .application-filters, .market-filters, .application-form-section) select.status-control[class*="status-"]:hover {
+  border-color: var(--status-ink);
+}
+
+:is(.application-filters, .market-filters, .application-form-section) select.status-control[class*="status-"] {
+  width: 128px;
+  min-width: 0;
+  max-width: 100%;
+  justify-self: start;
+  padding-left: 16px;
+  padding-right: 32px;
+}

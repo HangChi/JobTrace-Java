@@ -1,0 +1,26 @@
+.application-pagination { justify-content: space-between; gap: 16px; flex-wrap: wrap; padding-block: 14px; }
+.application-pagination .pagination-page-size { flex: none; gap: 8px; font-size: .78rem; white-space: nowrap; }
+.application-pagination .pagination-page-size select { width: 78px; min-width: 0; min-height: 32px; height: 32px; padding: 4px 25px 4px 10px; border-radius: 7px; font-size: .78rem; font-weight: 500; background-position: right 8px center; background-size: 12px; }
+.page-navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 14px; color: var(--muted); font-size: .78rem; }
+.page-navigation-count { white-space: nowrap; }
+.page-navigation-buttons, .page-navigation-item { display: flex; align-items: center; gap: 5px; }
+.page-navigation button { display: inline-flex; justify-content: center; align-items: center; flex: none; min-width: 32px; min-height: 32px; height: 32px; margin: 0; padding: 4px 8px; border: 1px solid var(--line); border-radius: 7px; background: #fff; color: var(--muted); font-size: .8rem; font-weight: 500; box-shadow: none; }
+.page-navigation button:hover:not(:disabled) { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-dark); }
+.page-navigation button[aria-current=page] { border-color: var(--brand); background: var(--brand); color: #fff; }
+.page-navigation button:disabled { opacity: .4; cursor: not-allowed; }
+.page-navigation button[aria-label="上一页"], .page-navigation button[aria-label="下一页"] { font-size: 1.15rem; }
+.page-navigation .page-navigation-skip { border-color: transparent; background: transparent; }
+.page-navigation-jump { display: flex; align-items: center; gap: 8px; margin: 0; }
+.page-navigation-jump label { display: flex; align-items: center; gap: 7px; margin: 0; color: var(--muted); font-size: .78rem; font-weight: 400; white-space: nowrap; }
+.page-navigation .page-navigation-jump input { width: 48px; min-width: 0; min-height: 32px; height: 32px; padding: 4px; border: 1px solid var(--line-strong); border-radius: 7px; background: #fff; color: var(--ink); text-align: center; font-size: .8rem; appearance: textfield; }
+.page-navigation-jump input::-webkit-inner-spin-button, .page-navigation-jump input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+@media (max-width: 700px) {
+  .application-pagination { align-items: flex-start; }
+  .page-navigation { width: 100%; justify-content: center; gap: 12px; }
+  .page-navigation-item>button.page-navigation-neighbor { display: none; }
+  .page-navigation-count { width: 100%; text-align: center; }
+  .page-navigation-buttons, .page-navigation-item { gap: 4px; }
+  .page-navigation button { min-width: 36px; min-height: 40px; height: 40px; padding-inline: 8px; }
+  .page-navigation .page-navigation-jump input { min-height: 40px; height: 40px; font-size: 16px; }
+  .application-pagination .pagination-page-size select { min-height: 36px; height: 36px; }
+}

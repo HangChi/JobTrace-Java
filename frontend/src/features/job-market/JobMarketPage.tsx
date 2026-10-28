@@ -1,7 +1,10 @@
+import QueryFilterPanel from '../../shared/ui/QueryFilterPanel'
+import Pagination from '../../shared/ui/Pagination'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { ApiError, apiRequest } from '../../shared/api/client'
 import MarketDetailPopover from './MarketDetailPopover'
+import '../../shared/ui/QueryToolbar.css'
 
 type Campaign = {
   id: string
@@ -99,18 +102,11 @@ export default function JobMarketPage({ search, navigate, onExpired }: { search:
   }
 
   const totalPages = page ? Math.max(1, Math.ceil(page.total / page.limit)) : 1
-  const activeFilters = ['q', 'location', 'status', 'postedFrom', 'favorite'].filter(key => Boolean(params.get(key))).length
   return <section className="job-market-page">
     <header className="market-hero"><div><p className="eyebrow">自动更新</p><h1>招聘广场</h1><p>集中查看企业岗位、招聘地点与官方投递入口。</p></div><div className="market-hero-actions"><span className="market-count">{page ? `共 ${page.total} 家招聘企业` : '正在统计招聘企业'}</span><button type="button" className={favoriteOnly ? 'market-favorite-filter is-active' : 'market-favorite-filter'} aria-pressed={favoriteOnly} onClick={() => withParams(next => { next.delete('page'); if (favoriteOnly) next.delete('favorite'); else next.set('favorite', 'true') })}>仅看收藏</button></div></header>
-    <form className="market-filters filter-panel" role="search" onSubmit={filter}>
-      <div className="filter-panel-heading"><div><span className="filter-panel-kicker">岗位检索</span><h2>筛选招聘机会</h2></div><p>从公司、岗位到地点，逐步缩小范围。</p></div>
-      <div className="filter-panel-fields">
-        <label className="filter-search-field">关键词<input value={query} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label>
-        <label>地点<input value={location} onChange={event => setFilterDraft({ ...draft, location: event.target.value })} placeholder="城市或远程" /></label>
-        <label>状态<select className={`status-control status-${status || "all"}`} value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部状态</option><option value="open">有效</option><option value="stale">待确认</option><option value="closed">已失效</option></select></label>
-        <label>发布时间<input type="date" value={postedFrom} onChange={event => setFilterDraft({ ...draft, postedFrom: event.target.value })} /></label>
-      </div>
-      <div className="filter-panel-footer"><span>{activeFilters ? `已启用 ${activeFilters} 项筛选条件` : '可组合多个条件查找岗位'}</span><div className="market-filter-actions"><button type="button" className="quiet-button" onClick={clearFilters}>清除筛选</button><button type="submit">筛选</button></div></div>
+    <form className="market-filters filter-panel list-query" role="search" aria-label="筛选招聘机会" onSubmit={filter}>
+      <div className="query-search-box"><label className="query-search"><span className="sr-only">关键词</span><input value={query} onChange={event => setFilterDraft({ ...draft, query: event.target.value })} placeholder="公司名称或岗位名称" /></label><button type="submit" className="query-search-button">搜索</button></div>
+      <div className="query-toolbar-right"><label className="query-control query-location"><span >地点</span><input value={location} onChange={event => setFilterDraft({ ...draft, location: event.target.value })} placeholder="城市或远程" /></label><QueryFilterPanel count={Number(Boolean(status)) + Number(Boolean(postedFrom))} onReset={clearFilters}><label className="query-control"><span>状态</span><select className={`status-control status-${status || "all"}`} value={status} onChange={event => setFilterDraft({ ...draft, status: event.target.value })}><option value="">全部</option><option value="open">有效</option><option value="stale">待确认</option><option value="closed">已失效</option></select></label><label className="query-control query-control-date"><span>发布时间</span><input aria-label="发布时间" type="date" value={postedFrom} onChange={event => setFilterDraft({ ...draft, postedFrom: event.target.value })} /></label></QueryFilterPanel><button type="button" className="query-reset" aria-label="清除筛选" title="清除筛选" onClick={clearFilters}><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.2 5M4 3v4h4" strokeLinecap="round" strokeLinejoin="round" /></svg><span>重置</span></button></div>
     </form>
     {error && <div className="content-card market-message"><p role="alert">{error}</p><button type="button" className="quiet-button" onClick={() => setReload(value => value + 1)}>重试加载</button></div>}
     {!page && !error && <p className="market-loading" role="status">正在加载招聘信息…</p>}
@@ -119,6 +115,6 @@ export default function JobMarketPage({ search, navigate, onExpired }: { search:
       const directory = item.listingKind === 'recruitment_directory'
       const sourceUrl = safeExternalUrl(item.primaryApplyUrl ?? item.source.url)
       return <tr key={item.id}><th scope="row"><div className="market-company"><span className="market-company-mark" aria-hidden="true">{item.company.name.trim().slice(0, 1)}</span><span><strong>{item.company.name}</strong><small>{[item.company.type, item.company.industry].filter(Boolean).join(' · ')}</small></span><span className={`market-status status-${item.status}`}>{labels[item.status]}</span></div></th><td data-label="岗位"><strong>{directory ? item.recruitmentType || '招聘入口' : `${item.positionCount} 个岗位`}</strong><small>{directory ? '岗位以官方发布为准' : item.positions.slice(0, 2).join(' · ') || '岗位未提供'}</small>{!directory && item.positionCount > 2 && <MarketDetailPopover company={item.company.name} label="岗位" summary={item.positions.length < item.positionCount ? `查看岗位摘要（共 ${item.positionCount} 个）` : '查看全部岗位'} items={item.positions} note={item.positions.length < item.positionCount ? `这里只展示前 ${item.positions.length} 个岗位，请前往招聘官网查看全部。` : undefined} />}</td><td data-label="地点"><strong>{directory ? '以招聘原文为准' : `${item.locations.length} 个地点`}</strong><small>{item.locations.slice(0, 2).map(value => value.name).join(' · ')}</small>{!directory && item.locations.length > 2 && <MarketDetailPopover company={item.company.name} label="地点" summary="查看全部地点" items={item.locations.map(location => location.name)} />}</td><td data-label="招聘渠道"><strong>{item.source.name || '官方渠道'}</strong><small>{item.publishedAt ? `发布 ${item.publishedAt.slice(0, 10)}` : item.lastConfirmedAt ? `更新 ${item.lastConfirmedAt.slice(0, 10)}` : '暂无更新日期'}</small></td><td data-label="操作"><div className="market-row-actions"><button type="button" className="market-save" disabled={busy === item.id} aria-label={item.isFavorite ? `取消收藏 ${item.company.name}` : `收藏 ${item.company.name}`} aria-pressed={item.isFavorite} onClick={() => void favorite(item)}>{item.isFavorite ? '已收藏' : '收藏'}</button>{!directory && <button type="button" disabled={item.status === 'closed'} onClick={() => track(item, sourceUrl)}>记录投递</button>}{sourceUrl && item.status !== 'closed' ? <a href={sourceUrl} target="_blank" rel="noopener noreferrer">{directory ? '查看招聘原文' : '立即投递'} <span aria-hidden="true">↗</span></a> : <span className="muted-note">{item.status === 'closed' ? '招聘记录已失效' : '暂无入口'}</span>}</div></td></tr>
-    })}</tbody></table></div>{totalPages > 1 && <nav className="market-pagination" aria-label="招聘记录分页"><span>{page.page} / {totalPages} 页</span><button type="button" className="quiet-button" disabled={page.page <= 1} onClick={() => withParams(next => { if (page.page <= 2) next.delete('page'); else next.set('page', String(page.page - 1)) })}>上一页</button><button type="button" className="quiet-button" disabled={page.page >= totalPages} onClick={() => withParams(next => next.set('page', String(page.page + 1)))}>下一页</button></nav>}</>}
+    })}</tbody></table></div>{totalPages > 1 && <div className="market-pagination"><Pagination page={page.page} totalPages={totalPages} label="招聘记录分页" onChange={value => withParams(next => { if (value === 1) next.delete('page'); else next.set('page', String(value)) })} /></div>}</>}
   </section>
 }
