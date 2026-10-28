@@ -526,7 +526,18 @@ test('full public interviews keep a readable document and separate discussion on
     expect(Math.abs(readingBounds.x - squareBounds.x)).toBeLessThanOrEqual(1)
     expect(Math.abs(readingBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
     expect(Math.abs(cardBounds.x - squareBounds.x)).toBeLessThanOrEqual(1)
-    expect(Math.abs(cardBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
+    const toolsBounds = (await page.locator('.public-reading-tools .public-feed-sidebar').boundingBox())!
+    if (width > 900) {
+      expect(Math.abs(cardBounds.width + 24 + toolsBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
+      expect(toolsBounds.width).toBe(280)
+      expect(cardBounds.width).toBeGreaterThan(0)
+      expect(Math.abs((await page.locator('.public-reading-contents').boundingBox())!.y - cardBounds.y)).toBeLessThanOrEqual(1)
+    } else {
+      expect(Math.abs(cardBounds.width - squareBounds.width)).toBeLessThanOrEqual(1)
+      const contents = (await page.locator('.public-reading-contents').boundingBox())!
+      expect(contents.y + contents.height).toBeLessThanOrEqual(cardBounds.y)
+      expect(toolsBounds.y).toBeGreaterThan(cardBounds.y + cardBounds.height)
+    }
     const body = page.getByRole('region', { name: '面经正文' })
     expect((await body.boundingBox())!.width).toBeLessThanOrEqual(920)
     const headerBounds = (await page.locator('.public-reading-header').boundingBox())!
@@ -534,7 +545,18 @@ test('full public interviews keep a readable document and separate discussion on
     expect(Math.abs(headerBounds.x - commentBounds.x)).toBeLessThanOrEqual(1)
     await expect(body.getByRole('heading', { name: '面试记录', level: 2 })).toBeVisible()
     await expect(body.getByRole('list')).toBeVisible()
-    await expect(page.locator('.public-feed-sidebar')).toBeHidden()
+    await expect(page.locator('.public-feed-sidebar')).toBeVisible()
+    const directory = page.getByRole('navigation', { name: '面经目录' })
+    if (width <= 900) {
+      await expect(directory).toBeHidden()
+      await page.locator('.public-reading-contents summary').click()
+    }
+    await directory.getByRole('link', { name: '项目交流' }).click()
+    await expect(page.locator('#reading-section-1')).toBeInViewport()
+    await expect(page.locator('#reading-section-1')).toBeFocused()
+    await directory.getByRole('link', { name: '评论', exact: true }).click()
+    await expect(page.locator('#reading-comments')).toBeInViewport()
+    if (width <= 900) await page.locator('.public-reading-contents summary').click()
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
     expect(await body.locator('pre').evaluate(el => el.scrollWidth > el.clientWidth)).toBe(true)
     await page.getByRole('button', { name: '点赞 · 0', exact: true }).click()

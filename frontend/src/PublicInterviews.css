@@ -48,10 +48,28 @@
 .interview-square-page.interview-reading-page { width: 100%; max-width: none; margin-inline: 0; gap: 16px; }
 .interview-reading-page .public-interview { width: 100%; min-width: 0; }
 .interview-reading-page .public-interview>:is(.public-reading-header, .public-reading-body, .public-reading-actions, .public-comments) { width: 100%; max-width: 920px; margin-inline: auto; }
-.interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "feed"; }
-.interview-reading-page .public-feed-sidebar { display: none; }
+.interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr) 280px; grid-template-areas: "feed tools"; align-items: start; }
+.public-reading-tools { grid-area: tools; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "contents" "sidebar"; gap: 16px; min-width: 0; }
+.interview-reading-page .public-reading-tools .public-feed-sidebar { position: static; max-height: none; overflow: visible; }
+.public-reading-contents { grid-area: contents; min-width: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.public-reading-contents summary { cursor: pointer; color: var(--ink); font-size: .9rem; font-weight: 600; }
+.public-reading-contents summary::marker { color: var(--brand-dark); }
+.public-reading-contents nav { display: grid; gap: 3px; max-height: 240px; margin-top: 14px; overflow-y: auto; }
+.public-reading-contents a { display: block; padding: 7px 10px; border-left: 2px solid var(--line); color: var(--muted); font-size: .78rem; line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
+.public-reading-contents a.nested { padding-left: 22px; }
+.public-reading-contents a:hover { border-color: var(--brand); background: var(--surface-soft); color: var(--brand-dark); }
+.public-reading-contents :is(a,summary):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.interview-reading-page :is(.public-reading-body, .public-comments, .public-reading-body h2, .public-reading-body h3, .public-reading-body h4, .public-reading-body h5, .public-reading-body h6) { scroll-margin-top: 24px; }
+@media (min-width: 901px) {
+  .public-reading-tools { position: sticky; top: 24px; max-height: calc(100dvh - 48px); overflow-y: auto; }
+}
+@media (max-width: 900px) {
+  .interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "contents" "feed" "sidebar"; }
+  .public-reading-tools { display: contents; }
+  .public-reading-contents { grid-area: contents; }
+}
 .interview-reading-page>.interview-switch { min-height: 36px; padding: 6px 0; border: 0; background: transparent; font-size: .82rem; }
-.interview-square-page .public-interview { display: block; min-width: 0; padding: 30px 36px; border-radius: 14px; }
+.interview-square-page .public-interview { display: block; min-width: 0; padding: 26px 28px; border-radius: 14px; }
 .public-reading-header { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .public-reading-header .editor-heading { align-items: start; gap: 18px; margin: 0; }
 .public-reading-header :is(h1, h2) { margin: 0; color: var(--ink); font-size: clamp(1.35rem, 2.5vw, 1.85rem); line-height: 1.5; letter-spacing: -.025em; overflow-wrap: anywhere; }
