@@ -1,6 +1,6 @@
 import QueryFilterPanel from '../../shared/ui/QueryFilterPanel'
 import '../../shared/ui/QueryToolbar.css'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { listApplications } from '../applications/api'
 import type { ApplicationSummary } from '../applications/api'
@@ -11,6 +11,8 @@ import InterviewDocumentEditor from './InterviewDocumentEditor'
 import { consolidateInterview } from './interviewDocument'
 import { MarkdownPreview } from './MarkdownPreview'
 import PublicInterviewCard from './PublicInterviewCard'
+import PublicInterviewSidebar from './PublicInterviewSidebar'
+import PublicReadingContents from './PublicReadingContents'
 
 const stages = [['assessment', '测评'], ['interview_1', '一面'], ['interview_2', '二面'], ['interview_3', '三面'], ['hr_interview', 'HR 面'], ['final_interview', '终面']]
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Shanghai' })
@@ -55,7 +57,14 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
   const [reload, setReload] = useState(0)
   const savedDraftRef = useRef<string | null>(null)
   const failedDraftRef = useRef<string | null>(null)
+  const publicArticleRef = useRef<HTMLElement | null>(null)
   const versionRef = useRef(0)
+  const publicExpiredRef = useRef(false)
+  const reportPublicExpired = useCallback(() => {
+    if (publicExpiredRef.current) return
+    publicExpiredRef.current = true
+    onExpired()
+  }, [onExpired])
 
   useEffect(() => {
     let active = true
@@ -74,9 +83,9 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
     if (city) params.set('city', city)
     if (position) params.set('position', position)
     listPublicInterviews(params).then(value => { if (active) setPublicPage(value) })
-      .catch(caught => { if (active) { if (caught instanceof ApiError && caught.status === 401) onExpired(); else setError(message(caught)) } })
+      .catch(caught => { if (active) { if (caught instanceof ApiError && caught.status === 401) reportPublicExpired(); else setError(message(caught)) } })
     return () => { active = false }
-  }, [tab, sort, search, city, position, reload, onExpired])
+  }, [tab, sort, search, city, position, reload, reportPublicExpired])
 
   async function execute(work: () => Promise<void>) {
     if (busy) return
@@ -241,23 +250,23 @@ export default function InterviewsPage({ onExpired, initialTab = 'private', navi
         </div>
       </div>}
 
-      <div className="public-square-layout"><div className="public-main">{!initialPublicId && <header className="public-feed-heading"><div><h1>面经分享</h1><p>从真实面试记录中找到准备方向。</p></div><span>共 {publicPage?.total ?? 0} 篇</span></header>}
+      <div className="public-square-layout">{!initialPublicId && <header className="public-feed-heading"><div><h1>面经分享</h1><p>从真实面试记录中找到准备方向。</p></div><span className="public-feed-total">公开面经 <strong>{publicPage?.total ?? 0}</strong> 篇</span></header>}<div className="public-main">
       {!initialPublicId && (!publicPage ? <p role="status">正在加载公开面经…</p> : <section className="public-feed" aria-label="公开面经列表">{publicPage.items.length === 0 ? <div className="content-card interview-empty-state"><h2>暂时没有公开面经</h2><p>换个筛选条件，或者先完成并分享你的第一篇面经。</p>{navigate && <button className="quiet-button" onClick={() => navigate('/interviews/mine')}>查看个人面经</button>}</div> : <ol className="public-feed-list">{publicPage.items.map(item => <li key={item.id}><PublicInterviewCard item={item} onOpen={() => navigate ? navigate(`/interviews/shared/${encodeURIComponent(item.id)}`) : openPublic(item.id)} /></li>)}</ol>}{publicPage.nextCursor && <button className="quiet-button public-feed-more" disabled={busy} onClick={morePublic}>加载更多公开面经</button>}</section>)}
       {initialPublicId && !publicDetail && !error && <p role="status">正在加载面经详情…</p>}
-      {publicDetail && <article className="content-card public-interview">
+      {publicDetail && <article ref={publicArticleRef} className="content-card public-interview">
         <header className="public-reading-header"><div className="editor-heading"><PublicTitle>{publicDetail.companyName} · {publicDetail.positionName}</PublicTitle><button className="quiet-button" onClick={() => navigate ? navigate('/interviews') : setPublicDetail(null)}>关闭</button></div>
           <p className="public-reading-byline">{publicDetail.author?.username ?? '匿名'} · {publicDetail.interviewedOn}</p>
           <div className="public-card-tags"><span>{stages.find(([key]) => key === publicDetail.stage)?.[1] ?? publicDetail.stage}</span>{publicDetail.city && <span>{publicDetail.city}</span>}<span>发布于 {publicDetail.publishedAt.slice(0, 10)}</span></div>
         </header>
-        <section className="public-reading-body" aria-label="面经正文">{publicDetail.questions.map((item, index) => <div key={index} className="public-reading-entry"><MarkdownPreview value={item.question} headingOffset={1} />{item.originalAnswer && <p>{item.originalAnswer}</p>}{item.followUpNotes && <p>追问记录：{item.followUpNotes}</p>}{item.improvedAnswer && <p>改进回答：{item.improvedAnswer}</p>}</div>)}
+        <section id="reading-body" tabIndex={-1} className="public-reading-body" aria-label="面经正文">{publicDetail.questions.map((item, index) => <div key={index} className="public-reading-entry"><MarkdownPreview value={item.question} headingOffset={1} />{item.originalAnswer && <p>{item.originalAnswer}</p>}{item.followUpNotes && <p>追问记录：{item.followUpNotes}</p>}{item.improvedAnswer && <p>改进回答：{item.improvedAnswer}</p>}</div>)}
           {(publicDetail.highlights || publicDetail.gaps) && <div className="public-reading-summary">{publicDetail.highlights && <p>亮点：{publicDetail.highlights}</p>}{publicDetail.gaps && <p>待改进：{publicDetail.gaps}</p>}</div>}
         </section>
         <div className="public-reading-actions"><button type="button" className="quiet-button public-like-button" aria-pressed={publicDetail.engagement.likedByViewer} disabled={busy} onClick={() => void execute(async () => { const engagement = await togglePublicLike(publicDetail.id); setPublicDetail({ ...publicDetail, engagement }) })}>{publicDetail.engagement.likedByViewer ? '取消点赞' : '点赞'} · {publicDetail.engagement.likeCount}</button><span>浏览 {publicDetail.engagement.viewCount} · 评论 {publicDetail.engagement.commentCount}</span></div>
-        <section className="public-comments" aria-label="面经评论"><h2>评论 <span>{comments.length}</span></h2>{comments.length === 0 ? <p className="muted-note">还没有评论，分享你的想法。</p> : <ul className="public-comment-list">{comments.map(item => <li key={item.id}><div><strong>{item.author.username}</strong><time dateTime={item.createdAt}>{item.createdAt.slice(0, 10)}</time></div><p>{item.content}</p></li>)}</ul>}
+        <section id="reading-comments" tabIndex={-1} className="public-comments" aria-label="面经评论"><h2>评论 <span>{comments.length}</span></h2>{comments.length === 0 ? <p className="muted-note">还没有评论，分享你的想法。</p> : <ul className="public-comment-list">{comments.map(item => <li key={item.id}><div><strong>{item.author.username}</strong><time dateTime={item.createdAt}>{item.createdAt.slice(0, 10)}</time></div><p>{item.content}</p></li>)}</ul>}
           <form className="comment-form" onSubmit={event => { event.preventDefault(); if (!comment.trim()) return; void execute(async () => { const value = await addPublicComment(publicDetail.id, comment.trim()); setComments([...comments, value.comment]); setPublicDetail({ ...publicDetail, engagement: value.engagement }); setComment('') }) }}><label>发表评论<textarea rows={3} value={comment} maxLength={2000} placeholder="交流面试体验，分享准备建议…" onChange={event => setComment(event.target.value)} required /></label><button disabled={busy} type="submit">提交评论</button></form>
         </section>
       </article>}
-      </div><aside className="public-feed-sidebar" aria-label="面经广场辅助信息">{navigate && !initialPublicId && <button className="public-mine-link" onClick={() => navigate('/interviews/mine')}><small>个人空间</small><strong>我的面经 →</strong></button>}<section className="content-card"><span>公开动态</span><p><strong>{publicPage?.total ?? '—'}</strong> 篇面经</p></section><section className="content-card"><h2>分享说明</h2><ul><li>完成复盘后才可公开</li><li>公开时默认匿名分享</li><li>可随时切回私有状态</li></ul></section></aside></div>
+      </div>{initialPublicId && publicDetail && <div className="public-reading-tools"><PublicReadingContents articleRef={publicArticleRef} documentId={publicDetail.id} /><PublicInterviewSidebar onExpired={reportPublicExpired} onOpen={id => navigate ? navigate(`/interviews/shared/${encodeURIComponent(id)}`) : openPublic(id)} /></div>}{!initialPublicId && <PublicInterviewSidebar onExpired={reportPublicExpired} onMine={navigate ? () => navigate('/interviews/mine') : undefined} onOpen={id => navigate ? navigate(`/interviews/shared/${encodeURIComponent(id)}`) : openPublic(id)} />}</div>
     </>}
   </section>
 }

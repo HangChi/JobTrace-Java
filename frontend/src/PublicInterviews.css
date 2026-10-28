@@ -1,27 +1,75 @@
 /* The square previews whole documents; detail pages are comfortable reading surfaces. */
-.interview-square-page .public-feed-heading { margin-bottom: 16px; }
+.interview-square-page .public-square-layout { grid-template-areas: "heading ." "feed sidebar"; column-gap: 24px; row-gap: 16px; }
+.interview-square-page .public-feed-heading { grid-area: heading; margin: 0; }
+.interview-square-page .public-main { grid-area: feed; }
+.interview-square-page .public-feed-sidebar { grid-area: sidebar; }
 .interview-square-page .public-feed-heading h1 { font-size: 1.15rem; }
 .interview-square-page .public-feed-heading p { display: block; margin: 5px 0 0; color: var(--muted); font-size: .78rem; font-weight: 400; line-height: 1.6; }
-.interview-square-page .public-feed-heading>span { flex: none; padding: 5px 9px; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
+.interview-square-page .public-feed-heading>.public-feed-total { flex: none; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: .78rem; white-space: nowrap; }
+.public-feed-total strong { margin-inline: 4px; color: var(--ink); font-size: .9rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .interview-square-page .public-feed-card { border-radius: 12px; background: #fff; }
-.interview-square-page .public-feed-card-header { min-height: 0; padding: 18px 22px 14px; }
-.interview-square-page .public-feed-card-body { padding: 0 22px; }
+.interview-square-page .public-feed-card-header { min-height: 0; padding: 14px 20px 10px; }
+.interview-square-page .public-feed-card-body { padding: 0 20px; }
 .interview-square-page .public-feed-company { gap: 5px; padding: 0; border: 0; }
 .interview-square-page .public-feed-title-link h2 { font-size: 1.12rem; line-height: 1.6; }
 .interview-square-page .public-feed-company>span { font-size: .75rem; }
-.public-card-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; }
+.public-card-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 10px; }
 .public-card-tags>span { padding: 4px 8px; border-radius: 5px; background: var(--surface-soft); color: var(--muted); font-size: .72rem; line-height: 1.4; }
 .public-card-tags>span:first-child { background: var(--accent-info-soft); color: var(--accent-info); }
-.public-feed-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 14px 0 0; color: #52635c; font-size: .89rem; font-weight: 400; line-height: 1.85; overflow-wrap: anywhere; }
-.interview-square-page .public-feed-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 22px 0; padding: 10px 0; border-top: 1px solid var(--line); }
+.public-feed-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 12px 0 0; color: #52635c; font-size: .89rem; font-weight: 400; line-height: 1.85; overflow-wrap: anywhere; }
+.interview-square-page .public-feed-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 20px 0; padding: 8px 0; border-top: 1px solid var(--line); }
 .interview-square-page .public-feed-card-footer .public-feed-engagement { display: flex; flex-wrap: wrap; gap: 14px; margin: 0; padding: 0; border: 0; color: var(--muted); font-size: .73rem; }
 .interview-square-page .public-feed-card-footer button { min-height: 36px; padding: 6px 0 6px 8px; white-space: nowrap; font-size: .77rem; }
-.interview-square-page .public-feed-sidebar .content-card { padding: 18px; }
-.interview-square-page.interview-reading-page { max-width: 920px; margin-inline: auto; gap: 14px; }
-.interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); }
-.interview-reading-page .public-feed-sidebar { display: none; }
+/* One supporting panel aligns with the first feed card through the page grid. */
+.interview-square-page .public-feed-sidebar { display: block; min-width: 0; }
+.public-feed-panel { display: grid; align-content: start; gap: 18px; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.interview-square-page .public-feed-panel .public-mine-link { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; width: 100%; min-width: 0; min-height: 56px; padding: 12px; border: 0; border-radius: 8px; }
+.public-popular>header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.interview-square-page .public-popular h2 { margin: 0; font-size: .9rem; line-height: 1.5; }
+.public-popular>header>span { color: var(--muted); font-size: .68rem; }
+.public-popular ol { margin: 10px 0 0; padding: 0; list-style: none; }
+.public-popular li+li { border-top: 1px solid var(--line); }
+.public-popular button { display: flex; align-items: flex-start; gap: 10px; width: 100%; padding: 14px 0; border: 0; border-radius: 4px; background: transparent; color: var(--ink); text-align: left; font: inherit; }
+.public-popular button:hover { color: var(--brand-dark); background: var(--surface-soft); }
+.public-popular button:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+.public-popular-rank { flex: 0 0 18px; padding-top: 1px; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.public-popular li:first-child .public-popular-rank { color: var(--brand-dark); font-weight: 700; }
+.public-popular-entry { display: grid; min-width: 0; gap: 6px; }
+.public-popular-entry strong { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font-size: .82rem; font-weight: 600; line-height: 1.6; }
+.public-popular-entry small { color: var(--muted); font-size: .72rem; line-height: 1.5; overflow-wrap: anywhere; }
+.public-popular-note { margin: 14px 0 0; color: var(--muted); font-size: .78rem; line-height: 1.7; }
+.public-sharing-note { margin: 0; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .72rem; line-height: 1.8; }
+@media (min-width: 901px) {
+  .interview-square-page .public-feed-sidebar { position: sticky; top: 24px; max-height: calc(100dvh - 48px); overflow-y: auto; }
+}
+@media (max-width: 900px) {
+  .interview-square-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "heading" "feed" "sidebar"; }
+}
+.interview-square-page.interview-reading-page { width: 100%; max-width: none; margin-inline: 0; gap: 16px; }
+.interview-reading-page .public-interview { width: 100%; min-width: 0; }
+.interview-reading-page .public-interview>:is(.public-reading-header, .public-reading-body, .public-reading-actions, .public-comments) { width: 100%; max-width: 920px; margin-inline: auto; }
+.interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr) 280px; grid-template-areas: "feed tools"; align-items: start; }
+.public-reading-tools { grid-area: tools; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "contents" "sidebar"; gap: 16px; min-width: 0; }
+.interview-reading-page .public-reading-tools .public-feed-sidebar { position: static; max-height: none; overflow: visible; }
+.public-reading-contents { grid-area: contents; min-width: 0; padding: 18px 20px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.public-reading-contents summary { cursor: pointer; color: var(--ink); font-size: .9rem; font-weight: 600; }
+.public-reading-contents summary::marker { color: var(--brand-dark); }
+.public-reading-contents nav { display: grid; gap: 3px; max-height: 240px; margin-top: 14px; overflow-y: auto; }
+.public-reading-contents a { display: block; padding: 7px 10px; border-left: 2px solid var(--line); color: var(--muted); font-size: .78rem; line-height: 1.6; text-decoration: none; overflow-wrap: anywhere; }
+.public-reading-contents a.nested { padding-left: 22px; }
+.public-reading-contents a:hover { border-color: var(--brand); background: var(--surface-soft); color: var(--brand-dark); }
+.public-reading-contents :is(a,summary):focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.interview-reading-page :is(.public-reading-body, .public-comments, .public-reading-body h2, .public-reading-body h3, .public-reading-body h4, .public-reading-body h5, .public-reading-body h6) { scroll-margin-top: 24px; }
+@media (min-width: 901px) {
+  .public-reading-tools { position: sticky; top: 24px; max-height: calc(100dvh - 48px); overflow-y: auto; }
+}
+@media (max-width: 900px) {
+  .interview-reading-page .public-square-layout { grid-template-columns: minmax(0, 1fr); grid-template-areas: "contents" "feed" "sidebar"; }
+  .public-reading-tools { display: contents; }
+  .public-reading-contents { grid-area: contents; }
+}
 .interview-reading-page>.interview-switch { min-height: 36px; padding: 6px 0; border: 0; background: transparent; font-size: .82rem; }
-.interview-square-page .public-interview { display: block; min-width: 0; padding: 30px 36px; border-radius: 14px; }
+.interview-square-page .public-interview { display: block; min-width: 0; padding: 26px 28px; border-radius: 14px; }
 .public-reading-header { padding-bottom: 22px; border-bottom: 1px solid var(--line); }
 .public-reading-header .editor-heading { align-items: start; gap: 18px; margin: 0; }
 .public-reading-header :is(h1, h2) { margin: 0; color: var(--ink); font-size: clamp(1.35rem, 2.5vw, 1.85rem); line-height: 1.5; letter-spacing: -.025em; overflow-wrap: anywhere; }
